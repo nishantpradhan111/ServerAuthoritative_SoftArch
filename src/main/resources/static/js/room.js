@@ -2,6 +2,7 @@ import { apiJson, clearProfile, ensureProfile, loadProfile, saveProfile } from "
 import { openRoomSocket } from "./socket.js";
 
 const profile = ensureProfile();
+const displayName = profile?.username ?? profile?.name ?? "pilot";
 
 const roomTitle = document.querySelector("#room-title");
 const roomSubtitle = document.querySelector("#room-subtitle");
@@ -102,7 +103,7 @@ function connectRoom(roomCode, token) {
 
 async function hydrateFromStorage() {
     if (!profile?.roomCode || !profile?.token) {
-        roomSubtitle.textContent = `Welcome, ${profile?.name ?? "pilot"}. Create a room or join with a code.`;
+        roomSubtitle.textContent = `Welcome, ${displayName}. Create a room or join with a code.`;
         setConnectionState("Offline", "ghost");
         return;
     }
@@ -128,7 +129,7 @@ createRoomForm.addEventListener("submit", async (event) => {
         setNotice("Creating room...");
         const response = await apiJson("/api/rooms", {
             method: "POST",
-            body: JSON.stringify({ name: profile.name })
+            body: JSON.stringify({ name: displayName })
         });
         currentRoomCode = response.roomCode;
         currentToken = response.token;
@@ -154,7 +155,7 @@ joinRoomForm.addEventListener("submit", async (event) => {
         setNotice(`Joining ${roomCode}...`);
         const response = await apiJson("/api/rooms/join", {
             method: "POST",
-            body: JSON.stringify({ roomCode, name: profile.name })
+            body: JSON.stringify({ roomCode, name: displayName })
         });
         currentRoomCode = response.roomCode;
         currentToken = response.token;
@@ -181,7 +182,7 @@ leaveButton.addEventListener("click", () => {
     if (socketHandle) {
         socketHandle.close();
     }
-    saveProfile({ name: profile.name });
+    clearProfile();
     window.location.href = "/login.html";
 });
 

@@ -23,7 +23,7 @@ export function clearProfile() {
 
 export function ensureProfile() {
     const profile = loadProfile();
-    if (!profile.name) {
+    if (!profile.userId && !profile.name) {
         window.location.href = "/login.html";
         return null;
     }

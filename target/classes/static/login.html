@@ -13,31 +13,61 @@
         <h1>Small duel. Loud presence.</h1>
         <p class="hero-lead">
             Enter a room, face a rival, and trade pulses across a neon grid.
-            The shell is intentionally modular so login, payments, and progression can be added later without undoing the game.
+            Your account is encrypted with BCrypt (strength 12) and all queries use parameterized SQL to prevent injection attacks.
         </p>
         <div class="hero-points">
             <span>Browser-based</span>
             <span>Room multiplayer</span>
-            <span>Java backend</span>
+            <span>Secure auth</span>
         </div>
     </section>
 
     <section class="card stack-card">
         <div class="card-heading">
-            <p class="eyebrow">Welcome back</p>
-            <h2>Choose a display name</h2>
+            <p class="eyebrow">Secure Access</p>
+            <h2>Join the arena</h2>
         </div>
-        <form id="login-form" class="form-stack">
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" type="button" data-tab="login">Login</button>
+            <button class="auth-tab" type="button" data-tab="register">Register</button>
+        </div>
+
+        <form id="login-form" class="auth-form form-stack active">
             <label class="field">
-                <span>Name</span>
-                <input id="name-input" name="name" maxlength="20" placeholder="Nova" autocomplete="nickname" required>
+                <span>Username</span>
+                <input id="login-username" name="username" maxlength="20" placeholder="nova_strike" autocomplete="username" required>
             </label>
-            <button class="primary-button" type="submit">Enter lobby</button>
+            <label class="field">
+                <span>Password</span>
+                <input id="login-password" name="password" type="password" placeholder="********" autocomplete="current-password" required>
+            </label>
+            <button class="primary-button" type="submit">Login</button>
+            <p class="form-message" id="login-message"></p>
         </form>
-        <p class="fine-print">This first pass stores a guest identity locally and keeps the auth seam ready for a real login flow later.</p>
+
+        <form id="register-form" class="auth-form form-stack">
+            <label class="field">
+                <span>Username</span>
+                <input id="register-username" name="username" maxlength="20" placeholder="nova_strike" autocomplete="username" required>
+            </label>
+            <label class="field">
+                <span>Email</span>
+                <input id="register-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+            </label>
+            <label class="field">
+                <span>Password</span>
+                <input id="register-password" name="password" type="password" placeholder="********" autocomplete="new-password" required>
+            </label>
+            <p class="fine-print">Password must be at least 8 characters. Username: 3-20 alphanumeric + underscore only.</p>
+            <button class="primary-button" type="submit">Create account</button>
+            <p class="form-message" id="register-message"></p>
+        </form>
+
+        <p class="fine-print">Your password is hashed with BCrypt (strength 12) and never stored plaintext. All database queries use parameterized SQL.</p>
     </section>
 </main>
 
-<script type="module" src="/js/login.js"></script>
+<script type="module" src="/js/auth.js"></script>
 </body>
 </html>

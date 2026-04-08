@@ -1,12 +1,19 @@
 com\codereboot\gameboot\application\RoomService.class
+com\codereboot\gameboot\api\AuthController.class
+com\codereboot\gameboot\application\AuthService.class
+com\codereboot\gameboot\api\RegisterRequest.class
+com\codereboot\gameboot\api\LoginRequest.class
+com\codereboot\gameboot\infra\UserRepository.class
 com\codereboot\gameboot\api\dto\RoomEntryResponse.class
 com\codereboot\gameboot\api\RoomController.class
 com\codereboot\gameboot\api\ApiExceptionHandler.class
 com\codereboot\gameboot\application\RoomBroadcastGateway.class
 com\codereboot\gameboot\transport\WebSocketRoomBroadcaster.class
 com\codereboot\gameboot\GameBootApplication.class
+com\codereboot\gameboot\domain\User.class
 com\codereboot\gameboot\infra\InMemoryRoomRepository.class
 com\codereboot\gameboot\transport\GameSocketHandler.class
+com\codereboot\gameboot\api\AuthResponse.class
 com\codereboot\gameboot\domain\RoomSnapshot.class
 com\codereboot\gameboot\domain\Room.class
 com\codereboot\gameboot\config\WebSocketConfig.class
@@ -17,3 +24,5 @@ com\codereboot\gameboot\domain\PlayerSnapshot.class
 com\codereboot\gameboot\api\JoinRoomRequest.class
 com\codereboot\gameboot\domain\RoomPhase.class
 com\codereboot\gameboot\infra\RoomRepository.class
+com\codereboot\gameboot\security\PasswordEncoder.class
+com\codereboot\gameboot\security\BCryptPasswordEncoderImpl.class
