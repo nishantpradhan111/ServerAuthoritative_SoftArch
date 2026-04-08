@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeReboot | Room</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main class="shell page-shell">
+    <header class="page-header card">
+        <div>
+            <p class="eyebrow">Room lobby</p>
+            <h1 id="room-title">Awaiting room</h1>
+            <p id="room-subtitle" class="muted">Create or join a room to bring another pilot into the arena.</p>
+        </div>
+        <div class="header-actions">
+            <button class="secondary-button" id="return-login-button" type="button">Reset profile</button>
+        </div>
+    </header>
+
+    <section class="room-grid">
+        <article class="card stack-card">
+            <div class="card-heading">
+                <p class="eyebrow">Matchmaking</p>
+                <h2>Create or join</h2>
+            </div>
+            <form id="create-room-form" class="form-stack compact">
+                <button class="primary-button" type="submit">Create room</button>
+            </form>
+            <form id="join-room-form" class="form-stack compact">
+                <label class="field">
+                    <span>Room code</span>
+                    <input id="join-code-input" name="roomCode" maxlength="5" placeholder="AB12C" autocomplete="off">
+                </label>
+                <button class="secondary-button" type="submit">Join room</button>
+            </form>
+            <p id="room-notice" class="notice">Pick a room flow. The lobby will stay live once the socket connects.</p>
+        </article>
+
+        <article class="card stack-card">
+            <div class="card-heading">
+                <p class="eyebrow">Lobby state</p>
+                <h2 id="lobby-state-title">No room selected</h2>
+            </div>
+            <div class="status-row">
+                <span class="badge" id="phase-badge">IDLE</span>
+                <span class="badge ghost" id="connection-badge">Offline</span>
+            </div>
+            <div id="player-list" class="player-list"></div>
+            <div class="lobby-actions">
+                <button id="ready-button" class="primary-button" type="button" disabled>Ready up</button>
+                <button id="leave-button" class="secondary-button" type="button">Leave room</button>
+            </div>
+        </article>
+    </section>
+</main>
+
+<script type="module" src="/js/room.js"></script>
+</body>
+</html>

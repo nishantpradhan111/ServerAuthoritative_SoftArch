@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeReboot | Login</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="landing-page">
+<main class="hero-shell shell">
+    <section class="hero-copy">
+        <p class="eyebrow">CodeReboot Arena</p>
+        <h1>Small duel. Loud presence.</h1>
+        <p class="hero-lead">
+            Enter a room, face a rival, and trade pulses across a neon grid.
+            The shell is intentionally modular so login, payments, and progression can be added later without undoing the game.
+        </p>
+        <div class="hero-points">
+            <span>Browser-based</span>
+            <span>Room multiplayer</span>
+            <span>Java backend</span>
+        </div>
+    </section>
+
+    <section class="card stack-card">
+        <div class="card-heading">
+            <p class="eyebrow">Welcome back</p>
+            <h2>Choose a display name</h2>
+        </div>
+        <form id="login-form" class="form-stack">
+            <label class="field">
+                <span>Name</span>
+                <input id="name-input" name="name" maxlength="20" placeholder="Nova" autocomplete="nickname" required>
+            </label>
+            <button class="primary-button" type="submit">Enter lobby</button>
+        </form>
+        <p class="fine-print">This first pass stores a guest identity locally and keeps the auth seam ready for a real login flow later.</p>
+    </section>
+</main>
+
+<script type="module" src="/js/login.js"></script>
+</body>
+</html>
