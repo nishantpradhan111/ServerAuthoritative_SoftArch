@@ -25,4 +25,6 @@ com\codereboot\gameboot\api\JoinRoomRequest.class
 com\codereboot\gameboot\domain\RoomPhase.class
 com\codereboot\gameboot\infra\RoomRepository.class
 com\codereboot\gameboot\security\PasswordEncoder.class
+com\codereboot\gameboot\application\GameSimulationService.class
 com\codereboot\gameboot\security\BCryptPasswordEncoderImpl.class
+com\codereboot\gameboot\domain\GameInputFrame.class

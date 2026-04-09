@@ -2,6 +2,7 @@ package com.codereboot.gameboot.application;
 
 import com.codereboot.gameboot.api.dto.RoomEntryResponse;
 import com.codereboot.gameboot.domain.Direction;
+import com.codereboot.gameboot.domain.GameInputFrame;
 import com.codereboot.gameboot.domain.Room;
 import com.codereboot.gameboot.domain.RoomSnapshot;
 import com.codereboot.gameboot.infra.RoomRepository;
@@ -61,6 +62,12 @@ public class RoomService {
     public void fire(String roomCode, String token) {
         Room room = getRoom(roomCode);
         room.fire(token);
+        broadcastGateway.broadcast(room.snapshot());
+    }
+
+    public void applyInput(String roomCode, String token, GameInputFrame input) {
+        Room room = getRoom(roomCode);
+        room.applyInput(token, input);
         broadcastGateway.broadcast(room.snapshot());
     }
 

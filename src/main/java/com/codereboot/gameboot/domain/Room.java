@@ -12,13 +12,18 @@ public class Room {
     public static final int BOARD_WIDTH = 7;
     public static final int BOARD_HEIGHT = 5;
     public static final int STARTING_HEALTH = 3;
+    public static final int STARTING_AMMO = 30;
     public static final int FIRE_RANGE = 4;
+    public static final double PLAYER_SPEED = 4.0;
+    public static final double PLAYER_RADIUS = 0.35;
+    public static final double SIMULATION_STEP_SECONDS = 1.0 / 30.0;
 
     private final String code;
     private final LinkedHashMap<String, Player> players = new LinkedHashMap<>();
     private RoomPhase phase = RoomPhase.LOBBY;
     private String winnerToken;
     private String lastEvent = "Create or join a room to begin";
+    private long simulationTick;
 
     public Room(String code) {
         this.code = code.toUpperCase();
@@ -39,9 +44,9 @@ public class Room {
         String token = UUID.randomUUID().toString();
         Player player = new Player(token, name);
         if (players.isEmpty()) {
-            player.place(1, BOARD_HEIGHT / 2, Direction.RIGHT);
+            player.place(1.0, BOARD_HEIGHT / 2.0, Direction.RIGHT);
         } else {
-            player.place(BOARD_WIDTH - 2, BOARD_HEIGHT / 2, Direction.LEFT);
+            player.place(BOARD_WIDTH - 2.0, BOARD_HEIGHT / 2.0, Direction.LEFT);
         }
         players.put(token, player);
         lastEvent = name + " entered the arena";
@@ -63,8 +68,8 @@ public class Room {
     public synchronized void move(String token, Direction direction) {
         ensureActive();
         Player player = requirePlayer(token);
-        int nextX = clamp(player.x() + direction.deltaX(), 0, BOARD_WIDTH - 1);
-        int nextY = clamp(player.y() + direction.deltaY(), 0, BOARD_HEIGHT - 1);
+        double nextX = clamp(player.positionX() + direction.deltaX(), 0.0, BOARD_WIDTH - 1.0);
+        double nextY = clamp(player.positionY() + direction.deltaY(), 0.0, BOARD_HEIGHT - 1.0);
         if (!isCellFree(nextX, nextY, token)) {
             player.face(direction);
             lastEvent = player.name() + " tried to move but the path was blocked";
@@ -73,6 +78,28 @@ public class Room {
         player.moveTo(nextX, nextY);
         player.face(direction);
         lastEvent = player.name() + " moved " + direction.name().toLowerCase();
+    }
+
+    public synchronized void applyInput(String token, GameInputFrame input) {
+        ensureActive();
+        Player player = requirePlayer(token);
+        if (input.sequence() <= player.lastInputSequence()) {
+            return;
+        }
+
+        player.setLastInputSequence(input.sequence());
+        double moveX = clamp(input.moveX(), -1.0, 1.0);
+        double moveY = clamp(input.moveY(), -1.0, 1.0);
+        player.setVelocity(moveX * PLAYER_SPEED, moveY * PLAYER_SPEED);
+        if (input.aimDegrees() != null) {
+            player.face(input.aimDegrees());
+        } else if (moveX != 0.0 || moveY != 0.0) {
+            player.face(Direction.fromVector(moveX, moveY));
+        }
+
+        if (input.firing()) {
+            fire(token);
+        }
     }
 
     public synchronized void fire(String token) {
@@ -99,6 +126,31 @@ public class Room {
         lastEvent = shooter.name() + " hit " + target.name();
     }
 
+    public synchronized boolean tick(double deltaSeconds) {
+        if (phase != RoomPhase.ACTIVE || deltaSeconds <= 0.0) {
+            return false;
+        }
+
+        boolean changed = false;
+        double[] previousX = new double[players.size()];
+        double[] previousY = new double[players.size()];
+        int index = 0;
+        for (Player player : players.values()) {
+            previousX[index] = player.positionX();
+            previousY[index] = player.positionY();
+            index++;
+        }
+
+        for (Player player : players.values()) {
+            changed |= player.advance(deltaSeconds);
+            changed |= clampPlayer(player);
+        }
+
+        changed |= resolveOverlap(previousX, previousY);
+        simulationTick++;
+        return changed;
+    }
+
     public synchronized RoomSnapshot snapshot() {
         List<PlayerSnapshot> playerSnapshots = new ArrayList<>();
         String hostToken = players.keySet().stream().findFirst().orElse(null);
@@ -110,13 +162,19 @@ public class Room {
                     player.name(),
                     player.x(),
                     player.y(),
+                    player.positionX(),
+                    player.positionY(),
+                    player.velocityX(),
+                    player.velocityY(),
                     player.facing(),
+                    player.aimDegrees(),
                     player.health(),
                     player.ready(),
-                    host
+                    host,
+                    player.ammo()
             ));
         }
-        return new RoomSnapshot(code, phase, BOARD_WIDTH, BOARD_HEIGHT, playerSnapshots, winnerToken, lastEvent, canStart());
+        return new RoomSnapshot(code, phase, BOARD_WIDTH, BOARD_HEIGHT, simulationTick, playerSnapshots, winnerToken, lastEvent, canStart());
     }
 
     public synchronized Player requirePlayer(String token) {
@@ -130,6 +188,7 @@ public class Room {
     private void startMatch() {
         phase = RoomPhase.ACTIVE;
         winnerToken = null;
+        simulationTick = 0L;
         lastEvent = "Match started";
 
         int index = 0;
@@ -155,10 +214,10 @@ public class Room {
         }
     }
 
-    private boolean isCellFree(int x, int y, String movingToken) {
+    private boolean isCellFree(double x, double y, String movingToken) {
         return players.values().stream()
                 .filter(player -> !player.token().equals(movingToken))
-                .noneMatch(player -> player.x() == x && player.y() == y);
+                .noneMatch(player -> player.x() == Math.round(x) && player.y() == Math.round(y));
     }
 
     private boolean canHit(Player shooter, Player target) {
@@ -185,7 +244,43 @@ public class Room {
         return false;
     }
 
+    private boolean clampPlayer(Player player) {
+        double clampedX = clamp(player.positionX(), PLAYER_RADIUS, BOARD_WIDTH - 1.0 - PLAYER_RADIUS);
+        double clampedY = clamp(player.positionY(), PLAYER_RADIUS, BOARD_HEIGHT - 1.0 - PLAYER_RADIUS);
+        boolean changed = clampedX != player.positionX() || clampedY != player.positionY();
+        if (changed) {
+            player.moveTo(clampedX, clampedY);
+        }
+        return changed;
+    }
+
+    private boolean resolveOverlap(double[] previousX, double[] previousY) {
+        if (players.size() < 2) {
+            return false;
+        }
+
+        Player[] pair = players.values().toArray(new Player[0]);
+        Player first = pair[0];
+        Player second = pair[1];
+        double deltaX = first.positionX() - second.positionX();
+        double deltaY = first.positionY() - second.positionY();
+        double minimumSeparation = PLAYER_RADIUS * 2.0;
+        if ((deltaX * deltaX) + (deltaY * deltaY) >= minimumSeparation * minimumSeparation) {
+            return false;
+        }
+
+        first.moveTo(previousX[0], previousY[0]);
+        second.moveTo(previousX[1], previousY[1]);
+        first.stop();
+        second.stop();
+        return true;
+    }
+
     private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }
 }

@@ -8,10 +8,12 @@ C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\jav
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\RegisterRequest.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\RoomController.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\application\AuthService.java
+C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\application\GameSimulationService.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\application\RoomBroadcastGateway.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\application\RoomService.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\config\WebSocketConfig.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\domain\Direction.java
+C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\domain\GameInputFrame.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\domain\Player.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\domain\PlayerSnapshot.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\domain\Room.java

@@ -3,6 +3,7 @@ package com.codereboot.gameboot.transport;
 import com.codereboot.gameboot.application.RoomBroadcastGateway;
 import com.codereboot.gameboot.application.RoomService;
 import com.codereboot.gameboot.domain.Direction;
+import com.codereboot.gameboot.domain.GameInputFrame;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -41,6 +42,7 @@ public class GameSocketHandler extends TextWebSocketHandler {
                 case "ready" -> roomService.setReady(roomCode(session), token(session), true);
                 case "move" -> roomService.move(roomCode(session), token(session), Direction.from(text(payload, "direction")));
                 case "fire" -> roomService.fire(roomCode(session), token(session));
+                case "input" -> roomService.applyInput(roomCode(session), token(session), inputFrame(payload));
                 case "sync" -> broadcastGateway.sendSnapshot(session, roomService.snapshot(roomCode(session), token(session)));
                 default -> broadcastGateway.sendError(session, "Unknown websocket command: " + type);
             }
@@ -100,5 +102,14 @@ public class GameSocketHandler extends TextWebSocketHandler {
             throw new IllegalArgumentException("Missing field: " + field);
         }
         return value.asText();
+    }
+
+    private GameInputFrame inputFrame(JsonNode payload) {
+        long sequence = payload.path("sequence").asLong(0L);
+        double moveX = payload.path("moveX").asDouble(0.0);
+        double moveY = payload.path("moveY").asDouble(0.0);
+        Double aimDegrees = payload.hasNonNull("aimDegrees") ? payload.path("aimDegrees").asDouble() : null;
+        boolean firing = payload.path("firing").asBoolean(false);
+        return new GameInputFrame(sequence, moveX, moveY, aimDegrees, firing);
     }
 }
