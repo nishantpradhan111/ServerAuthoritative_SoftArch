@@ -12,7 +12,7 @@
         <div>
             <p class="eyebrow">Arena match</p>
             <h1 id="game-title">Neon Duel</h1>
-            <p id="game-subtitle" class="muted">Move with WASD or arrows. Fire with space. Hold the lane and break the rival's shield.</p>
+            <p id="game-subtitle" class="muted">WASD to strafe, mouse to look, click or space to fire. Stay mobile and keep your crosshair calm.</p>
         </div>
         <div class="header-actions">
             <button class="secondary-button" id="back-to-room-button" type="button">Back to room</button>
@@ -25,28 +25,34 @@
                 <div class="status-row">
                     <span class="badge" id="phase-badge">ACTIVE</span>
                     <span class="badge ghost" id="room-code-badge">Room</span>
+                    <span class="badge ghost" id="tick-badge">Tick 0</span>
                 </div>
                 <div id="event-banner" class="event-banner">Waiting for match state...</div>
             </div>
-            <div id="board" class="board" aria-label="Duel board"></div>
-            <div class="control-cluster">
-                <div class="d-pad">
-                    <button class="pad-button" data-direction="up" type="button">▲</button>
-                    <div class="pad-row">
-                        <button class="pad-button" data-direction="left" type="button">◀</button>
-                        <button class="pad-button fire-button" data-action="fire" type="button">Fire</button>
-                        <button class="pad-button" data-direction="right" type="button">▶</button>
-                    </div>
-                    <button class="pad-button" data-direction="down" type="button">▼</button>
+            <div class="fps-stage" id="fps-stage">
+                <canvas id="game-canvas" aria-label="Arena viewport"></canvas>
+                <div class="crosshair" aria-hidden="true">
+                    <span></span>
+                    <span></span>
                 </div>
-                <p class="fine-print">The first version uses a crisp line-of-sight pulse duel so the multiplayer loop is clear and easy to extend.</p>
+                <div id="pointer-lock-hint" class="pointer-hint">Click the arena to lock pointer and enable mouse look.</div>
+                <div class="hud-row top-left">
+                    <div class="hud-chip"><label>Health</label><strong id="hud-health">3</strong></div>
+                    <div class="hud-chip"><label>Ammo</label><strong id="hud-ammo">30</strong></div>
+                </div>
+                <div class="hud-row top-right">
+                    <div class="hud-chip"><label>Latency</label><strong id="hud-latency">-- ms</strong></div>
+                    <div class="hud-chip"><label>Correction</label><strong id="hud-correction">0.000</strong></div>
+                    <button id="fire-action-button" class="hud-fire-button" type="button">Fire</button>
+                </div>
             </div>
+            <p class="fine-print">Pointer lock is desktop-first. On touch devices, movement continues with keyboard fallback if available.</p>
         </article>
 
         <aside class="card stack-card game-sidebar">
             <div class="card-heading">
                 <p class="eyebrow">Pilot telemetry</p>
-                <h2>Shield status</h2>
+                <h2>Combat status</h2>
             </div>
             <div id="scoreboard" class="scoreboard"></div>
             <div id="game-log" class="event-log"></div>

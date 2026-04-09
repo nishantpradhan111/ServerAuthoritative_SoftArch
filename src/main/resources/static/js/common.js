@@ -1,23 +1,39 @@
 const PROFILE_KEY = "codereboot.profile";
 
 export function loadProfile() {
-    const raw = localStorage.getItem(PROFILE_KEY);
-    if (!raw) {
+    const sessionRaw = sessionStorage.getItem(PROFILE_KEY);
+    if (sessionRaw) {
+        try {
+            return JSON.parse(sessionRaw);
+        } catch {
+            sessionStorage.removeItem(PROFILE_KEY);
+            return {};
+        }
+    }
+
+    // One-time migration path for older profiles stored in localStorage.
+    const legacyRaw = localStorage.getItem(PROFILE_KEY);
+    if (!legacyRaw) {
         return {};
     }
 
     try {
-        return JSON.parse(raw);
+        const profile = JSON.parse(legacyRaw);
+        sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+        localStorage.removeItem(PROFILE_KEY);
+        return profile;
     } catch {
+        localStorage.removeItem(PROFILE_KEY);
         return {};
     }
 }
 
 export function saveProfile(profile) {
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 }
 
 export function clearProfile() {
+    sessionStorage.removeItem(PROFILE_KEY);
     localStorage.removeItem(PROFILE_KEY);
 }
 

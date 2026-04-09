@@ -171,7 +171,9 @@ public class Room {
                     player.health(),
                     player.ready(),
                     host,
-                    player.ammo()
+                    player.ammo(),
+                    player.lastInputSequence(),
+                    simulationTick
             ));
         }
         return new RoomSnapshot(code, phase, BOARD_WIDTH, BOARD_HEIGHT, simulationTick, playerSnapshots, winnerToken, lastEvent, canStart());

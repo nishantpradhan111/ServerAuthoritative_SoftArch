@@ -71,8 +71,12 @@ class RoomTest {
                 .findFirst()
                 .orElseThrow();
 
+        RoomSnapshot after = room.snapshot();
+
         assertTrue(player.positionX() > before.players().get(0).positionX());
-        assertEquals(before.simulationTick() + 1, room.snapshot().simulationTick());
+        assertEquals(before.simulationTick() + 1, after.simulationTick());
         assertTrue(player.velocityX() > 0.0);
+        assertEquals(1L, player.lastProcessedInputSequence());
+        assertEquals(after.simulationTick(), player.snapshotTick());
     }
 }

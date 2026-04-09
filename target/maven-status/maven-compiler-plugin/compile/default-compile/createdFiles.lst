@@ -1,5 +1,6 @@
 com\codereboot\gameboot\application\RoomService.class
 com\codereboot\gameboot\api\AuthController.class
+com\codereboot\gameboot\transport\WebSocketRoomBroadcaster$SessionRef.class
 com\codereboot\gameboot\application\AuthService.class
 com\codereboot\gameboot\api\RegisterRequest.class
 com\codereboot\gameboot\api\LoginRequest.class

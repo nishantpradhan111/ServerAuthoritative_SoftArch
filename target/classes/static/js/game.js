@@ -12,8 +12,16 @@ const gameTitle = document.querySelector("#game-title");
 const gameSubtitle = document.querySelector("#game-subtitle");
 const roomCodeBadge = document.querySelector("#room-code-badge");
 const phaseBadge = document.querySelector("#phase-badge");
+const tickBadge = document.querySelector("#tick-badge");
 const eventBanner = document.querySelector("#event-banner");
-const board = document.querySelector("#board");
+const canvas = document.querySelector("#game-canvas");
+const fpsStage = document.querySelector("#fps-stage");
+const pointerLockHint = document.querySelector("#pointer-lock-hint");
+const hudHealth = document.querySelector("#hud-health");
+const hudAmmo = document.querySelector("#hud-ammo");
+const hudLatency = document.querySelector("#hud-latency");
+const hudCorrection = document.querySelector("#hud-correction");
+const fireActionButton = document.querySelector("#fire-action-button");
 const scoreboard = document.querySelector("#scoreboard");
 const gameLog = document.querySelector("#game-log");
 const endOverlay = document.querySelector("#end-overlay");
@@ -22,54 +30,290 @@ const endMessage = document.querySelector("#end-message");
 const backToRoomButton = document.querySelector("#back-to-room-button");
 const returnRoomButton = document.querySelector("#return-room-button");
 
+const context = canvas.getContext("2d");
+
+const CLIENT_SEND_INTERVAL_MS = 16;
+const CLIENT_REPLAY_STEP_SECONDS = 1 / 30;
+const PLAYER_SPEED = 4.0;
+const PLAYER_RADIUS = 0.35;
+const FIRE_COOLDOWN_MS = 180;
+const MOUSE_SENSITIVITY = 0.18;
+const MAX_LOG_LINES = 18;
+const SNAPSHOT_STALE_MS = 2200;
+const RECONNECT_COOLDOWN_MS = 1500;
+
 let socketHandle = null;
 let latestSnapshot = null;
+let latestEventMessage = null;
+let latestAppliedTick = -1;
+let latestAckSequence = 0;
+let lastSnapshotReceivedAt = 0;
+let lastReconnectAttemptAt = 0;
+
+let animationFrameId = null;
+let lastAnimationTime = performance.now();
+let sendAccumulatorMs = 0;
+let watchdogIntervalId = null;
+
+let inputSequence = 0;
+let localAimDegrees = 0;
+let pointerLocked = false;
+let triggerPressed = false;
+let lastFireSentAt = 0;
+
+let predictedSelf = null;
+let displaySelf = null;
+let correctionMagnitude = 0;
+let smoothedLatencyMs = null;
+const pendingInputs = [];
+const sentInputTimes = new Map();
+
+const keyState = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    fireKey: false
+};
+
+const worldMetrics = {
+    boardWidth: 7,
+    boardHeight: 5
+};
 
 function logLine(message) {
     if (!message) {
+        return;
+    }
+    if (gameLog.firstElementChild?.textContent === message) {
         return;
     }
     const entry = document.createElement("div");
     entry.className = "event-log-entry";
     entry.textContent = message;
     gameLog.prepend(entry);
+
+    while (gameLog.childElementCount > MAX_LOG_LINES) {
+        gameLog.removeChild(gameLog.lastElementChild);
+    }
 }
 
-function buildBoard(snapshot) {
-    board.innerHTML = "";
-    board.style.gridTemplateColumns = `repeat(${snapshot.boardWidth}, minmax(0, 1fr))`;
-    board.style.gridTemplateRows = `repeat(${snapshot.boardHeight}, minmax(72px, 1fr))`;
+function resetClientPredictionState() {
+    latestAppliedTick = -1;
+    latestAckSequence = 0;
+    inputSequence = 0;
+    predictedSelf = null;
+    displaySelf = null;
+    correctionMagnitude = 0;
+    pendingInputs.length = 0;
+    sentInputTimes.clear();
+    sendAccumulatorMs = 0;
+}
 
-    for (let row = 0; row < snapshot.boardHeight; row++) {
-        for (let column = 0; column < snapshot.boardWidth; column++) {
-            const cell = document.createElement("div");
-            cell.className = "cell";
-            board.appendChild(cell);
-        }
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function normalizeDegrees(value) {
+    const normalized = value % 360;
+    return normalized < 0 ? normalized + 360 : normalized;
+}
+
+function blend(current, target, factor) {
+    return current + (target - current) * factor;
+}
+
+function distance2D(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function normalizeVector(x, y) {
+    const length = Math.hypot(x, y);
+    if (length <= Number.EPSILON) {
+        return { x: 0, y: 0 };
+    }
+    return { x: x / length, y: y / length };
+}
+
+function mapKeyboardState(event, isPressed) {
+    const key = event.key.toLowerCase();
+    if (key === "w" || key === "arrowup") {
+        keyState.forward = isPressed;
+        return true;
+    }
+    if (key === "s" || key === "arrowdown") {
+        keyState.backward = isPressed;
+        return true;
+    }
+    if (key === "a" || key === "arrowleft") {
+        keyState.left = isPressed;
+        return true;
+    }
+    if (key === "d" || key === "arrowright") {
+        keyState.right = isPressed;
+        return true;
+    }
+    if (key === " " || key === "enter") {
+        keyState.fireKey = isPressed;
+        return true;
+    }
+    return false;
+}
+
+function movementVector() {
+    let x = 0;
+    let y = 0;
+
+    if (keyState.left) {
+        x -= 1;
+    }
+    if (keyState.right) {
+        x += 1;
+    }
+    if (keyState.forward) {
+        y -= 1;
+    }
+    if (keyState.backward) {
+        y += 1;
     }
 
-    snapshot.players.forEach((player) => {
-        const marker = document.createElement("div");
-        marker.className = `player-ship ${player.token === profile.token ? "self" : "enemy"}`;
-        marker.style.gridColumn = String(player.x + 1);
-        marker.style.gridRow = String(player.y + 1);
-        marker.innerHTML = `<span>${player.name.slice(0, 2).toUpperCase()}</span>`;
-        board.appendChild(marker);
-    });
+    return normalizeVector(x, y);
+}
+
+function shouldFire(nowMs) {
+    const wantsFire = triggerPressed || keyState.fireKey;
+    if (!wantsFire) {
+        return false;
+    }
+    if ((nowMs - lastFireSentAt) < FIRE_COOLDOWN_MS) {
+        return false;
+    }
+
+    lastFireSentAt = nowMs;
+    return true;
+}
+
+function sendInstantFire() {
+    if (!socketHandle || latestSnapshot?.phase !== "ACTIVE") {
+        return;
+    }
+
+    const nowMs = performance.now();
+    if ((nowMs - lastFireSentAt) < FIRE_COOLDOWN_MS) {
+        return;
+    }
+
+    lastFireSentAt = nowMs;
+    const movement = movementVector();
+    const inputFrame = {
+        type: "input",
+        sequence: ++inputSequence,
+        moveX: movement.x,
+        moveY: movement.y,
+        aimDegrees: normalizeDegrees(localAimDegrees),
+        firing: true
+    };
+
+    socketHandle.send(inputFrame);
+    sentInputTimes.set(inputFrame.sequence, nowMs);
+    pendingInputs.push(inputFrame);
+
+    if (predictedSelf) {
+        applyInputToState(predictedSelf, inputFrame, CLIENT_SEND_INTERVAL_MS / 1000);
+    }
+}
+
+function applyInputToState(state, inputFrame, deltaSeconds) {
+    const clampedX = clamp(inputFrame.moveX, -1, 1);
+    const clampedY = clamp(inputFrame.moveY, -1, 1);
+    state.vx = clampedX * PLAYER_SPEED;
+    state.vy = clampedY * PLAYER_SPEED;
+    state.aimDegrees = normalizeDegrees(inputFrame.aimDegrees ?? state.aimDegrees ?? 0);
+
+    state.x += state.vx * deltaSeconds;
+    state.y += state.vy * deltaSeconds;
+
+    state.x = clamp(state.x, PLAYER_RADIUS, worldMetrics.boardWidth - 1 - PLAYER_RADIUS);
+    state.y = clamp(state.y, PLAYER_RADIUS, worldMetrics.boardHeight - 1 - PLAYER_RADIUS);
+}
+
+function buildInputFrame(nowMs) {
+    const movement = movementVector();
+    const firing = shouldFire(nowMs);
+
+    return {
+        type: "input",
+        sequence: ++inputSequence,
+        moveX: movement.x,
+        moveY: movement.y,
+        aimDegrees: normalizeDegrees(localAimDegrees),
+        firing
+    };
+}
+
+function reconcileSelf(authoritativeSelf) {
+    if (!authoritativeSelf) {
+        return;
+    }
+
+    const previousPrediction = predictedSelf
+        ? { ...predictedSelf }
+        : {
+            x: authoritativeSelf.positionX,
+            y: authoritativeSelf.positionY,
+            vx: authoritativeSelf.velocityX,
+            vy: authoritativeSelf.velocityY,
+            aimDegrees: authoritativeSelf.aimDegrees
+        };
+
+    predictedSelf = {
+        x: authoritativeSelf.positionX,
+        y: authoritativeSelf.positionY,
+        vx: authoritativeSelf.velocityX,
+        vy: authoritativeSelf.velocityY,
+        aimDegrees: authoritativeSelf.aimDegrees
+    };
+
+    const acknowledgedSequence = authoritativeSelf.lastProcessedInputSequence ?? 0;
+
+    const acknowledgedAt = sentInputTimes.get(acknowledgedSequence);
+    if (acknowledgedAt) {
+        const roundTrip = performance.now() - acknowledgedAt;
+        smoothedLatencyMs = smoothedLatencyMs == null
+            ? roundTrip
+            : blend(smoothedLatencyMs, roundTrip, 0.2);
+    }
+
+    while (pendingInputs.length > 0 && pendingInputs[0].sequence <= acknowledgedSequence) {
+        const removed = pendingInputs.shift();
+        sentInputTimes.delete(removed.sequence);
+    }
+
+    for (const queuedInput of pendingInputs) {
+        applyInputToState(predictedSelf, queuedInput, CLIENT_REPLAY_STEP_SECONDS);
+    }
+
+    correctionMagnitude = distance2D(previousPrediction, predictedSelf);
+
+    if (!displaySelf) {
+        displaySelf = { ...predictedSelf };
+    }
 }
 
 function renderScoreboard(snapshot) {
     scoreboard.innerHTML = snapshot.players
         .map((player) => {
+            const isSelf = player.token === profile.token;
+            const speed = Math.hypot(player.velocityX, player.velocityY).toFixed(2);
             return `
                 <div class="score-row">
                     <div class="score-meta">
-                        <span class="score-name">${player.name}${player.token === profile.token ? " (you)" : ""}</span>
-                        <span class="score-subtext">Facing ${player.facing}</span>
+                        <span class="score-name">${player.name}${isSelf ? " (you)" : ""}</span>
+                        <span class="score-subtext">Aim ${Math.round(player.aimDegrees)}° | Speed ${speed}</span>
                     </div>
-                    <div class="score-meta" style="min-width: 92px; text-align: right;">
+                    <div class="score-meta" style="min-width: 120px; text-align: right;">
                         <span class="score-name">HP ${player.health}</span>
-                        <span class="score-subtext">${"▮".repeat(player.health)}${"▯".repeat(3 - player.health)}</span>
+                        <span class="score-subtext">Ammo ${player.ammo}</span>
                     </div>
                 </div>
             `;
@@ -86,24 +330,224 @@ function showEndState(snapshot) {
     endOverlay.classList.add("is-visible");
     const didWin = snapshot.winnerToken === profile.token;
     endTitle.textContent = didWin ? "Victory" : "Defeat";
-    endMessage.textContent = snapshot.lastEvent ?? (didWin ? "You closed out the duel." : "The rival closed the arena.");
+    endMessage.textContent = snapshot.lastEvent ?? (didWin ? "You won the duel." : "The rival won the duel.");
+}
+
+function renderBackdrop(width, height) {
+    const gradient = context.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, "#0b1c2f");
+    gradient.addColorStop(1, "#06101d");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+
+    const haze = context.createRadialGradient(width * 0.5, height * 0.42, 24, width * 0.5, height * 0.42, height * 0.65);
+    haze.addColorStop(0, "rgba(86, 230, 242, 0.12)");
+    haze.addColorStop(1, "rgba(86, 230, 242, 0)");
+    context.fillStyle = haze;
+    context.fillRect(0, 0, width, height);
+}
+
+function worldToScreen(worldX, worldY, cameraX, cameraY, scale, width, height) {
+    return {
+        x: (worldX - cameraX) * scale + width * 0.5,
+        y: (worldY - cameraY) * scale + height * 0.5
+    };
+}
+
+function drawArenaGrid(cameraX, cameraY, scale, width, height) {
+    context.strokeStyle = "rgba(160, 190, 220, 0.17)";
+    context.lineWidth = 1;
+
+    for (let x = 0; x <= worldMetrics.boardWidth - 1; x++) {
+        const a = worldToScreen(x, 0, cameraX, cameraY, scale, width, height);
+        const b = worldToScreen(x, worldMetrics.boardHeight - 1, cameraX, cameraY, scale, width, height);
+        context.beginPath();
+        context.moveTo(a.x, a.y);
+        context.lineTo(b.x, b.y);
+        context.stroke();
+    }
+
+    for (let y = 0; y <= worldMetrics.boardHeight - 1; y++) {
+        const a = worldToScreen(0, y, cameraX, cameraY, scale, width, height);
+        const b = worldToScreen(worldMetrics.boardWidth - 1, y, cameraX, cameraY, scale, width, height);
+        context.beginPath();
+        context.moveTo(a.x, a.y);
+        context.lineTo(b.x, b.y);
+        context.stroke();
+    }
+}
+
+function drawPlayer(player, isSelf, cameraX, cameraY, scale, width, height) {
+    const screen = worldToScreen(player.positionX, player.positionY, cameraX, cameraY, scale, width, height);
+    const radius = Math.max(7, PLAYER_RADIUS * scale);
+    const facingRadians = (player.aimDegrees * Math.PI) / 180;
+
+    context.fillStyle = isSelf ? "rgba(86, 230, 242, 0.95)" : "rgba(255, 142, 93, 0.92)";
+    context.beginPath();
+    context.arc(screen.x, screen.y, radius, 0, Math.PI * 2);
+    context.fill();
+
+    context.strokeStyle = "rgba(4, 16, 30, 0.95)";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(screen.x, screen.y);
+    context.lineTo(
+        screen.x + Math.cos(facingRadians) * radius * 1.65,
+        screen.y + Math.sin(facingRadians) * radius * 1.65
+    );
+    context.stroke();
+
+    context.fillStyle = "rgba(239, 246, 255, 0.95)";
+    context.font = "600 12px Verdana";
+    context.textAlign = "center";
+    context.fillText(player.name, screen.x, screen.y - radius - 10);
+}
+
+function updateSelfDisplay() {
+    if (!predictedSelf) {
+        return;
+    }
+    if (!displaySelf) {
+        displaySelf = { ...predictedSelf };
+        return;
+    }
+
+    displaySelf.x = blend(displaySelf.x, predictedSelf.x, 0.22);
+    displaySelf.y = blend(displaySelf.y, predictedSelf.y, 0.22);
+    displaySelf.vx = blend(displaySelf.vx, predictedSelf.vx, 0.2);
+    displaySelf.vy = blend(displaySelf.vy, predictedSelf.vy, 0.2);
+    displaySelf.aimDegrees = normalizeDegrees(blend(displaySelf.aimDegrees, predictedSelf.aimDegrees, 0.24));
+}
+
+function drawScene() {
+    if (!latestSnapshot) {
+        return;
+    }
+
+    const width = canvas.width;
+    const height = canvas.height;
+    renderBackdrop(width, height);
+
+    const selfSnapshot = latestSnapshot.players.find((player) => player.token === profile.token);
+    if (!selfSnapshot) {
+        return;
+    }
+
+    updateSelfDisplay();
+
+    const cameraX = displaySelf ? displaySelf.x : selfSnapshot.positionX;
+    const cameraY = displaySelf ? displaySelf.y : selfSnapshot.positionY;
+    const scale = Math.max(40, Math.min(width / worldMetrics.boardWidth, height / worldMetrics.boardHeight) * 1.22);
+
+    drawArenaGrid(cameraX, cameraY, scale, width, height);
+
+    latestSnapshot.players.forEach((player) => {
+        const renderPlayer = player.token === profile.token && displaySelf
+            ? {
+                ...player,
+                positionX: displaySelf.x,
+                positionY: displaySelf.y,
+                velocityX: displaySelf.vx,
+                velocityY: displaySelf.vy,
+                aimDegrees: displaySelf.aimDegrees
+            }
+            : player;
+
+        drawPlayer(renderPlayer, player.token === profile.token, cameraX, cameraY, scale, width, height);
+    });
+}
+
+function resizeCanvasIfNeeded() {
+    const width = Math.floor(fpsStage.clientWidth);
+    const height = Math.floor(fpsStage.clientHeight);
+
+    if (canvas.width === width && canvas.height === height) {
+        return;
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+}
+
+function updateHud() {
+    const self = latestSnapshot?.players.find((player) => player.token === profile.token);
+    if (self) {
+        hudHealth.textContent = String(self.health);
+        hudAmmo.textContent = String(self.ammo);
+    }
+
+    hudCorrection.textContent = correctionMagnitude.toFixed(3);
+    hudLatency.textContent = smoothedLatencyMs == null ? "-- ms" : `${Math.round(smoothedLatencyMs)} ms`;
+}
+
+function animationStep(now) {
+    const deltaMs = Math.min(64, now - lastAnimationTime);
+    lastAnimationTime = now;
+    sendAccumulatorMs += deltaMs;
+    const isActive = latestSnapshot?.phase === "ACTIVE";
+
+    if (!isActive && pendingInputs.length > 0) {
+        pendingInputs.length = 0;
+        sentInputTimes.clear();
+    }
+
+    while (sendAccumulatorMs >= CLIENT_SEND_INTERVAL_MS && socketHandle && isActive) {
+        const inputFrame = buildInputFrame(now);
+        socketHandle.send(inputFrame);
+
+        sentInputTimes.set(inputFrame.sequence, performance.now());
+        pendingInputs.push(inputFrame);
+
+        if (predictedSelf) {
+            applyInputToState(predictedSelf, inputFrame, CLIENT_SEND_INTERVAL_MS / 1000);
+        }
+
+        sendAccumulatorMs -= CLIENT_SEND_INTERVAL_MS;
+    }
+
+    resizeCanvasIfNeeded();
+    drawScene();
+    updateHud();
+    animationFrameId = window.requestAnimationFrame(animationStep);
 }
 
 function renderSnapshot(snapshot) {
+    lastSnapshotReceivedAt = performance.now();
+
+    const self = snapshot.players.find((player) => player.token === profile.token);
+    const receivedAckSequence = self?.lastProcessedInputSequence ?? latestAckSequence;
+
+    if (snapshot.simulationTick < latestAppliedTick) {
+        return;
+    }
+
     latestSnapshot = snapshot;
+    latestAppliedTick = Math.max(latestAppliedTick, snapshot.simulationTick);
+    if (self) {
+        latestAckSequence = receivedAckSequence;
+    }
+    worldMetrics.boardWidth = snapshot.boardWidth;
+    worldMetrics.boardHeight = snapshot.boardHeight;
+
     gameTitle.textContent = `Neon Duel · Room ${snapshot.code}`;
     roomCodeBadge.textContent = `Room ${snapshot.code}`;
     phaseBadge.textContent = snapshot.phase;
+    tickBadge.textContent = `Tick ${snapshot.simulationTick}`;
     eventBanner.textContent = snapshot.lastEvent ?? "The arena is quiet.";
     gameSubtitle.textContent = snapshot.phase === "COMPLETE"
-        ? "The duel has ended. You can return to the room to rematch or create a fresh lobby."
-        : "Move with WASD or arrows. Fire with space. Hold your lane and pressure the rival.";
+        ? "The duel has ended. Return to the room to rematch."
+        : "WASD to strafe, mouse to look, click or space to fire.";
 
-    buildBoard(snapshot);
     renderScoreboard(snapshot);
     showEndState(snapshot);
 
-    if (snapshot.lastEvent) {
+    if (self) {
+        localAimDegrees = self.aimDegrees;
+        reconcileSelf(self);
+    }
+
+    if (snapshot.lastEvent && snapshot.lastEvent !== latestEventMessage) {
+        latestEventMessage = snapshot.lastEvent;
         logLine(snapshot.lastEvent);
     }
 }
@@ -120,69 +564,132 @@ function connectRoom() {
         onError: (message) => {
             eventBanner.textContent = message;
             logLine(message);
+        },
+        onClose: () => {
+            if (document.visibilityState === "visible") {
+                maybeReconnect("Socket closed");
+            }
         }
     });
 }
 
-function sendAction(message) {
-    if (!socketHandle) {
+function maybeReconnect(reason) {
+    const now = performance.now();
+    if ((now - lastReconnectAttemptAt) < RECONNECT_COOLDOWN_MS) {
         return;
     }
-    socketHandle.send(message);
+
+    lastReconnectAttemptAt = now;
+    resetClientPredictionState();
+    eventBanner.textContent = `${reason}. Reconnecting...`;
+    logLine(`${reason}. Reconnecting...`);
+    connectRoom();
 }
 
-document.addEventListener("keydown", (event) => {
-    if (event.repeat) {
-        return;
+function updatePointerHint() {
+    pointerLockHint.classList.toggle("hidden", pointerLocked);
+}
+
+function requestPointerLock() {
+    if (document.pointerLockElement === canvas || !document.pointerLockElement) {
+        canvas.requestPointerLock?.();
     }
+}
 
-    const key = event.key.toLowerCase();
-    const mapping = {
-        arrowup: { type: "move", direction: "up" },
-        w: { type: "move", direction: "up" },
-        arrowdown: { type: "move", direction: "down" },
-        s: { type: "move", direction: "down" },
-        arrowleft: { type: "move", direction: "left" },
-        a: { type: "move", direction: "left" },
-        arrowright: { type: "move", direction: "right" },
-        d: { type: "move", direction: "right" },
-        " ": { type: "fire" },
-        enter: { type: "fire" }
-    };
-
-    const action = mapping[key];
-    if (!action) {
-        return;
+function cleanupAndExit() {
+    if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId);
     }
-
-    event.preventDefault();
-    sendAction(action);
-});
-
-document.querySelectorAll("[data-direction]").forEach((button) => {
-    button.addEventListener("click", () => {
-        sendAction({ type: "move", direction: button.dataset.direction });
-    });
-});
-
-document.querySelectorAll("[data-action='fire']").forEach((button) => {
-    button.addEventListener("click", () => {
-        sendAction({ type: "fire" });
-    });
-});
-
-backToRoomButton.addEventListener("click", () => {
+    if (watchdogIntervalId) {
+        window.clearInterval(watchdogIntervalId);
+    }
     if (socketHandle) {
         socketHandle.close();
     }
+}
+
+document.addEventListener("keydown", (event) => {
+    const handled = mapKeyboardState(event, true);
+    if (handled) {
+        event.preventDefault();
+    }
+});
+
+document.addEventListener("keyup", (event) => {
+    const handled = mapKeyboardState(event, false);
+    if (handled) {
+        event.preventDefault();
+    }
+});
+
+canvas.addEventListener("click", () => {
+    requestPointerLock();
+});
+
+canvas.addEventListener("mousedown", (event) => {
+    if (event.button === 0) {
+        triggerPressed = true;
+        requestPointerLock();
+    }
+});
+
+fireActionButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    sendInstantFire();
+});
+
+document.addEventListener("mouseup", (event) => {
+    if (event.button === 0) {
+        triggerPressed = false;
+    }
+});
+
+document.addEventListener("pointerlockchange", () => {
+    pointerLocked = document.pointerLockElement === canvas;
+    updatePointerHint();
+});
+
+document.addEventListener("mousemove", (event) => {
+    if (!pointerLocked) {
+        return;
+    }
+    localAimDegrees = normalizeDegrees(localAimDegrees + (event.movementX * MOUSE_SENSITIVITY));
+});
+
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        const now = performance.now();
+        const snapshotIsStale = lastSnapshotReceivedAt > 0 && (now - lastSnapshotReceivedAt) > SNAPSHOT_STALE_MS;
+        if (snapshotIsStale) {
+            maybeReconnect("Snapshot stream stalled after tab switch");
+        }
+    }
+});
+
+backToRoomButton.addEventListener("click", () => {
+    cleanupAndExit();
     window.location.href = "/room.html";
 });
 
 returnRoomButton.addEventListener("click", () => {
-    if (socketHandle) {
-        socketHandle.close();
-    }
+    cleanupAndExit();
     window.location.href = "/room.html";
 });
 
+window.addEventListener("beforeunload", cleanupAndExit);
+
 connectRoom();
+animationFrameId = window.requestAnimationFrame(animationStep);
+watchdogIntervalId = window.setInterval(() => {
+    if (document.visibilityState !== "visible") {
+        return;
+    }
+    if (!latestSnapshot) {
+        return;
+    }
+
+    const now = performance.now();
+    if ((now - lastSnapshotReceivedAt) > SNAPSHOT_STALE_MS) {
+        maybeReconnect("Snapshot stream timeout");
+    }
+}, 1000);
