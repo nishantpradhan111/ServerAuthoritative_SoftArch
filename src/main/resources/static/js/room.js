@@ -32,6 +32,41 @@ function setNotice(text) {
     roomNotice.textContent = text;
 }
 
+function setRoomTitle(code) {
+    if (!code) {
+        roomTitle.textContent = "Awaiting room";
+        return;
+    }
+
+    roomTitle.innerHTML = `Room <span class="room-code-glow">${code}</span>`;
+}
+
+function updateLeaveButtonState() {
+    leaveButton.disabled = !currentRoomCode || !currentToken;
+}
+
+function clearRoomSession() {
+    const nextProfile = { ...loadProfile() };
+    delete nextProfile.roomCode;
+    delete nextProfile.token;
+    saveProfile(nextProfile);
+    currentRoomCode = "";
+    currentToken = "";
+    currentSnapshot = null;
+    updateLeaveButtonState();
+}
+
+function resetLobbyUI() {
+    setRoomTitle("");
+    roomSubtitle.textContent = `Welcome, ${displayName}. Create a room or join with a code.`;
+    lobbyStateTitle.textContent = "No room selected";
+    phaseBadge.textContent = "IDLE";
+    readyButton.disabled = true;
+    setConnectionState("Offline", "ghost");
+    renderPlayers({ players: [] });
+    joinCodeInput.value = "";
+}
+
 function renderPlayers(snapshot) {
     if (!snapshot.players.length) {
         playerList.innerHTML = `<div class="player-row"><div class="player-meta"><span class="player-name">Waiting</span><span class="player-subtext">No pilots in the room yet.</span></div></div>`;
@@ -60,7 +95,8 @@ function renderPlayers(snapshot) {
 
 function applySnapshot(snapshot) {
     currentSnapshot = snapshot;
-    roomTitle.textContent = `Room ${snapshot.code}`;
+    updateLeaveButtonState();
+    setRoomTitle(snapshot.code);
     lobbyStateTitle.textContent = snapshot.phase === "ACTIVE" ? "Battle online" : snapshot.phase === "COMPLETE" ? "Match complete" : "Lobby ready";
     phaseBadge.textContent = snapshot.phase;
     setNotice(snapshot.lastEvent ?? "Room updated");
@@ -105,11 +141,13 @@ async function hydrateFromStorage() {
     if (!profile?.roomCode || !profile?.token) {
         roomSubtitle.textContent = `Welcome, ${displayName}. Create a room or join with a code.`;
         setConnectionState("Offline", "ghost");
+        updateLeaveButtonState();
         return;
     }
 
     currentRoomCode = profile.roomCode;
     currentToken = profile.token;
+    updateLeaveButtonState();
 
     try {
         const snapshot = await apiJson(`/api/rooms/${encodeURIComponent(profile.roomCode)}?token=${encodeURIComponent(profile.token)}`);
@@ -179,11 +217,20 @@ readyButton.addEventListener("click", () => {
 });
 
 leaveButton.addEventListener("click", () => {
+    if (!currentRoomCode || !currentToken) {
+        setNotice("You're not in a room yet. Create one or join with a code.");
+        updateLeaveButtonState();
+        return;
+    }
+
     if (socketHandle) {
         socketHandle.close();
+        socketHandle = null;
     }
-    clearProfile();
-    window.location.href = "/login.html";
+
+    clearRoomSession();
+    resetLobbyUI();
+    setNotice("Left room. Create a new room or join with a code.");
 });
 
 returnLoginButton.addEventListener("click", () => {
@@ -194,4 +241,5 @@ returnLoginButton.addEventListener("click", () => {
     window.location.href = "/login.html";
 });
 
+updateLeaveButtonState();
 hydrateFromStorage();

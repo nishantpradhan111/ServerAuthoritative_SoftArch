@@ -7,19 +7,20 @@
     <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-<main class="shell page-shell">
-    <header class="page-header card">
-        <div>
-            <p class="eyebrow">Arena match</p>
-            <h1 id="game-title">Neon Duel</h1>
-            <p id="game-subtitle" class="muted">WASD to strafe, mouse to look, click or space to fire. Stay mobile and keep your crosshair calm.</p>
-        </div>
-        <div class="header-actions">
-            <button class="secondary-button" id="back-to-room-button" type="button">Back to room</button>
-        </div>
-    </header>
-
+<main class="shell page-shell game-screen">
     <section class="game-layout">
+        <aside class="card stack-card game-header-panel">
+            <div>
+                <p class="eyebrow">Arena match</p>
+                <h1 id="game-title">Neon Duel</h1>
+                <p id="game-room-title" class="game-room-title">Room -----</p>
+                <p id="game-subtitle" class="muted">WASD to strafe, mouse to look, click or space to fire. Stay mobile and keep your crosshair calm.</p>
+            </div>
+            <div class="header-actions">
+                <button class="secondary-button" id="back-to-room-button" type="button">Back to room</button>
+            </div>
+        </aside>
+
         <article class="card arena-card">
             <div class="arena-topbar">
                 <div class="status-row">
@@ -31,11 +32,7 @@
             </div>
             <div class="fps-stage" id="fps-stage">
                 <canvas id="game-canvas" aria-label="Arena viewport"></canvas>
-                <div class="crosshair" aria-hidden="true">
-                    <span></span>
-                    <span></span>
-                </div>
-                <div id="pointer-lock-hint" class="pointer-hint">Click the arena to lock pointer and enable mouse look.</div>
+                <div id="aim-cursor" class="aim-cursor" aria-hidden="true"><span></span></div>
                 <div class="hud-row top-left">
                     <div class="hud-chip"><label>Health</label><strong id="hud-health">3</strong></div>
                     <div class="hud-chip"><label>Ammo</label><strong id="hud-ammo">30</strong></div>
@@ -46,7 +43,7 @@
                     <button id="fire-action-button" class="hud-fire-button" type="button">Fire</button>
                 </div>
             </div>
-            <p class="fine-print">Pointer lock is desktop-first. On touch devices, movement continues with keyboard fallback if available.</p>
+            <p class="fine-print">Mouse stays visible. Move it inside the arena to aim, click or press space to fire.</p>
         </article>
 
         <aside class="card stack-card game-sidebar">

@@ -9,6 +9,7 @@ if (!profile?.roomCode || !profile?.token) {
 }
 
 const gameTitle = document.querySelector("#game-title");
+const gameRoomTitle = document.querySelector("#game-room-title");
 const gameSubtitle = document.querySelector("#game-subtitle");
 const roomCodeBadge = document.querySelector("#room-code-badge");
 const phaseBadge = document.querySelector("#phase-badge");
@@ -16,7 +17,7 @@ const tickBadge = document.querySelector("#tick-badge");
 const eventBanner = document.querySelector("#event-banner");
 const canvas = document.querySelector("#game-canvas");
 const fpsStage = document.querySelector("#fps-stage");
-const pointerLockHint = document.querySelector("#pointer-lock-hint");
+const aimCursor = document.querySelector("#aim-cursor");
 const hudHealth = document.querySelector("#hud-health");
 const hudAmmo = document.querySelector("#hud-ammo");
 const hudLatency = document.querySelector("#hud-latency");
@@ -37,7 +38,6 @@ const CLIENT_REPLAY_STEP_SECONDS = 1 / 30;
 const PLAYER_SPEED = 4.0;
 const PLAYER_RADIUS = 0.35;
 const FIRE_COOLDOWN_MS = 180;
-const MOUSE_SENSITIVITY = 0.18;
 const MAX_LOG_LINES = 18;
 const SNAPSHOT_STALE_MS = 2200;
 const RECONNECT_COOLDOWN_MS = 1500;
@@ -57,7 +57,8 @@ let watchdogIntervalId = null;
 
 let inputSequence = 0;
 let localAimDegrees = 0;
-let pointerLocked = false;
+let aimCursorX = 0;
+let aimCursorY = 0;
 let triggerPressed = false;
 let lastFireSentAt = 0;
 
@@ -158,6 +159,33 @@ function mapKeyboardState(event, isPressed) {
         return true;
     }
     return false;
+}
+
+function updateAimFromPointer(clientX, clientY) {
+    const rect = fpsStage.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+        return;
+    }
+
+    const localX = clamp(clientX - rect.left, 0, rect.width);
+    const localY = clamp(clientY - rect.top, 0, rect.height);
+    const centerX = rect.width * 0.5;
+    const centerY = rect.height * 0.5;
+    const angleRad = Math.atan2(localY - centerY, localX - centerX);
+    localAimDegrees = normalizeDegrees((angleRad * 180) / Math.PI);
+    aimCursorX = localX;
+    aimCursorY = localY;
+
+    if (aimCursor) {
+        aimCursor.style.left = `${localX}px`;
+        aimCursor.style.top = `${localY}px`;
+        aimCursor.style.setProperty("--cursor-rotation", `${localAimDegrees}deg`);
+    }
+}
+
+function centerAimCursor() {
+    const rect = fpsStage.getBoundingClientRect();
+    updateAimFromPointer(rect.left + (rect.width * 0.5), rect.top + (rect.height * 0.5));
 }
 
 function movementVector() {
@@ -311,7 +339,7 @@ function renderScoreboard(snapshot) {
                         <span class="score-name">${player.name}${isSelf ? " (you)" : ""}</span>
                         <span class="score-subtext">Aim ${Math.round(player.aimDegrees)}° | Speed ${speed}</span>
                     </div>
-                    <div class="score-meta" style="min-width: 120px; text-align: right;">
+                    <div class="score-meta score-stats">
                         <span class="score-name">HP ${player.health}</span>
                         <span class="score-subtext">Ammo ${player.ammo}</span>
                     </div>
@@ -387,20 +415,47 @@ function drawPlayer(player, isSelf, cameraX, cameraY, scale, width, height) {
     context.arc(screen.x, screen.y, radius, 0, Math.PI * 2);
     context.fill();
 
-    context.strokeStyle = "rgba(4, 16, 30, 0.95)";
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(screen.x, screen.y);
-    context.lineTo(
-        screen.x + Math.cos(facingRadians) * radius * 1.65,
-        screen.y + Math.sin(facingRadians) * radius * 1.65
-    );
-    context.stroke();
+    if (!isSelf) {
+        context.strokeStyle = "rgba(4, 16, 30, 0.95)";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(screen.x, screen.y);
+        context.lineTo(
+            screen.x + Math.cos(facingRadians) * radius * 1.65,
+            screen.y + Math.sin(facingRadians) * radius * 1.65
+        );
+        context.stroke();
+    }
 
     context.fillStyle = "rgba(239, 246, 255, 0.95)";
     context.font = "600 12px Verdana";
     context.textAlign = "center";
     context.fillText(player.name, screen.x, screen.y - radius - 10);
+}
+
+function drawAimTracer(fromX, fromY, cameraX, cameraY, scale, width, height) {
+    const topLeft = worldToScreen(0, 0, cameraX, cameraY, scale, width, height);
+    const bottomRight = worldToScreen(worldMetrics.boardWidth - 1, worldMetrics.boardHeight - 1, cameraX, cameraY, scale, width, height);
+    const minX = Math.min(topLeft.x, bottomRight.x);
+    const maxX = Math.max(topLeft.x, bottomRight.x);
+    const minY = Math.min(topLeft.y, bottomRight.y);
+    const maxY = Math.max(topLeft.y, bottomRight.y);
+
+    const clampedX = clamp(aimCursorX, minX, maxX);
+    const clampedY = clamp(aimCursorY, minY, maxY);
+
+    context.save();
+    context.setLineDash([4, 8]);
+    context.lineDashOffset = -((performance.now() / 24) % 12);
+    context.lineWidth = 2;
+    context.strokeStyle = "rgba(146, 244, 255, 0.82)";
+    context.shadowColor = "rgba(86, 230, 242, 0.46)";
+    context.shadowBlur = 9;
+    context.beginPath();
+    context.moveTo(fromX, fromY);
+    context.lineTo(clampedX, clampedY);
+    context.stroke();
+    context.restore();
 }
 
 function updateSelfDisplay() {
@@ -438,6 +493,9 @@ function drawScene() {
     const cameraX = displaySelf ? displaySelf.x : selfSnapshot.positionX;
     const cameraY = displaySelf ? displaySelf.y : selfSnapshot.positionY;
     const scale = Math.max(40, Math.min(width / worldMetrics.boardWidth, height / worldMetrics.boardHeight) * 1.22);
+    const selfRenderX = displaySelf ? displaySelf.x : selfSnapshot.positionX;
+    const selfRenderY = displaySelf ? displaySelf.y : selfSnapshot.positionY;
+    const selfScreen = worldToScreen(selfRenderX, selfRenderY, cameraX, cameraY, scale, width, height);
 
     drawArenaGrid(cameraX, cameraY, scale, width, height);
 
@@ -455,6 +513,8 @@ function drawScene() {
 
         drawPlayer(renderPlayer, player.token === profile.token, cameraX, cameraY, scale, width, height);
     });
+
+    drawAimTracer(selfScreen.x, selfScreen.y, cameraX, cameraY, scale, width, height);
 }
 
 function resizeCanvasIfNeeded() {
@@ -467,6 +527,7 @@ function resizeCanvasIfNeeded() {
 
     canvas.width = width;
     canvas.height = height;
+    centerAimCursor();
 }
 
 function updateHud() {
@@ -529,7 +590,8 @@ function renderSnapshot(snapshot) {
     worldMetrics.boardWidth = snapshot.boardWidth;
     worldMetrics.boardHeight = snapshot.boardHeight;
 
-    gameTitle.textContent = `Neon Duel · Room ${snapshot.code}`;
+    gameTitle.textContent = "Neon Duel";
+    gameRoomTitle.textContent = `Room ${snapshot.code}`;
     roomCodeBadge.textContent = `Room ${snapshot.code}`;
     phaseBadge.textContent = snapshot.phase;
     tickBadge.textContent = `Tick ${snapshot.simulationTick}`;
@@ -586,16 +648,6 @@ function maybeReconnect(reason) {
     connectRoom();
 }
 
-function updatePointerHint() {
-    pointerLockHint.classList.toggle("hidden", pointerLocked);
-}
-
-function requestPointerLock() {
-    if (document.pointerLockElement === canvas || !document.pointerLockElement) {
-        canvas.requestPointerLock?.();
-    }
-}
-
 function cleanupAndExit() {
     if (animationFrameId) {
         window.cancelAnimationFrame(animationFrameId);
@@ -623,13 +675,13 @@ document.addEventListener("keyup", (event) => {
 });
 
 canvas.addEventListener("click", () => {
-    requestPointerLock();
+    centerAimCursor();
 });
 
 canvas.addEventListener("mousedown", (event) => {
     if (event.button === 0) {
         triggerPressed = true;
-        requestPointerLock();
+        updateAimFromPointer(event.clientX, event.clientY);
     }
 });
 
@@ -644,16 +696,8 @@ document.addEventListener("mouseup", (event) => {
     }
 });
 
-document.addEventListener("pointerlockchange", () => {
-    pointerLocked = document.pointerLockElement === canvas;
-    updatePointerHint();
-});
-
-document.addEventListener("mousemove", (event) => {
-    if (!pointerLocked) {
-        return;
-    }
-    localAimDegrees = normalizeDegrees(localAimDegrees + (event.movementX * MOUSE_SENSITIVITY));
+fpsStage.addEventListener("mousemove", (event) => {
+    updateAimFromPointer(event.clientX, event.clientY);
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -679,6 +723,7 @@ returnRoomButton.addEventListener("click", () => {
 window.addEventListener("beforeunload", cleanupAndExit);
 
 connectRoom();
+centerAimCursor();
 animationFrameId = window.requestAnimationFrame(animationStep);
 watchdogIntervalId = window.setInterval(() => {
     if (document.visibilityState !== "visible") {

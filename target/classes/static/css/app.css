@@ -114,6 +114,16 @@ h2 {
     font-size: clamp(1.65rem, 4vw, 2.6rem);
 }
 
+.room-code-glow {
+    color: #aaf7ff;
+    letter-spacing: 0.08em;
+    font-weight: 900;
+    text-shadow:
+        0 0 6px rgba(86, 230, 242, 0.85),
+        0 0 16px rgba(86, 230, 242, 0.45),
+        0 0 28px rgba(49, 200, 215, 0.32);
+}
+
 .hero-lead,
 .muted,
 .fine-print,
@@ -263,6 +273,64 @@ button {
     grid-template-columns: 1.4fr 0.6fr;
 }
 
+.game-screen {
+    gap: 10px;
+    padding-top: 12px;
+    padding-bottom: 14px;
+}
+
+.shell.game-screen {
+    width: min(96vw, 1500px);
+}
+
+.game-header-panel {
+    align-self: stretch;
+    display: grid;
+    align-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+
+.game-screen #game-title {
+    font-size: clamp(1.65rem, 2.8vw, 2.5rem);
+    line-height: 1.04;
+}
+
+.game-room-title {
+    margin: 2px 0 4px;
+    color: #aaf7ff;
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-shadow:
+        0 0 6px rgba(86, 230, 242, 0.72),
+        0 0 14px rgba(86, 230, 242, 0.36);
+}
+
+.game-screen .game-layout {
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(230px, 280px);
+    gap: 14px;
+    align-items: start;
+}
+
+@media (min-width: 1400px) {
+    .shell.game-screen {
+        width: min(97vw, 1650px);
+    }
+
+    .game-screen .game-layout {
+        grid-template-columns: minmax(230px, 290px) minmax(0, 1fr) minmax(240px, 300px);
+        gap: clamp(22px, 2.6vw, 42px);
+    }
+}
+
+.game-screen .game-sidebar {
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
 .status-row {
     display: flex;
     flex-wrap: wrap;
@@ -273,6 +341,7 @@ button {
 .scoreboard {
     display: grid;
     gap: 12px;
+    min-width: 0;
 }
 
 .player-row,
@@ -285,23 +354,36 @@ button {
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--line-soft);
+    min-width: 0;
 }
 
 .player-meta,
 .score-meta {
     display: grid;
     gap: 4px;
+    min-width: 0;
+}
+
+.score-row {
+    align-items: flex-start;
+}
+
+.score-stats {
+    text-align: right;
+    flex: 0 1 92px;
 }
 
 .player-name,
 .score-name {
     font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 .player-subtext,
 .score-subtext {
     color: var(--muted);
     font-size: 0.85rem;
+    overflow-wrap: anywhere;
 }
 
 .player-flags {
@@ -330,6 +412,10 @@ button {
     gap: 18px;
 }
 
+.game-screen .arena-card {
+    gap: 10px;
+}
+
 .arena-topbar {
     display: grid;
     gap: 12px;
@@ -349,6 +435,15 @@ button {
         radial-gradient(circle at 20% 15%, rgba(86, 230, 242, 0.18), transparent 32%),
         radial-gradient(circle at 84% 90%, rgba(255, 142, 93, 0.16), transparent 28%),
         linear-gradient(180deg, rgba(7, 20, 35, 0.96), rgba(4, 10, 20, 0.94));
+    cursor: none;
+}
+
+.game-screen .fps-stage {
+    min-height: min(62vh, 520px);
+}
+
+.fps-stage * {
+    cursor: none !important;
 }
 
 #game-canvas {
@@ -359,35 +454,46 @@ button {
     display: block;
 }
 
-.crosshair {
+.aim-cursor {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 32px;
-    height: 32px;
-    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    transform: translate(-50%, -50%) rotate(var(--cursor-rotation, 0deg));
     pointer-events: none;
-    opacity: 0.92;
+    z-index: 3;
+    filter: drop-shadow(0 0 10px rgba(86, 230, 242, 0.55));
 }
 
-.crosshair span {
+.aim-cursor span {
     position: absolute;
-    background: rgba(239, 246, 255, 0.92);
-    box-shadow: 0 0 12px rgba(86, 230, 242, 0.38);
+    inset: 0;
 }
 
-.crosshair span:first-child {
-    top: 15px;
-    left: 0;
-    width: 32px;
+.aim-cursor span::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 16px solid rgba(170, 247, 255, 0.95);
+}
+
+.aim-cursor span::after {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
     height: 2px;
-}
-
-.crosshair span:last-child {
-    top: 0;
-    left: 15px;
-    width: 2px;
-    height: 32px;
+    background: rgba(170, 247, 255, 0.92);
+    box-shadow: 0 0 10px rgba(86, 230, 242, 0.52);
 }
 
 .pointer-hint {
@@ -568,6 +674,10 @@ button {
     overflow: auto;
 }
 
+.game-screen .event-log {
+    max-height: min(36vh, 300px);
+}
+
 .modal {
     position: fixed;
     inset: 0;
@@ -597,6 +707,10 @@ button {
     .hero-shell,
     .room-grid,
     .game-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .game-screen .game-layout {
         grid-template-columns: 1fr;
     }
 
