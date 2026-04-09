@@ -1,6 +1,7 @@
 package com.codereboot.gameboot.transport;
 
-import com.codereboot.gameboot.application.RoomBroadcastGateway;
+import com.codereboot.gameboot.application.RoomEventBroadcaster;
+import com.codereboot.gameboot.application.RoomSessionGateway;
 import com.codereboot.gameboot.domain.RoomSnapshot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -19,11 +21,12 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 
 @Component
-public class WebSocketRoomBroadcaster implements RoomBroadcastGateway {
+public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessionGateway {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketRoomBroadcaster.class);
     private static final int SEND_TIME_LIMIT_MS = 5_000;
     private static final int BUFFER_SIZE_LIMIT_BYTES = 512 * 1024;
+    private static final CloseStatus SEND_FAILURE_STATUS = new CloseStatus(1011, "Server send failure");
 
     private final ObjectMapper objectMapper;
     private final ConcurrentMap<String, ConcurrentMap<String, WebSocketSession>> sessionsByRoom = new ConcurrentHashMap<>();
@@ -34,7 +37,7 @@ public class WebSocketRoomBroadcaster implements RoomBroadcastGateway {
     }
 
     @Override
-    public void register(String roomCode, String token, WebSocketSession session) {
+    public void register(String roomCode, String token, @NonNull WebSocketSession session) {
         WebSocketSession safeSession = new ConcurrentWebSocketSessionDecorator(
                 session,
                 SEND_TIME_LIMIT_MS,
@@ -83,12 +86,12 @@ public class WebSocketRoomBroadcaster implements RoomBroadcastGateway {
     }
 
     @Override
-    public void sendSnapshot(WebSocketSession session, RoomSnapshot snapshot) {
+    public void sendSnapshot(@NonNull WebSocketSession session, RoomSnapshot snapshot) {
         send(session, envelope("snapshot", snapshot));
     }
 
     @Override
-    public void sendError(WebSocketSession session, String message) {
+    public void sendError(@NonNull WebSocketSession session, String message) {
         send(session, envelope("error", message));
     }
 
@@ -133,12 +136,13 @@ public class WebSocketRoomBroadcaster implements RoomBroadcastGateway {
         }
     }
 
+    @SuppressWarnings("null")
     private void closeQuietly(WebSocketSession session) {
         if (session == null || !session.isOpen()) {
             return;
         }
         try {
-            session.close(CloseStatus.SERVER_ERROR);
+            session.close(SEND_FAILURE_STATUS);
         } catch (IOException ignored) {
             // Nothing to do.
         }

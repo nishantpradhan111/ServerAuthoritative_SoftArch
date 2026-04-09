@@ -1,5 +1,6 @@
 import { apiJson, clearProfile, ensureProfile, loadProfile, saveProfile } from "./common.js";
 import { openRoomSocket } from "./socket.js";
+import { SocketCommand } from "./protocol.js";
 
 const profile = ensureProfile();
 const displayName = profile?.username ?? profile?.name ?? "pilot";
@@ -212,7 +213,7 @@ readyButton.addEventListener("click", () => {
         setNotice("Connect to a room first.");
         return;
     }
-    socketHandle.send({ type: "ready" });
+    socketHandle.send({ type: SocketCommand.READY });
     setNotice("Readiness sent. Waiting on the second pilot.");
 });
 

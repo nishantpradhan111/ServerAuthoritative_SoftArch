@@ -26,4 +26,12 @@ public class InMemoryRoomRepository implements RoomRepository {
     public Collection<Room> findAll() {
         return rooms.values();
     }
+
+    @Override
+    public void deleteByCode(String roomCode) {
+        if (roomCode == null) {
+            return;
+        }
+        rooms.remove(roomCode.toUpperCase());
+    }
 }

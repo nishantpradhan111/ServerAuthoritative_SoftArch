@@ -97,4 +97,52 @@ class RoomTest {
         assertEquals(1L, player.lastProcessedInputSequence());
         assertEquals(after.simulationTick(), player.snapshotTick());
     }
+
+    @Test
+    void diagonalAimCanHitWithinRange() {
+        Room room = new Room("diag");
+        String host = room.addPlayer("Ada");
+        String guest = room.addPlayer("Lin");
+
+        room.setReady(host, true);
+        room.setReady(guest, true);
+
+        Player shooter = room.requirePlayer(host);
+        Player target = room.requirePlayer(guest);
+        shooter.moveTo(2.0, 1.0);
+        target.moveTo(4.0, 3.0);
+        shooter.face(45.0);
+
+        room.fire(host);
+
+        PlayerSnapshot targetSnapshot = room.snapshot().players().stream()
+                .filter(player -> player.token().equals(guest))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(2, targetSnapshot.health());
+    }
+
+    @Test
+    void aimingAwayStillMisses() {
+        Room room = new Room("miss");
+        String host = room.addPlayer("Ada");
+        String guest = room.addPlayer("Lin");
+
+        room.setReady(host, true);
+        room.setReady(guest, true);
+
+        Player shooter = room.requirePlayer(host);
+        Player target = room.requirePlayer(guest);
+        shooter.moveTo(2.0, 1.0);
+        target.moveTo(4.0, 3.0);
+        shooter.face(225.0);
+
+        room.fire(host);
+
+        PlayerSnapshot targetSnapshot = room.snapshot().players().stream()
+                .filter(player -> player.token().equals(guest))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(3, targetSnapshot.health());
+    }
 }

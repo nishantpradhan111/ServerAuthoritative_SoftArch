@@ -16,11 +16,11 @@ public class RoomService {
     private static final String ROOM_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
     private final RoomRepository roomRepository;
-    private final RoomBroadcastGateway broadcastGateway;
+    private final RoomEventBroadcaster eventBroadcaster;
 
-    public RoomService(RoomRepository roomRepository, RoomBroadcastGateway broadcastGateway) {
+    public RoomService(RoomRepository roomRepository, RoomEventBroadcaster eventBroadcaster) {
         this.roomRepository = roomRepository;
-        this.broadcastGateway = broadcastGateway;
+        this.eventBroadcaster = eventBroadcaster;
     }
 
     public RoomEntryResponse createRoom(String playerName) {
@@ -29,7 +29,7 @@ public class RoomService {
         roomRepository.save(room);
         String token = room.addPlayer(normalizeName(playerName));
         RoomSnapshot snapshot = room.snapshot();
-        broadcastGateway.broadcast(snapshot);
+        eventBroadcaster.broadcast(snapshot);
         return new RoomEntryResponse(roomCode, token, snapshot);
     }
 
@@ -37,7 +37,7 @@ public class RoomService {
         Room room = getRoom(roomCode);
         String token = room.addPlayer(normalizeName(playerName));
         RoomSnapshot snapshot = room.snapshot();
-        broadcastGateway.broadcast(snapshot);
+        eventBroadcaster.broadcast(snapshot);
         return new RoomEntryResponse(room.code(), token, snapshot);
     }
 
@@ -50,25 +50,25 @@ public class RoomService {
     public void setReady(String roomCode, String token, boolean ready) {
         Room room = getRoom(roomCode);
         room.setReady(token, ready);
-        broadcastGateway.broadcast(room.snapshot());
+        eventBroadcaster.broadcast(room.snapshot());
     }
 
     public void move(String roomCode, String token, Direction direction) {
         Room room = getRoom(roomCode);
         room.move(token, direction);
-        broadcastGateway.broadcast(room.snapshot());
+        eventBroadcaster.broadcast(room.snapshot());
     }
 
     public void fire(String roomCode, String token) {
         Room room = getRoom(roomCode);
         room.fire(token);
-        broadcastGateway.broadcast(room.snapshot());
+        eventBroadcaster.broadcast(room.snapshot());
     }
 
     public void applyInput(String roomCode, String token, GameInputFrame input) {
         Room room = getRoom(roomCode);
         room.applyInput(token, input);
-        broadcastGateway.broadcast(room.snapshot());
+        eventBroadcaster.broadcast(room.snapshot());
     }
 
     private Room getRoom(String roomCode) {

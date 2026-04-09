@@ -1,5 +1,8 @@
 import { ensureProfile } from "./common.js";
 import { openRoomSocket } from "./socket.js";
+import { SocketCommand } from "./protocol.js";
+import { blend, clamp, distance2D, normalizeDegrees, normalizeVector } from "./game/math.js";
+import { drawAimTracer, drawArenaGrid, drawPlayer, renderBackdrop, worldToScreen } from "./game/rendering.js";
 
 const profile = ensureProfile();
 
@@ -111,31 +114,6 @@ function resetClientPredictionState() {
     sendAccumulatorMs = 0;
 }
 
-function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-}
-
-function normalizeDegrees(value) {
-    const normalized = value % 360;
-    return normalized < 0 ? normalized + 360 : normalized;
-}
-
-function blend(current, target, factor) {
-    return current + (target - current) * factor;
-}
-
-function distance2D(a, b) {
-    return Math.hypot(a.x - b.x, a.y - b.y);
-}
-
-function normalizeVector(x, y) {
-    const length = Math.hypot(x, y);
-    if (length <= Number.EPSILON) {
-        return { x: 0, y: 0 };
-    }
-    return { x: x / length, y: y / length };
-}
-
 function mapKeyboardState(event, isPressed) {
     const key = event.key.toLowerCase();
     if (key === "w" || key === "arrowup") {
@@ -234,7 +212,7 @@ function sendInstantFire() {
     lastFireSentAt = nowMs;
     const movement = movementVector();
     const inputFrame = {
-        type: "input",
+        type: SocketCommand.INPUT,
         sequence: ++inputSequence,
         moveX: movement.x,
         moveY: movement.y,
@@ -270,7 +248,7 @@ function buildInputFrame(nowMs) {
     const firing = shouldFire(nowMs);
 
     return {
-        type: "input",
+        type: SocketCommand.INPUT,
         sequence: ++inputSequence,
         moveX: movement.x,
         moveY: movement.y,
@@ -361,103 +339,6 @@ function showEndState(snapshot) {
     endMessage.textContent = snapshot.lastEvent ?? (didWin ? "You won the duel." : "The rival won the duel.");
 }
 
-function renderBackdrop(width, height) {
-    const gradient = context.createLinearGradient(0, 0, 0, height);
-    gradient.addColorStop(0, "#0b1c2f");
-    gradient.addColorStop(1, "#06101d");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, width, height);
-
-    const haze = context.createRadialGradient(width * 0.5, height * 0.42, 24, width * 0.5, height * 0.42, height * 0.65);
-    haze.addColorStop(0, "rgba(86, 230, 242, 0.12)");
-    haze.addColorStop(1, "rgba(86, 230, 242, 0)");
-    context.fillStyle = haze;
-    context.fillRect(0, 0, width, height);
-}
-
-function worldToScreen(worldX, worldY, cameraX, cameraY, scale, width, height) {
-    return {
-        x: (worldX - cameraX) * scale + width * 0.5,
-        y: (worldY - cameraY) * scale + height * 0.5
-    };
-}
-
-function drawArenaGrid(cameraX, cameraY, scale, width, height) {
-    context.strokeStyle = "rgba(160, 190, 220, 0.17)";
-    context.lineWidth = 1;
-
-    for (let x = 0; x <= worldMetrics.boardWidth - 1; x++) {
-        const a = worldToScreen(x, 0, cameraX, cameraY, scale, width, height);
-        const b = worldToScreen(x, worldMetrics.boardHeight - 1, cameraX, cameraY, scale, width, height);
-        context.beginPath();
-        context.moveTo(a.x, a.y);
-        context.lineTo(b.x, b.y);
-        context.stroke();
-    }
-
-    for (let y = 0; y <= worldMetrics.boardHeight - 1; y++) {
-        const a = worldToScreen(0, y, cameraX, cameraY, scale, width, height);
-        const b = worldToScreen(worldMetrics.boardWidth - 1, y, cameraX, cameraY, scale, width, height);
-        context.beginPath();
-        context.moveTo(a.x, a.y);
-        context.lineTo(b.x, b.y);
-        context.stroke();
-    }
-}
-
-function drawPlayer(player, isSelf, cameraX, cameraY, scale, width, height) {
-    const screen = worldToScreen(player.positionX, player.positionY, cameraX, cameraY, scale, width, height);
-    const radius = Math.max(7, PLAYER_RADIUS * scale);
-    const facingRadians = (player.aimDegrees * Math.PI) / 180;
-
-    context.fillStyle = isSelf ? "rgba(86, 230, 242, 0.95)" : "rgba(255, 142, 93, 0.92)";
-    context.beginPath();
-    context.arc(screen.x, screen.y, radius, 0, Math.PI * 2);
-    context.fill();
-
-    if (!isSelf) {
-        context.strokeStyle = "rgba(4, 16, 30, 0.95)";
-        context.lineWidth = 2;
-        context.beginPath();
-        context.moveTo(screen.x, screen.y);
-        context.lineTo(
-            screen.x + Math.cos(facingRadians) * radius * 1.65,
-            screen.y + Math.sin(facingRadians) * radius * 1.65
-        );
-        context.stroke();
-    }
-
-    context.fillStyle = "rgba(239, 246, 255, 0.95)";
-    context.font = "600 12px Verdana";
-    context.textAlign = "center";
-    context.fillText(player.name, screen.x, screen.y - radius - 10);
-}
-
-function drawAimTracer(fromX, fromY, cameraX, cameraY, scale, width, height) {
-    const topLeft = worldToScreen(0, 0, cameraX, cameraY, scale, width, height);
-    const bottomRight = worldToScreen(worldMetrics.boardWidth - 1, worldMetrics.boardHeight - 1, cameraX, cameraY, scale, width, height);
-    const minX = Math.min(topLeft.x, bottomRight.x);
-    const maxX = Math.max(topLeft.x, bottomRight.x);
-    const minY = Math.min(topLeft.y, bottomRight.y);
-    const maxY = Math.max(topLeft.y, bottomRight.y);
-
-    const clampedX = clamp(aimCursorX, minX, maxX);
-    const clampedY = clamp(aimCursorY, minY, maxY);
-
-    context.save();
-    context.setLineDash([4, 8]);
-    context.lineDashOffset = -((performance.now() / 24) % 12);
-    context.lineWidth = 2;
-    context.strokeStyle = "rgba(146, 244, 255, 0.82)";
-    context.shadowColor = "rgba(86, 230, 242, 0.46)";
-    context.shadowBlur = 9;
-    context.beginPath();
-    context.moveTo(fromX, fromY);
-    context.lineTo(clampedX, clampedY);
-    context.stroke();
-    context.restore();
-}
-
 function updateSelfDisplay() {
     if (!predictedSelf) {
         return;
@@ -481,7 +362,7 @@ function drawScene() {
 
     const width = canvas.width;
     const height = canvas.height;
-    renderBackdrop(width, height);
+    renderBackdrop(context, width, height);
 
     const selfSnapshot = latestSnapshot.players.find((player) => player.token === profile.token);
     if (!selfSnapshot) {
@@ -497,7 +378,7 @@ function drawScene() {
     const selfRenderY = displaySelf ? displaySelf.y : selfSnapshot.positionY;
     const selfScreen = worldToScreen(selfRenderX, selfRenderY, cameraX, cameraY, scale, width, height);
 
-    drawArenaGrid(cameraX, cameraY, scale, width, height);
+    drawArenaGrid(context, cameraX, cameraY, scale, width, height, worldMetrics);
 
     latestSnapshot.players.forEach((player) => {
         const renderPlayer = player.token === profile.token && displaySelf
@@ -511,10 +392,10 @@ function drawScene() {
             }
             : player;
 
-        drawPlayer(renderPlayer, player.token === profile.token, cameraX, cameraY, scale, width, height);
+        drawPlayer(context, renderPlayer, player.token === profile.token, cameraX, cameraY, scale, width, height, PLAYER_RADIUS);
     });
 
-    drawAimTracer(selfScreen.x, selfScreen.y, cameraX, cameraY, scale, width, height);
+    drawAimTracer(context, selfScreen.x, selfScreen.y, cameraX, cameraY, scale, width, height, worldMetrics, aimCursorX, aimCursorY);
 }
 
 function resizeCanvasIfNeeded() {

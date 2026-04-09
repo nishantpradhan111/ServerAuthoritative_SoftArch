@@ -1,11 +1,12 @@
 import { wsUrl } from "./common.js";
+import { SocketCommand, SocketEvent } from "./protocol.js";
 
 export function openRoomSocket({ roomCode, token, onSnapshot, onError, onOpen, onClose }) {
     const socket = new WebSocket(wsUrl("/ws"));
 
     socket.addEventListener("open", () => {
         socket.send(JSON.stringify({
-            type: "subscribe",
+            type: SocketCommand.SUBSCRIBE,
             roomCode,
             token
         }));
@@ -22,12 +23,12 @@ export function openRoomSocket({ roomCode, token, onSnapshot, onError, onOpen, o
             return;
         }
 
-        if (payload.type === "snapshot" && onSnapshot) {
+        if (payload.type === SocketEvent.SNAPSHOT && onSnapshot) {
             onSnapshot(payload.snapshot);
             return;
         }
 
-        if (payload.type === "error" && onError) {
+        if (payload.type === SocketEvent.ERROR && onError) {
             onError(payload.message ?? "Socket error");
         }
     });

@@ -14,6 +14,7 @@ public class Room {
     public static final int STARTING_HEALTH = 3;
     public static final int STARTING_AMMO = 30;
     public static final int FIRE_RANGE = 4;
+    public static final double FIRE_CONE_HALF_ANGLE_DEGREES = 45.0;
     public static final double PLAYER_SPEED = 4.0;
     public static final double PLAYER_RADIUS = 0.35;
     public static final double SIMULATION_STEP_SECONDS = 1.0 / 30.0;
@@ -31,6 +32,10 @@ public class Room {
 
     public String code() {
         return code;
+    }
+
+    public synchronized RoomPhase phase() {
+        return phase;
     }
 
     public synchronized String addPlayer(String name) {
@@ -229,27 +234,28 @@ public class Room {
     }
 
     private boolean canHit(Player shooter, Player target) {
-        if (shooter.x() == target.x()) {
-            int deltaY = target.y() - shooter.y();
-            if (deltaY > 0 && shooter.facing() == Direction.DOWN) {
-                return deltaY <= FIRE_RANGE;
-            }
-            if (deltaY < 0 && shooter.facing() == Direction.UP) {
-                return -deltaY <= FIRE_RANGE;
-            }
+        double deltaX = target.positionX() - shooter.positionX();
+        double deltaY = target.positionY() - shooter.positionY();
+        double distance = Math.hypot(deltaX, deltaY);
+
+        if (distance > FIRE_RANGE) {
             return false;
         }
 
-        if (shooter.y() == target.y()) {
-            int deltaX = target.x() - shooter.x();
-            if (deltaX > 0 && shooter.facing() == Direction.RIGHT) {
-                return deltaX <= FIRE_RANGE;
-            }
-            if (deltaX < 0 && shooter.facing() == Direction.LEFT) {
-                return -deltaX <= FIRE_RANGE;
-            }
+        // Treat extremely close shots as hits to avoid precision edge-cases.
+        if (distance <= PLAYER_RADIUS * 2.0) {
+            return true;
         }
-        return false;
+
+        double directionX = deltaX / distance;
+        double directionY = deltaY / distance;
+        double aimRadians = Math.toRadians(shooter.aimDegrees());
+        double aimX = Math.cos(aimRadians);
+        double aimY = Math.sin(aimRadians);
+
+        double alignment = (aimX * directionX) + (aimY * directionY);
+        double minimumAlignment = Math.cos(Math.toRadians(FIRE_CONE_HALF_ANGLE_DEGREES));
+        return alignment >= minimumAlignment;
     }
 
     private boolean clampPlayer(Player player) {
@@ -282,10 +288,6 @@ public class Room {
         first.stop();
         second.stop();
         return true;
-    }
-
-    private int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
 
     private double clamp(double value, double min, double max) {

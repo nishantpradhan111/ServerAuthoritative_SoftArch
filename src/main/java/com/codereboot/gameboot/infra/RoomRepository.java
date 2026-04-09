@@ -11,4 +11,6 @@ public interface RoomRepository {
     Optional<Room> findByCode(String roomCode);
 
     Collection<Room> findAll();
+
+    void deleteByCode(String roomCode);
 }
