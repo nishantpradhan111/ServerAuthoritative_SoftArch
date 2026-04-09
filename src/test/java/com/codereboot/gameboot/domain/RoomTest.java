@@ -41,6 +41,24 @@ class RoomTest {
     }
 
     @Test
+    void fireDecrementsShooterAmmo() {
+        Room room = new Room("ammo");
+        String host = room.addPlayer("Ada");
+        String guest = room.addPlayer("Lin");
+
+        room.setReady(host, true);
+        room.setReady(guest, true);
+        room.fire(host);
+
+        PlayerSnapshot shooter = room.snapshot().players().stream()
+                .filter(player -> player.token().equals(host))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(Room.STARTING_AMMO - 1, shooter.ammo());
+    }
+
+    @Test
     void movementStaysInsideBoard() {
         Room room = new Room("edge");
         String host = room.addPlayer("Ada");

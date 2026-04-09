@@ -105,6 +105,12 @@ public class Room {
     public synchronized void fire(String token) {
         ensureActive();
         Player shooter = requirePlayer(token);
+        if (shooter.ammo() <= 0) {
+            lastEvent = shooter.name() + " tried to fire but has no ammo";
+            return;
+        }
+
+        shooter.consumeAmmo(1);
         Player target = players.values().stream()
                 .filter(player -> !player.token().equals(token))
                 .findFirst()

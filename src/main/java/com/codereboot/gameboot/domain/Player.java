@@ -153,6 +153,10 @@ public class Player {
         this.health = Math.max(0, health - amount);
     }
 
+    public void consumeAmmo(int amount) {
+        this.ammo = Math.max(0, ammo - amount);
+    }
+
     public boolean defeated() {
         return health <= 0;
     }
