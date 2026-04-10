@@ -10,6 +10,7 @@ const BULLET_WORLD_PADDING = 0.05;
 
 const bullets = [];
 let nextBulletId = 1;
+const pendingBulletIdsByOwner = new Map();
 
 function createRoundedRectPath(context, x, y, width, height, radius) {
     const cornerRadius = Math.max(0, Math.min(radius, width * 0.5, height * 0.5));
@@ -32,7 +33,7 @@ export function spawnBullet({ x, y, aimDegrees, color = "#ff8a1e", firedBy = "se
     const spawnX = x + Math.cos(directionRadians) * BULLET_OFFSET;
     const spawnY = y + Math.sin(directionRadians) * BULLET_OFFSET;
 
-    bullets.push({
+    const bullet = {
         id: nextBulletId++,
         x: spawnX,
         y: spawnY,
@@ -43,7 +44,14 @@ export function spawnBullet({ x, y, aimDegrees, color = "#ff8a1e", firedBy = "se
         firedBy: firedBy,
         ownerToken: ownerToken,
         shotId: null
-    });
+    };
+    bullets.push(bullet);
+
+    if (ownerToken) {
+        const queue = pendingBulletIdsByOwner.get(ownerToken) ?? [];
+        queue.push(bullet.id);
+        pendingBulletIdsByOwner.set(ownerToken, queue);
+    }
 }
 
 export function assignShotIdToLatestBullet(ownerToken, shotId) {
@@ -51,13 +59,28 @@ export function assignShotIdToLatestBullet(ownerToken, shotId) {
         return;
     }
 
-    for (let index = bullets.length - 1; index >= 0; index -= 1) {
-        const bullet = bullets[index];
-        if (bullet.ownerToken === ownerToken && bullet.shotId == null) {
+    const queue = pendingBulletIdsByOwner.get(ownerToken);
+    if (!queue || queue.length === 0) {
+        return;
+    }
+
+    while (queue.length > 0) {
+        const bulletId = queue.shift();
+        const bullet = bullets.find((entry) => entry.id === bulletId);
+        if (!bullet) {
+            continue;
+        }
+        if (bullet.shotId == null) {
             bullet.shotId = shotId;
-            return;
+            break;
         }
     }
+
+    if (queue.length === 0) {
+        pendingBulletIdsByOwner.delete(ownerToken);
+        return;
+    }
+    pendingBulletIdsByOwner.set(ownerToken, queue);
 }
 
 export function advanceBullets(deltaSeconds) {
@@ -156,4 +179,5 @@ export function drawBullets(context, cameraX, cameraY, scale, width, height) {
 export function clearBullets() {
     bullets.length = 0;
     nextBulletId = 1;
+    pendingBulletIdsByOwner.clear();
 }

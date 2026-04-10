@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -66,37 +67,28 @@ public class RoomService {
     }
 
     public void setReady(String roomCode, String token, boolean ready) {
-        Room room = getRoom(roomCode);
-        room.setReady(token, ready);
-        eventBroadcaster.broadcast(room.snapshot());
+        mutateAndBroadcast(roomCode, room -> room.setReady(token, ready));
     }
 
     public void move(String roomCode, String token, Direction direction) {
-        Room room = getRoom(roomCode);
-        room.move(token, direction);
-        eventBroadcaster.broadcast(room.snapshot());
+        mutateAndBroadcast(roomCode, room -> room.move(token, direction));
     }
 
     public void fire(String roomCode, String token) {
-        Room room = getRoom(roomCode);
-        room.fire(token);
-        eventBroadcaster.broadcast(room.snapshot());
+        mutateAndBroadcast(roomCode, room -> room.fire(token));
     }
 
     public void applyInput(String roomCode, String token, GameInputFrame input) {
-        Room room = getRoom(roomCode);
-        room.applyInput(token, input);
-        eventBroadcaster.broadcast(room.snapshot());
+        mutateAndBroadcast(roomCode, room -> room.applyInput(token, input));
     }
 
     public void claimHit(String roomCode, String reporterToken, long shotId, long snapshotTick) {
-        Room room = getRoom(roomCode);
-        room.claimHit(reporterToken, shotId, snapshotTick);
-        eventBroadcaster.broadcast(room.snapshot());
+        mutateAndBroadcast(roomCode, room -> room.claimHit(reporterToken, shotId, snapshotTick));
     }
 
     public List<ReplayRedirect> requestReplay(String roomCode, String token) {
         Room room = getRoom(roomCode);
+        room.requirePlayer(token);
         List<Room.ReplayParticipant> participants = room.requestReplay(token);
         eventBroadcaster.broadcast(room.snapshot());
         if (participants.isEmpty()) {
@@ -129,6 +121,12 @@ public class RoomService {
     private Room getRoom(String roomCode) {
         return roomRepository.findByCode(normalizeRoomCode(roomCode))
                 .orElseThrow(() -> new NoSuchElementException("Room not found"));
+    }
+
+    private void mutateAndBroadcast(String roomCode, Consumer<Room> mutation) {
+        Room room = getRoom(roomCode);
+        mutation.accept(room);
+        eventBroadcaster.broadcast(room.snapshot());
     }
 
     private String normalizeName(String value) {

@@ -28,6 +28,11 @@ class GameSocketCommandDispatcher {
             return;
         }
 
+        if (!hasSessionContext(session)) {
+            sessionGateway.sendError(session, "Session not registered. Subscribe with roomCode and token first.");
+            return;
+        }
+
         if (command instanceof GameSocketCommand.Ready) {
             roomService.setReady(roomCode(session), token(session), true);
             return;
@@ -110,6 +115,11 @@ class GameSocketCommandDispatcher {
             throw new IllegalStateException("Websocket session has no player token");
         }
         return value.toString();
+    }
+
+    private boolean hasSessionContext(WebSocketSession session) {
+        return session.getAttributes().get(ROOM_CODE_KEY) != null
+                && session.getAttributes().get(TOKEN_KEY) != null;
     }
 
     private void closeQuietly(WebSocketSession session) {

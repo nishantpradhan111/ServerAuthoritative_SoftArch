@@ -1,15 +1,21 @@
 package com.codereboot.gameboot.domain;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.LongSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Room {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Room.class);
+    private static final boolean HIT_CLAIM_DIAGNOSTICS_ENABLED =
+            Boolean.parseBoolean(System.getProperty("codereboot.diagnostics.hitClaims", "false"));
 
     public static final int BOARD_WIDTH = 15;
     public static final int BOARD_HEIGHT = 10;
@@ -21,32 +27,40 @@ public class Room {
     public static final double PLAYER_RADIUS = 0.35;
     public static final double SIMULATION_STEP_SECONDS = 1.0 / 30.0;
     private static final int MAX_TICK_HISTORY = 180;
-    private static final long MAX_SHOT_AGE_TICKS = 24L;
+    private static final long MAX_SHOT_AGE_MS = 2_000L;
     private static final long REPLAY_REQUEST_TIMEOUT_MS = 10_000L;
 
     private final String code;
+    private final LongSupplier nowMs;
+    private final ConeHitValidationPolicy hitValidation;
     private final LinkedHashMap<String, Player> players = new LinkedHashMap<>();
     private RoomPhase phase = RoomPhase.LOBBY;
     private String winnerToken;
     private String lastEvent = "Create or join a room to begin";
     private long simulationTick;
     private long nextShotId = 1L;
-    private final LinkedHashMap<Long, Map<String, HistoricalPlayerState>> tickHistory = new LinkedHashMap<>();
-    private final LinkedHashMap<Long, PendingShot> pendingShots = new LinkedHashMap<>();
-    private final Set<Long> consumedShotIds = new HashSet<>();
-    private final Map<String, Long> replayRequests = new LinkedHashMap<>();
-
-    private record HistoricalPlayerState(double positionX, double positionY, double aimDegrees) {
-    }
-
-    private record PendingShot(long shotId, String attackerToken, String targetToken, long firedTick) {
-    }
+    private final TickHistoryTracker tickHistory;
+    private final ShotTracker shots;
+    private final ReplayRequestTracker replayRequests;
 
     public record ReplayParticipant(String token, String name) {
     }
 
     public Room(String code) {
+        this(code, System::currentTimeMillis, new ConeHitValidationPolicy());
+    }
+
+    Room(String code, LongSupplier nowMs) {
+        this(code, nowMs, new ConeHitValidationPolicy());
+    }
+
+    Room(String code, LongSupplier nowMs, ConeHitValidationPolicy hitValidation) {
         this.code = code.toUpperCase();
+        this.nowMs = Objects.requireNonNull(nowMs, "nowMs");
+        this.hitValidation = Objects.requireNonNull(hitValidation, "hitValidation");
+        this.tickHistory = new TickHistoryTracker(MAX_TICK_HISTORY);
+        this.shots = new ShotTracker(MAX_SHOT_AGE_MS);
+        this.replayRequests = new ReplayRequestTracker(REPLAY_REQUEST_TIMEOUT_MS);
     }
 
     public String code() {
@@ -91,8 +105,7 @@ public class Room {
             phase = RoomPhase.LOBBY;
             simulationTick = 0L;
             tickHistory.clear();
-            pendingShots.clear();
-            consumedShotIds.clear();
+            shots.clear();
             replayRequests.clear();
             lastEvent = leavingPlayer.name() + " left the room";
             return;
@@ -171,22 +184,30 @@ public class Room {
 
         long shotId = nextShotId++;
         shooter.setLastShotId(shotId);
-        pendingShots.put(shotId, new PendingShot(shotId, shooter.token(), target.token(), simulationTick));
-        pruneExpiredShots();
+        shots.register(shotId, shooter.token(), target.token(), nowMs(), simulationTick);
+        shots.pruneExpired(nowMs());
         lastEvent = shooter.name() + " fired a pulse";
     }
 
     public synchronized void claimHit(String reporterToken, long shotId, long snapshotTick) {
         ensureActive();
         Player reporter = requirePlayer(reporterToken);
-        PendingShot shot = pendingShots.get(shotId);
-        if (shot == null || consumedShotIds.contains(shotId)) {
+        ShotTracker.TrackedShot shot = shots.findActive(shotId);
+        if (shot == null) {
+            logHitClaimRejection("SHOT_NOT_FOUND_OR_CONSUMED", reporter, shotId, snapshotTick, null);
             return;
         }
 
-        if (snapshotTick < shot.firedTick() || snapshotTick > shot.firedTick() + MAX_SHOT_AGE_TICKS) {
+        if (shots.isExpired(shot, nowMs())) {
             lastEvent = reporter.name() + " reported an expired hit";
-            pendingShots.remove(shotId);
+            logHitClaimRejection("SHOT_EXPIRED", reporter, shotId, snapshotTick, shot);
+            shots.discard(shotId);
+            return;
+        }
+
+        if (snapshotTick < shot.firedTick()) {
+            lastEvent = reporter.name() + " reported an invalid hit";
+            logHitClaimRejection("SNAPSHOT_BEFORE_FIRE", reporter, shotId, snapshotTick, shot);
             return;
         }
 
@@ -196,21 +217,28 @@ public class Room {
             throw new IllegalArgumentException("Reporter must be attacker or target");
         }
 
-        Map<String, HistoricalPlayerState> tickState = tickHistory.get(snapshotTick);
+        Map<String, PlayerTickState> tickState = tickHistory.snapshotAt(snapshotTick);
         if (tickState == null) {
             lastEvent = reporter.name() + " reported a stale hit";
+            logHitClaimRejection("TICK_NOT_FOUND", reporter, shotId, snapshotTick, shot);
             return;
         }
 
-        HistoricalPlayerState attackerAtTick = tickState.get(attacker.token());
-        HistoricalPlayerState targetAtTick = tickState.get(target.token());
-        if (attackerAtTick == null || targetAtTick == null || !canHit(attackerAtTick, targetAtTick)) {
+        PlayerTickState attackerAtTick = tickState.get(attacker.token());
+        PlayerTickState targetAtTick = tickState.get(target.token());
+        if (attackerAtTick == null || targetAtTick == null) {
             lastEvent = reporter.name() + " reported an invalid hit";
+            logHitClaimRejection("PLAYER_STATE_MISSING", reporter, shotId, snapshotTick, shot);
             return;
         }
 
-        consumedShotIds.add(shotId);
-        pendingShots.remove(shotId);
+        if (!canHit(attackerAtTick, targetAtTick)) {
+            lastEvent = reporter.name() + " reported an invalid hit";
+            logHitClaimRejection("CONE_VALIDATION_FAILED", reporter, shotId, snapshotTick, shot);
+            return;
+        }
+
+        shots.markConsumed(shotId);
         target.damage(1);
         if (target.defeated()) {
             winnerToken = attacker.token();
@@ -245,7 +273,7 @@ public class Room {
         changed |= resolveOverlap(previousX, previousY);
         simulationTick++;
         recordTickState();
-        pruneExpiredShots();
+        shots.pruneExpired(nowMs());
         return changed;
     }
 
@@ -257,7 +285,7 @@ public class Room {
 
         long now = System.currentTimeMillis();
         cleanupExpiredReplayRequests(now);
-        replayRequests.put(token, now);
+        replayRequests.record(token, now);
 
         if (isReplayReady()) {
             List<ReplayParticipant> participants = players.values().stream()
@@ -273,6 +301,10 @@ public class Room {
     }
 
     public synchronized RoomSnapshot snapshot() {
+        if (phase == RoomPhase.COMPLETE) {
+            cleanupExpiredReplayRequests(System.currentTimeMillis());
+        }
+
         List<PlayerSnapshot> playerSnapshots = new ArrayList<>();
         String hostToken = players.keySet().stream().findFirst().orElse(null);
         for (Map.Entry<String, Player> entry : players.entrySet()) {
@@ -298,7 +330,19 @@ public class Room {
                     player.lastShotId()
             ));
         }
-        return new RoomSnapshot(code, phase, BOARD_WIDTH, BOARD_HEIGHT, simulationTick, playerSnapshots, winnerToken, lastEvent, canStart());
+                List<String> replayPendingTokens = replayRequests.pendingTokens();
+                return new RoomSnapshot(
+                    code,
+                    phase,
+                    BOARD_WIDTH,
+                    BOARD_HEIGHT,
+                    simulationTick,
+                    playerSnapshots,
+                    winnerToken,
+                    lastEvent,
+                    canStart(),
+                    replayPendingTokens
+                );
     }
 
     public synchronized Player requirePlayer(String token) {
@@ -315,9 +359,8 @@ public class Room {
         simulationTick = 0L;
         nextShotId = 1L;
         lastEvent = "Match started";
-        consumedShotIds.clear();
+        shots.clear();
         tickHistory.clear();
-        pendingShots.clear();
         replayRequests.clear();
 
         int index = 0;
@@ -353,76 +396,39 @@ public class Room {
 
     private boolean canHit(Player shooter, Player target) {
         return canHit(
-                new HistoricalPlayerState(shooter.positionX(), shooter.positionY(), shooter.aimDegrees()),
-                new HistoricalPlayerState(target.positionX(), target.positionY(), target.aimDegrees())
+                new PlayerTickState(shooter.positionX(), shooter.positionY(), shooter.aimDegrees()),
+                new PlayerTickState(target.positionX(), target.positionY(), target.aimDegrees())
         );
     }
 
-    private boolean canHit(HistoricalPlayerState shooter, HistoricalPlayerState target) {
-        double deltaX = target.positionX() - shooter.positionX();
-        double deltaY = target.positionY() - shooter.positionY();
-        double distance = Math.hypot(deltaX, deltaY);
-
-        if (distance > FIRE_RANGE) {
-            return false;
-        }
-
-        // Treat extremely close shots as hits to avoid precision edge-cases.
-        if (distance <= PLAYER_RADIUS * 2.0) {
-            return true;
-        }
-
-        double directionX = deltaX / distance;
-        double directionY = deltaY / distance;
-        double aimRadians = Math.toRadians(shooter.aimDegrees());
-        double aimX = Math.cos(aimRadians);
-        double aimY = Math.sin(aimRadians);
-
-        double alignment = (aimX * directionX) + (aimY * directionY);
-        double minimumAlignment = Math.cos(Math.toRadians(FIRE_CONE_HALF_ANGLE_DEGREES));
-        return alignment >= minimumAlignment;
+    private boolean canHit(PlayerTickState shooter, PlayerTickState target) {
+        return hitValidation.canHit(
+                shooter.positionX(),
+                shooter.positionY(),
+                shooter.aimDegrees(),
+                target.positionX(),
+                target.positionY(),
+                FIRE_RANGE,
+                PLAYER_RADIUS,
+                FIRE_CONE_HALF_ANGLE_DEGREES
+        );
     }
 
     private void recordTickState() {
         if (phase != RoomPhase.ACTIVE) {
             return;
         }
-
-        Map<String, HistoricalPlayerState> state = new LinkedHashMap<>();
-        for (Player player : players.values()) {
-            state.put(player.token(), new HistoricalPlayerState(player.positionX(), player.positionY(), player.aimDegrees()));
-        }
-        tickHistory.put(simulationTick, state);
-
-        while (tickHistory.size() > MAX_TICK_HISTORY) {
-            Long oldestTick = tickHistory.keySet().iterator().next();
-            tickHistory.remove(oldestTick);
-        }
-    }
-
-    private void pruneExpiredShots() {
-        pendingShots.entrySet().removeIf(entry -> (simulationTick - entry.getValue().firedTick()) > MAX_SHOT_AGE_TICKS);
+        tickHistory.record(simulationTick, players.values());
     }
 
     private void cleanupExpiredReplayRequests(long nowMs) {
-        int before = replayRequests.size();
-        replayRequests.entrySet().removeIf(entry -> (nowMs - entry.getValue()) > REPLAY_REQUEST_TIMEOUT_MS);
-        if (before > 0 && replayRequests.isEmpty()) {
+        if (replayRequests.cleanupExpired(nowMs)) {
             lastEvent = "Replay request expired. Press Replay again within 10 seconds.";
         }
     }
 
     private boolean isReplayReady() {
-        if (players.size() != 2) {
-            return false;
-        }
-
-        for (String playerToken : players.keySet()) {
-            if (!replayRequests.containsKey(playerToken)) {
-                return false;
-            }
-        }
-        return true;
+        return players.size() == 2 && replayRequests.isReady(players.keySet());
     }
 
     private boolean clampPlayer(Player player) {
@@ -459,5 +465,47 @@ public class Room {
 
     private double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private long nowMs() {
+        return nowMs.getAsLong();
+    }
+
+    private void logHitClaimRejection(
+            String reason,
+            Player reporter,
+            long shotId,
+            long snapshotTick,
+            ShotTracker.TrackedShot shot
+    ) {
+        if (!HIT_CLAIM_DIAGNOSTICS_ENABLED || !LOG.isInfoEnabled()) {
+            return;
+        }
+
+        if (shot == null) {
+            LOG.info(
+                    "Hit claim rejected: reason={} reporterToken={} reporterName={} shotId={} snapshotTick={} simulationTick={}",
+                    reason,
+                    reporter.token(),
+                    reporter.name(),
+                    shotId,
+                    snapshotTick,
+                    simulationTick
+            );
+            return;
+        }
+
+        LOG.info(
+                "Hit claim rejected: reason={} reporterToken={} reporterName={} shotId={} attackerToken={} targetToken={} firedTick={} snapshotTick={} simulationTick={}",
+                reason,
+                reporter.token(),
+                reporter.name(),
+                shotId,
+                shot.attackerToken(),
+                shot.targetToken(),
+                shot.firedTick(),
+                snapshotTick,
+                simulationTick
+        );
     }
 }

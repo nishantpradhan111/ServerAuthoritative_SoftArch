@@ -17,6 +17,27 @@ Small multiplayer browser duel built as a clean Java backend plus HTML/CSS/JS cl
 mvn spring-boot:run
 ```
 
+Windows launcher options:
+
+```powershell
+# Build + run on default port 8080
+./run.ps1
+
+# Skip build (faster local iteration)
+./run.ps1 -SkipBuild
+
+# Run on a custom port
+./run.ps1 -SkipBuild -Port 8081
+
+# Enable hit-claim diagnostics logging
+./run.ps1 -SkipBuild -EnableHitClaimDiagnostics
+```
+
+Notes:
+
+- `run.ps1` performs a preflight port check and fails fast with an actionable message if the selected port is already in use.
+- Hit-claim diagnostics are off by default and can be enabled only when debugging intermittent hit validation reports.
+
 Then open:
 
 - http://localhost:8080/login.html

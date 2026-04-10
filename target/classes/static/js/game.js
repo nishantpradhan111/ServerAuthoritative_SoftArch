@@ -1,8 +1,13 @@
-import { ensureProfile, loadProfile, saveProfile } from "./common.js";
+import { ensureProfile } from "./common.js";
 import { openRoomSocket } from "./socket.js";
 import { SocketCommand } from "./protocol.js";
+import { resolveEndPresentation } from "./game/end-state.js";
+import { createHitClaimTracker } from "./game/hit-claim-tracker.js";
 import { blend, clamp, distance2D, normalizeDegrees, normalizeVector } from "./game/math.js";
+import { navigateToReplayRoom, navigateToRoom } from "./game/room-navigation.js";
+import { setReplayStatusBadge } from "./game/replay-ui.js";
 import { drawAimTracer, drawArenaGrid, drawPlayer, renderBackdrop, worldToScreen } from "./game/rendering.js";
+import { buildReplayUiState, canRequestReplay } from "./game/replay-state.js";
 import { advanceBullets, assignShotIdToLatestBullet, clearBullets, drawBullets, resolveBulletCollisions, spawnBullet } from "./game/effects.js";
 
 const profile = ensureProfile();
@@ -47,30 +52,6 @@ const FIRE_COOLDOWN_MS = 180;
 const MAX_LOG_LINES = 18;
 const SNAPSHOT_STALE_MS = 2200;
 const RECONNECT_COOLDOWN_MS = 1500;
-const WIN_MESSAGES = [
-    "You cooked them so hard the arena asked for the recipe.",
-    "Victory secured. Opponent rage-meter: critical.",
-    "That aim was illegal in at least three regions.",
-    "Clean win. Zero panic, maximum style.",
-    "You need to touch grass.",
-    "Arena control: yours. Confidence: outrageous.",
-    "They brought a pulse. You brought a masterclass.",
-    "Mission accomplished with disrespectful efficiency.",
-    "You won so fast the replay had to buffer your aura.",
-    "Dominant performance. Someone check on their ego."
-];
-const LOSS_MESSAGES = [
-    "Defeat today. Plot armor reload in progress.",
-    "You got outplayed, not outclassed. Next round.",
-    "Tactical setback. Dramatic comeback pending.",
-    "They won this one. You collected useful anger.",
-    "Rough round, strong sequel energy.",
-    "Temporary L. Permanent menace.",
-    "You lost the duel, not the storyline.",
-    "The arena humbled you. Briefly.",
-    "Opposition popped off. Time to return the favor.",
-    "Loss logged. Revenge patch deployed."
-];
 
 let socketHandle = null;
 let latestSnapshot = null;
@@ -94,8 +75,9 @@ let lastFireSentAt = 0;
 
 let opponentPreviousAmmo = null;
 let selfPreviousAmmo = null;
-const sentHitClaims = new Set();
-let replayRequested = false;
+const hitClaimTracker = createHitClaimTracker();
+let replayAckDeadline = 0;
+let returnRoomPending = false;
 let selectedEndMessage = null;
 let selectedEndMatchKey = null;
 
@@ -149,31 +131,20 @@ function resetClientPredictionState() {
     clearBullets();
     opponentPreviousAmmo = null;
     selfPreviousAmmo = null;
-    sentHitClaims.clear();
-    replayRequested = false;
+    hitClaimTracker.clear();
+    replayAckDeadline = 0;
+    returnRoomPending = false;
     if (replayButton) {
         replayButton.disabled = false;
+    }
+    if (returnRoomButton) {
+        returnRoomButton.disabled = false;
     }
     setReplayStatus("", "idle");
 }
 
 function setReplayStatus(text, tone = "idle") {
-    if (!replayStatusBadge) {
-        return;
-    }
-
-    if (!text) {
-        replayStatusBadge.hidden = true;
-        replayStatusBadge.classList.remove("pending", "expired", "matched");
-        return;
-    }
-
-    replayStatusBadge.hidden = false;
-    replayStatusBadge.textContent = text;
-    replayStatusBadge.classList.remove("pending", "expired", "matched");
-    if (tone === "pending" || tone === "expired" || tone === "matched") {
-        replayStatusBadge.classList.add(tone);
-    }
+    setReplayStatusBadge(replayStatusBadge, text, tone);
 }
 
 function mapKeyboardState(event, isPressed) {
@@ -326,11 +297,9 @@ function sendHitClaim(shotId, snapshotTick, bulletId) {
         return;
     }
 
-    const claimKey = `${shotId}|${snapshotTick}|${bulletId ?? "na"}`;
-    if (sentHitClaims.has(claimKey)) {
+    if (!hitClaimTracker.register(shotId, snapshotTick)) {
         return;
     }
-    sentHitClaims.add(claimKey);
 
     socketHandle.send({
         type: SocketCommand.HIT_CLAIM,
@@ -460,47 +429,40 @@ function renderScoreboard(snapshot) {
 }
 
 function showEndState(snapshot) {
-    if (snapshot.phase !== "COMPLETE") {
+    const endPresentation = resolveEndPresentation(snapshot, profile.token, selectedEndMatchKey, selectedEndMessage);
+    if (!endPresentation.visible) {
         endOverlay.classList.remove("is-visible");
-        replayRequested = false;
+        replayAckDeadline = 0;
+        returnRoomPending = false;
         selectedEndMessage = null;
         selectedEndMatchKey = null;
         if (replayButton) {
             replayButton.disabled = false;
+        }
+        if (returnRoomButton) {
+            returnRoomButton.disabled = false;
         }
         setReplayStatus("", "idle");
         return;
     }
 
     endOverlay.classList.add("is-visible");
-    const didWin = snapshot.winnerToken === profile.token;
-    endTitle.textContent = didWin ? "Victory" : "Defeat";
-    const matchKey = `${snapshot.code}|${snapshot.winnerToken ?? "none"}|${snapshot.simulationTick}`;
-    if (selectedEndMatchKey !== matchKey || !selectedEndMessage) {
-        const pool = didWin ? WIN_MESSAGES : LOSS_MESSAGES;
-        const randomIndex = Math.floor(Math.random() * pool.length);
-        selectedEndMessage = pool[randomIndex];
-        selectedEndMatchKey = matchKey;
-    }
-    endMessage.textContent = selectedEndMessage;
+    selectedEndMessage = endPresentation.message;
+    selectedEndMatchKey = endPresentation.matchKey;
+    endTitle.textContent = endPresentation.title;
+    endMessage.textContent = endPresentation.message;
 
-    const normalizedEvent = (snapshot.lastEvent ?? "").toLowerCase();
-    if (normalizedEvent.includes("expired")) {
-        replayRequested = false;
-        if (replayButton) {
-            replayButton.disabled = false;
-        }
-        setReplayStatus("Replay expired. Press Replay again.", "expired");
-    } else if (normalizedEvent.includes("requested replay")) {
-        if (replayRequested) {
-            setReplayStatus("Replay pending... waiting for opponent", "pending");
-        } else {
-            setReplayStatus("Opponent requested replay. Press Replay to join.", "pending");
-        }
-    } else if (replayRequested) {
-        setReplayStatus("Replay pending... waiting for opponent", "pending");
-    } else {
-        setReplayStatus("", "idle");
+    const replayUi = buildReplayUiState(snapshot, profile.token, replayAckDeadline, performance.now());
+    if (replayUi.selfReplayPending) {
+        replayAckDeadline = 0;
+    }
+    setReplayStatus(replayUi.statusText, replayUi.statusTone);
+
+    if (replayButton) {
+        replayButton.disabled = replayUi.selfReplayPending || replayUi.awaitingReplayAck;
+    }
+    if (returnRoomButton) {
+        returnRoomButton.disabled = returnRoomPending;
     }
 }
 
@@ -510,19 +472,16 @@ function handleReplayRedirect({ roomCode, token }) {
     }
 
     setReplayStatus("Replay matched. Redirecting...", "matched");
-
-    saveProfile({ ...loadProfile(), roomCode, token });
-    cleanupAndExit();
-    window.location.href = "/room.html";
+    navigateToReplayRoom(roomCode, token, cleanupAndExit);
 }
 
 function handleRoomReturn(message) {
     if (message) {
         logLine(message);
     }
+    returnRoomPending = false;
     setReplayStatus("Returning to room...", "matched");
-    cleanupAndExit();
-    window.location.href = "/room.html";
+    navigateToRoom(cleanupAndExit);
 }
 
 function updateSelfDisplay() {
@@ -728,6 +687,8 @@ function connectRoom() {
         onReplayRedirect: handleReplayRedirect,
         onRoomReturn: handleRoomReturn,
         onError: (message) => {
+            replayAckDeadline = 0;
+            returnRoomPending = false;
             eventBanner.textContent = message;
             logLine(message);
         },
@@ -795,13 +756,13 @@ fireActionButton.addEventListener("click", (event) => {
 });
 
 replayButton.addEventListener("click", () => {
-    if (!socketHandle || latestSnapshot?.phase !== "COMPLETE" || replayRequested) {
+    if (!socketHandle || !canRequestReplay(latestSnapshot, profile.token)) {
         return;
     }
 
-    replayRequested = true;
+    replayAckDeadline = performance.now() + 2500;
     replayButton.disabled = true;
-    setReplayStatus("Replay pending... waiting for opponent", "pending");
+    setReplayStatus("Sending replay request...", "pending");
     eventBanner.textContent = "Replay request sent. Waiting for opponent...";
     logLine("Replay request sent. Waiting for opponent...");
     socketHandle.send({ type: SocketCommand.REPLAY });
@@ -828,17 +789,20 @@ document.addEventListener("visibilitychange", () => {
 });
 
 backToRoomButton.addEventListener("click", () => {
-    cleanupAndExit();
-    window.location.href = "/room.html";
+    navigateToRoom(cleanupAndExit);
 });
 
 returnRoomButton.addEventListener("click", () => {
     if (!socketHandle || latestSnapshot?.phase !== "COMPLETE") {
-        cleanupAndExit();
-        window.location.href = "/room.html";
+        navigateToRoom(cleanupAndExit);
         return;
     }
 
+    if (returnRoomPending) {
+        return;
+    }
+
+    returnRoomPending = true;
     replayButton.disabled = true;
     returnRoomButton.disabled = true;
     setReplayStatus("Returning both players to room...", "matched");
