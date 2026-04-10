@@ -35,4 +35,9 @@ public class RoomController {
     public RoomSnapshot snapshot(@PathVariable String roomCode, @RequestParam String token) {
         return roomService.snapshot(roomCode, token);
     }
+
+    @PostMapping("/{roomCode}/leave")
+    public void leaveRoom(@PathVariable String roomCode, @RequestParam String token) {
+        roomService.leaveRoom(roomCode, token);
+    }
 }

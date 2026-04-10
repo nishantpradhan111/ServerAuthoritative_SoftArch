@@ -224,14 +224,24 @@ leaveButton.addEventListener("click", () => {
         return;
     }
 
-    if (socketHandle) {
-        socketHandle.close();
-        socketHandle = null;
-    }
+    const roomCode = currentRoomCode;
+    const token = currentToken;
+    apiJson(`/api/rooms/${encodeURIComponent(roomCode)}/leave?token=${encodeURIComponent(token)}`, {
+        method: "POST"
+    })
+        .catch((error) => {
+            setNotice(error.message);
+        })
+        .finally(() => {
+            if (socketHandle) {
+                socketHandle.close();
+                socketHandle = null;
+            }
 
-    clearRoomSession();
-    resetLobbyUI();
-    setNotice("Left room. Create a new room or join with a code.");
+            clearRoomSession();
+            resetLobbyUI();
+            setNotice("Left room. Create a new room or join with a code.");
+        });
 });
 
 returnLoginButton.addEventListener("click", () => {

@@ -77,6 +77,34 @@ public class Room {
         return token;
     }
 
+    public synchronized void removePlayer(String token) {
+        if (phase == RoomPhase.ACTIVE) {
+            throw new IllegalStateException("Cannot leave room during an active match");
+        }
+
+        Player leavingPlayer = requirePlayer(token);
+        players.remove(token);
+        replayRequests.remove(token);
+
+        if (players.isEmpty()) {
+            winnerToken = null;
+            phase = RoomPhase.LOBBY;
+            simulationTick = 0L;
+            tickHistory.clear();
+            pendingShots.clear();
+            consumedShotIds.clear();
+            replayRequests.clear();
+            lastEvent = leavingPlayer.name() + " left the room";
+            return;
+        }
+
+        lastEvent = leavingPlayer.name() + " left the room";
+    }
+
+    public synchronized boolean empty() {
+        return players.isEmpty();
+    }
+
     public synchronized void setReady(String token, boolean ready) {
         Player player = requirePlayer(token);
         if (phase != RoomPhase.LOBBY) {

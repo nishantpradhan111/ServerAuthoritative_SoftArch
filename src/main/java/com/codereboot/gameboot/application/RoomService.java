@@ -53,6 +53,18 @@ public class RoomService {
         return room.snapshot();
     }
 
+    public void leaveRoom(String roomCode, String token) {
+        Room room = getRoom(roomCode);
+        room.removePlayer(token);
+
+        if (room.empty()) {
+            roomRepository.deleteByCode(room.code());
+            return;
+        }
+
+        eventBroadcaster.broadcast(room.snapshot());
+    }
+
     public void setReady(String roomCode, String token, boolean ready) {
         Room room = getRoom(roomCode);
         room.setReady(token, ready);

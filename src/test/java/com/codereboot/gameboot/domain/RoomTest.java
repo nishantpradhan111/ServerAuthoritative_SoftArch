@@ -163,4 +163,19 @@ class RoomTest {
                 .orElseThrow();
         assertEquals(Room.STARTING_HEALTH, targetSnapshot.health());
     }
+
+    @Test
+    void leavingLobbyFreesSlotForAnotherPlayer() {
+        Room room = new Room("lobby");
+        String host = room.addPlayer("Ada");
+        String guest = room.addPlayer("Lin");
+
+        room.removePlayer(guest);
+        String replacement = room.addPlayer("Kai");
+
+        RoomSnapshot snapshot = room.snapshot();
+        assertEquals(2, snapshot.players().size());
+        assertTrue(snapshot.players().stream().anyMatch(player -> player.token().equals(host)));
+        assertTrue(snapshot.players().stream().anyMatch(player -> player.token().equals(replacement)));
+    }
 }
