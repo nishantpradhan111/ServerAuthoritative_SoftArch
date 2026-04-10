@@ -52,7 +52,7 @@ const WIN_MESSAGES = [
     "Victory secured. Opponent rage-meter: critical.",
     "That aim was illegal in at least three regions.",
     "Clean win. Zero panic, maximum style.",
-    "You didn\'t just win, you issued a public service announcement.",
+    "You need to touch grass.",
     "Arena control: yours. Confidence: outrageous.",
     "They brought a pulse. You brought a masterclass.",
     "Mission accomplished with disrespectful efficiency.",
