@@ -113,7 +113,8 @@ function applySnapshot(snapshot) {
     }
 
     if (snapshot.phase === "COMPLETE") {
-        setConnectionState("Complete");
+        const didWin = snapshot.winnerToken === currentToken;
+        setConnectionState(didWin ? "Won" : "Lost");
         roomSubtitle.textContent = "The match is over. You can re-enter or create a new room.";
         return false;
     }

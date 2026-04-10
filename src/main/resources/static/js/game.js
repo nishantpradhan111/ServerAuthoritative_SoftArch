@@ -47,6 +47,30 @@ const FIRE_COOLDOWN_MS = 180;
 const MAX_LOG_LINES = 18;
 const SNAPSHOT_STALE_MS = 2200;
 const RECONNECT_COOLDOWN_MS = 1500;
+const WIN_MESSAGES = [
+    "You cooked them so hard the arena asked for the recipe.",
+    "Victory secured. Opponent rage-meter: critical.",
+    "That aim was illegal in at least three regions.",
+    "Clean win. Zero panic, maximum style.",
+    "You didn\'t just win, you issued a public service announcement.",
+    "Arena control: yours. Confidence: outrageous.",
+    "They brought a pulse. You brought a masterclass.",
+    "Mission accomplished with disrespectful efficiency.",
+    "You won so fast the replay had to buffer your aura.",
+    "Dominant performance. Someone check on their ego."
+];
+const LOSS_MESSAGES = [
+    "Defeat today. Plot armor reload in progress.",
+    "You got outplayed, not outclassed. Next round.",
+    "Tactical setback. Dramatic comeback pending.",
+    "They won this one. You collected useful anger.",
+    "Rough round, strong sequel energy.",
+    "Temporary L. Permanent menace.",
+    "You lost the duel, not the storyline.",
+    "The arena humbled you. Briefly.",
+    "Opposition popped off. Time to return the favor.",
+    "Loss logged. Revenge patch deployed."
+];
 
 let socketHandle = null;
 let latestSnapshot = null;
@@ -72,6 +96,8 @@ let opponentPreviousAmmo = null;
 let selfPreviousAmmo = null;
 const sentHitClaims = new Set();
 let replayRequested = false;
+let selectedEndMessage = null;
+let selectedEndMatchKey = null;
 
 let predictedSelf = null;
 let displaySelf = null;
@@ -437,6 +463,8 @@ function showEndState(snapshot) {
     if (snapshot.phase !== "COMPLETE") {
         endOverlay.classList.remove("is-visible");
         replayRequested = false;
+        selectedEndMessage = null;
+        selectedEndMatchKey = null;
         if (replayButton) {
             replayButton.disabled = false;
         }
@@ -447,17 +475,32 @@ function showEndState(snapshot) {
     endOverlay.classList.add("is-visible");
     const didWin = snapshot.winnerToken === profile.token;
     endTitle.textContent = didWin ? "Victory" : "Defeat";
-    endMessage.textContent = snapshot.lastEvent ?? (didWin ? "You won the duel." : "The rival won the duel.");
+    const matchKey = `${snapshot.code}|${snapshot.winnerToken ?? "none"}|${snapshot.simulationTick}`;
+    if (selectedEndMatchKey !== matchKey || !selectedEndMessage) {
+        const pool = didWin ? WIN_MESSAGES : LOSS_MESSAGES;
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        selectedEndMessage = pool[randomIndex];
+        selectedEndMatchKey = matchKey;
+    }
+    endMessage.textContent = selectedEndMessage;
 
     const normalizedEvent = (snapshot.lastEvent ?? "").toLowerCase();
-    if (replayRequested && normalizedEvent.includes("expired")) {
+    if (normalizedEvent.includes("expired")) {
         replayRequested = false;
         if (replayButton) {
             replayButton.disabled = false;
         }
         setReplayStatus("Replay expired. Press Replay again.", "expired");
+    } else if (normalizedEvent.includes("requested replay")) {
+        if (replayRequested) {
+            setReplayStatus("Replay pending... waiting for opponent", "pending");
+        } else {
+            setReplayStatus("Opponent requested replay. Press Replay to join.", "pending");
+        }
     } else if (replayRequested) {
         setReplayStatus("Replay pending... waiting for opponent", "pending");
+    } else {
+        setReplayStatus("", "idle");
     }
 }
 
