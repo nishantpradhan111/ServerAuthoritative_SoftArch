@@ -4,8 +4,11 @@ import com.codereboot.gameboot.api.dto.RoomEntryResponse;
 import com.codereboot.gameboot.domain.Direction;
 import com.codereboot.gameboot.domain.GameInputFrame;
 import com.codereboot.gameboot.domain.Room;
+import com.codereboot.gameboot.domain.RoomPhase;
 import com.codereboot.gameboot.domain.RoomSnapshot;
 import com.codereboot.gameboot.infra.RoomRepository;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,9 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final RoomEventBroadcaster eventBroadcaster;
+
+    public record ReplayRedirect(String oldToken, String roomCode, String token) {
+    }
 
     public RoomService(RoomRepository roomRepository, RoomEventBroadcaster eventBroadcaster) {
         this.roomRepository = roomRepository;
@@ -75,6 +81,37 @@ public class RoomService {
         Room room = getRoom(roomCode);
         room.claimHit(reporterToken, shotId, snapshotTick);
         eventBroadcaster.broadcast(room.snapshot());
+    }
+
+    public List<ReplayRedirect> requestReplay(String roomCode, String token) {
+        Room room = getRoom(roomCode);
+        List<Room.ReplayParticipant> participants = room.requestReplay(token);
+        eventBroadcaster.broadcast(room.snapshot());
+        if (participants.isEmpty()) {
+            return List.of();
+        }
+
+        String newRoomCode = generateRoomCode();
+        Room replayRoom = new Room(newRoomCode);
+        roomRepository.save(replayRoom);
+
+        List<ReplayRedirect> redirects = new ArrayList<>();
+        for (Room.ReplayParticipant participant : participants) {
+            String newToken = replayRoom.addPlayer(participant.name());
+            redirects.add(new ReplayRedirect(participant.token(), newRoomCode, newToken));
+        }
+
+        eventBroadcaster.broadcast(replayRoom.snapshot());
+        return redirects;
+    }
+
+    public String requestReturnToRoom(String roomCode, String token) {
+        Room room = getRoom(roomCode);
+        if (room.phase() != RoomPhase.COMPLETE) {
+            throw new IllegalStateException("Return-to-room broadcast is only available after match completion");
+        }
+
+        return room.requirePlayer(token).name() + " returned to room";
     }
 
     private Room getRoom(String roomCode) {

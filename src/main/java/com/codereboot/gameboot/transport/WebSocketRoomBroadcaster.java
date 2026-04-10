@@ -95,6 +95,47 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
         send(session, envelope("error", message));
     }
 
+    @Override
+    public void sendReplayRedirect(String roomCode, String token, String newRoomCode, String newToken) {
+        ConcurrentMap<String, WebSocketSession> roomSessions = sessionsByRoom.get(roomCode);
+        if (roomSessions == null) {
+            return;
+        }
+
+        WebSocketSession session = roomSessions.get(token);
+        if (session == null || !session.isOpen()) {
+            removeSession(roomCode, token, session);
+            return;
+        }
+
+        Map<String, Object> message = new LinkedHashMap<>();
+        message.put("type", "replayRedirect");
+        message.put("roomCode", newRoomCode);
+        message.put("token", newToken);
+        send(session, message);
+    }
+
+    @Override
+    public void sendRoomReturn(String roomCode, String message) {
+        ConcurrentMap<String, WebSocketSession> roomSessions = sessionsByRoom.get(roomCode);
+        if (roomSessions == null) {
+            return;
+        }
+
+        for (Map.Entry<String, WebSocketSession> entry : roomSessions.entrySet()) {
+            WebSocketSession session = entry.getValue();
+            if (session == null || !session.isOpen()) {
+                removeSession(roomCode, entry.getKey(), session);
+                continue;
+            }
+
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("type", "roomReturn");
+            payload.put("message", message);
+            send(session, payload);
+        }
+    }
+
     private Map<String, Object> envelope(String type, Object payload) {
         Map<String, Object> message = new LinkedHashMap<>();
         message.put("type", type);

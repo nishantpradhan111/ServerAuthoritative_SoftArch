@@ -13,4 +13,8 @@ public interface RoomSessionGateway {
     void sendSnapshot(@NonNull WebSocketSession session, RoomSnapshot snapshot);
 
     void sendError(@NonNull WebSocketSession session, String message);
+
+    void sendReplayRedirect(String roomCode, String token, String newRoomCode, String newToken);
+
+    void sendRoomReturn(String roomCode, String message);
 }

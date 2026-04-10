@@ -2,6 +2,7 @@ com\codereboot\gameboot\api\AuthController.class
 com\codereboot\gameboot\transport\WebSocketRoomBroadcaster$SessionRef.class
 com\codereboot\gameboot\application\AuthService.class
 com\codereboot\gameboot\application\RoomEventBroadcaster.class
+com\codereboot\gameboot\domain\Room$ReplayParticipant.class
 com\codereboot\gameboot\transport\GameSocketCommandDispatcher.class
 com\codereboot\gameboot\transport\GameSocketCommand$Subscribe.class
 com\codereboot\gameboot\transport\GameSocketCommand$Ready.class
@@ -19,6 +20,7 @@ com\codereboot\gameboot\config\WebSocketConfig.class
 com\codereboot\gameboot\domain\Direction.class
 com\codereboot\gameboot\api\JoinRoomRequest.class
 com\codereboot\gameboot\transport\GameSocketCommand$Move.class
+com\codereboot\gameboot\application\RoomService$ReplayRedirect.class
 com\codereboot\gameboot\application\GameSimulationService.class
 com\codereboot\gameboot\transport\GameSocketCommand$Fire.class
 com\codereboot\gameboot\transport\GameSocketCommand.class
@@ -31,9 +33,11 @@ com\codereboot\gameboot\api\LoginRequest.class
 com\codereboot\gameboot\domain\Room$PendingShot.class
 com\codereboot\gameboot\transport\WebSocketRoomBroadcaster.class
 com\codereboot\gameboot\GameBootApplication.class
+com\codereboot\gameboot\transport\GameSocketCommand$Replay.class
 com\codereboot\gameboot\domain\User.class
 com\codereboot\gameboot\application\RoomSessionGateway.class
 com\codereboot\gameboot\transport\GameSocketCommandParser.class
+com\codereboot\gameboot\transport\GameSocketCommand$ReturnToRoom.class
 com\codereboot\gameboot\transport\GameSocketCommand$Sync.class
 com\codereboot\gameboot\domain\Player.class
 com\codereboot\gameboot\api\CreateRoomRequest.class

@@ -31,6 +31,8 @@ class GameSocketCommandParser {
                     payload.path("shotId").asLong(-1L),
                     payload.path("snapshotTick").asLong(-1L)
             );
+            case "replay" -> new GameSocketCommand.Replay();
+            case "returnRoom" -> new GameSocketCommand.ReturnToRoom();
             default -> throw new IllegalArgumentException("Unknown websocket command: " + type);
         };
     }

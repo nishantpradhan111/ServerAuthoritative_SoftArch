@@ -1,4 +1,4 @@
-import { ensureProfile } from "./common.js";
+import { ensureProfile, loadProfile, saveProfile } from "./common.js";
 import { openRoomSocket } from "./socket.js";
 import { SocketCommand } from "./protocol.js";
 import { blend, clamp, distance2D, normalizeDegrees, normalizeVector } from "./game/math.js";
@@ -32,6 +32,8 @@ const gameLog = document.querySelector("#game-log");
 const endOverlay = document.querySelector("#end-overlay");
 const endTitle = document.querySelector("#end-title");
 const endMessage = document.querySelector("#end-message");
+const replayButton = document.querySelector("#replay-button");
+const replayStatusBadge = document.querySelector("#replay-status-badge");
 const backToRoomButton = document.querySelector("#back-to-room-button");
 const returnRoomButton = document.querySelector("#return-room-button");
 
@@ -69,6 +71,7 @@ let lastFireSentAt = 0;
 let opponentPreviousAmmo = null;
 let selfPreviousAmmo = null;
 const sentHitClaims = new Set();
+let replayRequested = false;
 
 let predictedSelf = null;
 let displaySelf = null;
@@ -121,6 +124,30 @@ function resetClientPredictionState() {
     opponentPreviousAmmo = null;
     selfPreviousAmmo = null;
     sentHitClaims.clear();
+    replayRequested = false;
+    if (replayButton) {
+        replayButton.disabled = false;
+    }
+    setReplayStatus("", "idle");
+}
+
+function setReplayStatus(text, tone = "idle") {
+    if (!replayStatusBadge) {
+        return;
+    }
+
+    if (!text) {
+        replayStatusBadge.hidden = true;
+        replayStatusBadge.classList.remove("pending", "expired", "matched");
+        return;
+    }
+
+    replayStatusBadge.hidden = false;
+    replayStatusBadge.textContent = text;
+    replayStatusBadge.classList.remove("pending", "expired", "matched");
+    if (tone === "pending" || tone === "expired" || tone === "matched") {
+        replayStatusBadge.classList.add(tone);
+    }
 }
 
 function mapKeyboardState(event, isPressed) {
@@ -409,6 +436,11 @@ function renderScoreboard(snapshot) {
 function showEndState(snapshot) {
     if (snapshot.phase !== "COMPLETE") {
         endOverlay.classList.remove("is-visible");
+        replayRequested = false;
+        if (replayButton) {
+            replayButton.disabled = false;
+        }
+        setReplayStatus("", "idle");
         return;
     }
 
@@ -416,6 +448,38 @@ function showEndState(snapshot) {
     const didWin = snapshot.winnerToken === profile.token;
     endTitle.textContent = didWin ? "Victory" : "Defeat";
     endMessage.textContent = snapshot.lastEvent ?? (didWin ? "You won the duel." : "The rival won the duel.");
+
+    const normalizedEvent = (snapshot.lastEvent ?? "").toLowerCase();
+    if (replayRequested && normalizedEvent.includes("expired")) {
+        replayRequested = false;
+        if (replayButton) {
+            replayButton.disabled = false;
+        }
+        setReplayStatus("Replay expired. Press Replay again.", "expired");
+    } else if (replayRequested) {
+        setReplayStatus("Replay pending... waiting for opponent", "pending");
+    }
+}
+
+function handleReplayRedirect({ roomCode, token }) {
+    if (!roomCode || !token) {
+        return;
+    }
+
+    setReplayStatus("Replay matched. Redirecting...", "matched");
+
+    saveProfile({ ...loadProfile(), roomCode, token });
+    cleanupAndExit();
+    window.location.href = "/room.html";
+}
+
+function handleRoomReturn(message) {
+    if (message) {
+        logLine(message);
+    }
+    setReplayStatus("Returning to room...", "matched");
+    cleanupAndExit();
+    window.location.href = "/room.html";
 }
 
 function updateSelfDisplay() {
@@ -618,6 +682,8 @@ function connectRoom() {
         roomCode: profile.roomCode,
         token: profile.token,
         onSnapshot: renderSnapshot,
+        onReplayRedirect: handleReplayRedirect,
+        onRoomReturn: handleRoomReturn,
         onError: (message) => {
             eventBanner.textContent = message;
             logLine(message);
@@ -685,6 +751,19 @@ fireActionButton.addEventListener("click", (event) => {
     sendInstantFire();
 });
 
+replayButton.addEventListener("click", () => {
+    if (!socketHandle || latestSnapshot?.phase !== "COMPLETE" || replayRequested) {
+        return;
+    }
+
+    replayRequested = true;
+    replayButton.disabled = true;
+    setReplayStatus("Replay pending... waiting for opponent", "pending");
+    eventBanner.textContent = "Replay request sent. Waiting for opponent...";
+    logLine("Replay request sent. Waiting for opponent...");
+    socketHandle.send({ type: SocketCommand.REPLAY });
+});
+
 document.addEventListener("mouseup", (event) => {
     if (event.button === 0) {
         triggerPressed = false;
@@ -711,8 +790,16 @@ backToRoomButton.addEventListener("click", () => {
 });
 
 returnRoomButton.addEventListener("click", () => {
-    cleanupAndExit();
-    window.location.href = "/room.html";
+    if (!socketHandle || latestSnapshot?.phase !== "COMPLETE") {
+        cleanupAndExit();
+        window.location.href = "/room.html";
+        return;
+    }
+
+    replayButton.disabled = true;
+    returnRoomButton.disabled = true;
+    setReplayStatus("Returning both players to room...", "matched");
+    socketHandle.send({ type: SocketCommand.RETURN_TO_ROOM });
 });
 
 window.addEventListener("beforeunload", cleanupAndExit);

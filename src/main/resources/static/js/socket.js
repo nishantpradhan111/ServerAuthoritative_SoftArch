@@ -1,7 +1,7 @@
 import { wsUrl } from "./common.js";
 import { SocketCommand, SocketEvent } from "./protocol.js";
 
-export function openRoomSocket({ roomCode, token, onSnapshot, onError, onOpen, onClose }) {
+export function openRoomSocket({ roomCode, token, onSnapshot, onError, onReplayRedirect, onRoomReturn, onOpen, onClose }) {
     const socket = new WebSocket(wsUrl("/ws"));
 
     socket.addEventListener("open", () => {
@@ -30,6 +30,19 @@ export function openRoomSocket({ roomCode, token, onSnapshot, onError, onOpen, o
 
         if (payload.type === SocketEvent.ERROR && onError) {
             onError(payload.message ?? "Socket error");
+            return;
+        }
+
+        if (payload.type === SocketEvent.REPLAY_REDIRECT && onReplayRedirect) {
+            onReplayRedirect({
+                roomCode: payload.roomCode,
+                token: payload.token
+            });
+            return;
+        }
+
+        if (payload.type === SocketEvent.ROOM_RETURN && onRoomReturn) {
+            onRoomReturn(payload.message ?? "Opponent returned to room");
         }
     });
 

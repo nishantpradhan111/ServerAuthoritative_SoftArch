@@ -22,6 +22,7 @@ public class Room {
     public static final double SIMULATION_STEP_SECONDS = 1.0 / 30.0;
     private static final int MAX_TICK_HISTORY = 180;
     private static final long MAX_SHOT_AGE_TICKS = 24L;
+    private static final long REPLAY_REQUEST_TIMEOUT_MS = 10_000L;
 
     private final String code;
     private final LinkedHashMap<String, Player> players = new LinkedHashMap<>();
@@ -33,11 +34,15 @@ public class Room {
     private final LinkedHashMap<Long, Map<String, HistoricalPlayerState>> tickHistory = new LinkedHashMap<>();
     private final LinkedHashMap<Long, PendingShot> pendingShots = new LinkedHashMap<>();
     private final Set<Long> consumedShotIds = new HashSet<>();
+    private final Map<String, Long> replayRequests = new LinkedHashMap<>();
 
     private record HistoricalPlayerState(double positionX, double positionY, double aimDegrees) {
     }
 
     private record PendingShot(long shotId, String attackerToken, String targetToken, long firedTick) {
+    }
+
+    public record ReplayParticipant(String token, String name) {
     }
 
     public Room(String code) {
@@ -216,6 +221,29 @@ public class Room {
         return changed;
     }
 
+    public synchronized List<ReplayParticipant> requestReplay(String token) {
+        Player requester = requirePlayer(token);
+        if (phase != RoomPhase.COMPLETE) {
+            throw new IllegalStateException("Replay can only be requested after match completion");
+        }
+
+        long now = System.currentTimeMillis();
+        cleanupExpiredReplayRequests(now);
+        replayRequests.put(token, now);
+
+        if (isReplayReady()) {
+            List<ReplayParticipant> participants = players.values().stream()
+                    .map(player -> new ReplayParticipant(player.token(), player.name()))
+                    .toList();
+            replayRequests.clear();
+            lastEvent = "Replay matched. Entering new room...";
+            return participants;
+        }
+
+        lastEvent = requester.name() + " requested replay. Waiting for opponent...";
+        return List.of();
+    }
+
     public synchronized RoomSnapshot snapshot() {
         List<PlayerSnapshot> playerSnapshots = new ArrayList<>();
         String hostToken = players.keySet().stream().findFirst().orElse(null);
@@ -262,6 +290,7 @@ public class Room {
         consumedShotIds.clear();
         tickHistory.clear();
         pendingShots.clear();
+        replayRequests.clear();
 
         int index = 0;
         for (Player player : players.values()) {
@@ -345,6 +374,27 @@ public class Room {
 
     private void pruneExpiredShots() {
         pendingShots.entrySet().removeIf(entry -> (simulationTick - entry.getValue().firedTick()) > MAX_SHOT_AGE_TICKS);
+    }
+
+    private void cleanupExpiredReplayRequests(long nowMs) {
+        int before = replayRequests.size();
+        replayRequests.entrySet().removeIf(entry -> (nowMs - entry.getValue()) > REPLAY_REQUEST_TIMEOUT_MS);
+        if (before > 0 && replayRequests.isEmpty()) {
+            lastEvent = "Replay request expired. Press Replay again within 10 seconds.";
+        }
+    }
+
+    private boolean isReplayReady() {
+        if (players.size() != 2) {
+            return false;
+        }
+
+        for (String playerToken : players.keySet()) {
+            if (!replayRequests.containsKey(playerToken)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean clampPlayer(Player player) {

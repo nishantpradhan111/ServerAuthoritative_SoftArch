@@ -64,6 +64,21 @@ class GameSocketCommandDispatcher {
             return;
         }
 
+        if (command instanceof GameSocketCommand.Replay) {
+            String currentRoomCode = roomCode(session);
+            for (RoomService.ReplayRedirect redirect : roomService.requestReplay(currentRoomCode, token(session))) {
+                sessionGateway.sendReplayRedirect(currentRoomCode, redirect.oldToken(), redirect.roomCode(), redirect.token());
+            }
+            return;
+        }
+
+        if (command instanceof GameSocketCommand.ReturnToRoom) {
+            String currentRoomCode = roomCode(session);
+            String message = roomService.requestReturnToRoom(currentRoomCode, token(session));
+            sessionGateway.sendRoomReturn(currentRoomCode, message);
+            return;
+        }
+
         throw new IllegalArgumentException("Unsupported websocket command: " + command.type());
     }
 

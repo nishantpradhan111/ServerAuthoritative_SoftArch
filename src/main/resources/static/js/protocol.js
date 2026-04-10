@@ -5,10 +5,14 @@ export const SocketCommand = {
     FIRE: "fire",
     INPUT: "input",
     SYNC: "sync",
-    HIT_CLAIM: "hitClaim"
+    HIT_CLAIM: "hitClaim",
+    REPLAY: "replay",
+    RETURN_TO_ROOM: "returnRoom"
 };
 
 export const SocketEvent = {
     SNAPSHOT: "snapshot",
-    ERROR: "error"
+    ERROR: "error",
+    REPLAY_REDIRECT: "replayRedirect",
+    ROOM_RETURN: "roomReturn"
 };

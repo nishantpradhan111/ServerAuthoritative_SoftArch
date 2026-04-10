@@ -55,4 +55,18 @@ interface GameSocketCommand {
             return "hitClaim";
         }
     }
+
+    record Replay() implements GameSocketCommand {
+        @Override
+        public String type() {
+            return "replay";
+        }
+    }
+
+    record ReturnToRoom() implements GameSocketCommand {
+        @Override
+        public String type() {
+            return "returnRoom";
+        }
+    }
 }
