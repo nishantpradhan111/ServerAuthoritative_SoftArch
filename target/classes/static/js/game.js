@@ -3,6 +3,7 @@ import { openRoomSocket } from "./socket.js";
 import { SocketCommand } from "./protocol.js";
 import { blend, clamp, distance2D, normalizeDegrees, normalizeVector } from "./game/math.js";
 import { drawAimTracer, drawArenaGrid, drawPlayer, renderBackdrop, worldToScreen } from "./game/rendering.js";
+import { advanceBullets, assignShotIdToLatestBullet, clearBullets, drawBullets, resolveBulletCollisions, spawnBullet } from "./game/effects.js";
 
 const profile = ensureProfile();
 
@@ -65,6 +66,10 @@ let aimCursorY = 0;
 let triggerPressed = false;
 let lastFireSentAt = 0;
 
+let opponentPreviousAmmo = null;
+let selfPreviousAmmo = null;
+const sentHitClaims = new Set();
+
 let predictedSelf = null;
 let displaySelf = null;
 let correctionMagnitude = 0;
@@ -112,6 +117,10 @@ function resetClientPredictionState() {
     pendingInputs.length = 0;
     sentInputTimes.clear();
     sendAccumulatorMs = 0;
+    clearBullets();
+    opponentPreviousAmmo = null;
+    selfPreviousAmmo = null;
+    sentHitClaims.clear();
 }
 
 function mapKeyboardState(event, isPressed) {
@@ -191,6 +200,12 @@ function shouldFire(nowMs) {
     if (!wantsFire) {
         return false;
     }
+
+    const self = latestSnapshot?.players.find((player) => player.token === profile.token);
+    if (!self || self.ammo <= 0) {
+        return false;
+    }
+
     if ((nowMs - lastFireSentAt) < FIRE_COOLDOWN_MS) {
         return false;
     }
@@ -201,6 +216,11 @@ function shouldFire(nowMs) {
 
 function sendInstantFire() {
     if (!socketHandle || latestSnapshot?.phase !== "ACTIVE") {
+        return;
+    }
+
+    const self = latestSnapshot?.players.find((player) => player.token === profile.token);
+    if (!self || self.ammo <= 0) {
         return;
     }
 
@@ -223,9 +243,68 @@ function sendInstantFire() {
     socketHandle.send(inputFrame);
     sentInputTimes.set(inputFrame.sequence, nowMs);
     pendingInputs.push(inputFrame);
+    spawnLocalBullet(inputFrame.aimDegrees);
 
     if (predictedSelf) {
         applyInputToState(predictedSelf, inputFrame, CLIENT_SEND_INTERVAL_MS / 1000);
+    }
+}
+
+function spawnLocalBullet(aimDegrees) {
+    const localPlayer = displaySelf ?? predictedSelf ?? latestSnapshot?.players.find((player) => player.token === profile.token);
+    if (!localPlayer) {
+        return;
+    }
+
+    spawnBullet({
+        x: localPlayer.x ?? localPlayer.positionX,
+        y: localPlayer.y ?? localPlayer.positionY,
+        aimDegrees: aimDegrees ?? localPlayer.aimDegrees ?? 0,
+        ownerToken: profile.token
+    });
+}
+
+function sendHitClaim(shotId, snapshotTick, bulletId) {
+    if (!socketHandle || latestSnapshot?.phase !== "ACTIVE") {
+        return;
+    }
+
+    if (!shotId || snapshotTick == null || snapshotTick < 0) {
+        return;
+    }
+
+    const claimKey = `${shotId}|${snapshotTick}|${bulletId ?? "na"}`;
+    if (sentHitClaims.has(claimKey)) {
+        return;
+    }
+    sentHitClaims.add(claimKey);
+
+    socketHandle.send({
+        type: SocketCommand.HIT_CLAIM,
+        shotId,
+        snapshotTick
+    });
+}
+
+function handleBulletImpact(impact) {
+    if (!impact?.bullet || !latestSnapshot) {
+        return;
+    }
+
+    const selfToken = profile.token;
+    const claimedTick = impact.snapshotTick ?? latestSnapshot.simulationTick;
+    const shotId = impact.bullet.shotId;
+    if (!shotId) {
+        return;
+    }
+
+    if (impact.reason === "hit-opponent" && impact.bullet.ownerToken === selfToken) {
+        sendHitClaim(shotId, claimedTick, impact.bullet.id);
+        return;
+    }
+
+    if (impact.reason === "hit-self" && impact.bullet.ownerToken && impact.bullet.ownerToken !== selfToken) {
+        sendHitClaim(shotId, claimedTick, impact.bullet.id);
     }
 }
 
@@ -395,6 +474,8 @@ function drawScene() {
         drawPlayer(context, renderPlayer, player.token === profile.token, cameraX, cameraY, scale, width, height, PLAYER_RADIUS);
     });
 
+    drawBullets(context, cameraX, cameraY, scale, width, height);
+
     drawAimTracer(context, selfScreen.x, selfScreen.y, cameraX, cameraY, scale, width, height, worldMetrics, aimCursorX, aimCursorY);
 }
 
@@ -428,6 +509,9 @@ function animationStep(now) {
     sendAccumulatorMs += deltaMs;
     const isActive = latestSnapshot?.phase === "ACTIVE";
 
+    advanceBullets(deltaMs / 1000);
+    resolveBulletCollisions(latestSnapshot, profile.token, worldMetrics, handleBulletImpact);
+
     if (!isActive && pendingInputs.length > 0) {
         pendingInputs.length = 0;
         sentInputTimes.clear();
@@ -439,6 +523,9 @@ function animationStep(now) {
 
         sentInputTimes.set(inputFrame.sequence, performance.now());
         pendingInputs.push(inputFrame);
+        if (inputFrame.firing) {
+            spawnLocalBullet(inputFrame.aimDegrees);
+        }
 
         if (predictedSelf) {
             applyInputToState(predictedSelf, inputFrame, CLIENT_SEND_INTERVAL_MS / 1000);
@@ -457,10 +544,37 @@ function renderSnapshot(snapshot) {
     lastSnapshotReceivedAt = performance.now();
 
     const self = snapshot.players.find((player) => player.token === profile.token);
+    const opponent = snapshot.players.find((player) => player.token !== profile.token);
     const receivedAckSequence = self?.lastProcessedInputSequence ?? latestAckSequence;
 
     if (snapshot.simulationTick < latestAppliedTick) {
         return;
+    }
+
+    if (self && selfPreviousAmmo !== null && self.ammo < selfPreviousAmmo && self.lastShotId > 0) {
+        assignShotIdToLatestBullet(self.token, self.lastShotId);
+    }
+
+    if (opponent && opponentPreviousAmmo !== null && opponent.ammo < opponentPreviousAmmo) {
+        if (opponentPreviousAmmo > 0) {
+            spawnBullet({
+                x: opponent.positionX,
+                y: opponent.positionY,
+                aimDegrees: opponent.aimDegrees,
+                color: "#00ffcc",
+                firedBy: "opponent",
+                ownerToken: opponent.token
+            });
+            if (opponent.lastShotId > 0) {
+                assignShotIdToLatestBullet(opponent.token, opponent.lastShotId);
+            }
+        }
+    }
+    if (self) {
+        selfPreviousAmmo = self.ammo;
+    }
+    if (opponent) {
+        opponentPreviousAmmo = opponent.ammo;
     }
 
     latestSnapshot = snapshot;

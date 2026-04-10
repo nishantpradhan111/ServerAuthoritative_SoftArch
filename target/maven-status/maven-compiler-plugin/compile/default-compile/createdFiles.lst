@@ -13,6 +13,7 @@ com\codereboot\gameboot\infra\InMemoryRoomRepository.class
 com\codereboot\gameboot\transport\GameSocketHandler.class
 com\codereboot\gameboot\api\AuthResponse.class
 com\codereboot\gameboot\domain\RoomSnapshot.class
+com\codereboot\gameboot\domain\Room$HistoricalPlayerState.class
 com\codereboot\gameboot\domain\Room.class
 com\codereboot\gameboot\config\WebSocketConfig.class
 com\codereboot\gameboot\domain\Direction.class
@@ -24,8 +25,10 @@ com\codereboot\gameboot\transport\GameSocketCommand.class
 com\codereboot\gameboot\security\BCryptPasswordEncoderImpl.class
 com\codereboot\gameboot\domain\GameInputFrame.class
 com\codereboot\gameboot\application\RoomService.class
+com\codereboot\gameboot\transport\GameSocketCommand$HitClaim.class
 com\codereboot\gameboot\api\RegisterRequest.class
 com\codereboot\gameboot\api\LoginRequest.class
+com\codereboot\gameboot\domain\Room$PendingShot.class
 com\codereboot\gameboot\transport\WebSocketRoomBroadcaster.class
 com\codereboot\gameboot\GameBootApplication.class
 com\codereboot\gameboot\domain\User.class

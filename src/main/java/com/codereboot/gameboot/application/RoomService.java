@@ -71,6 +71,12 @@ public class RoomService {
         eventBroadcaster.broadcast(room.snapshot());
     }
 
+    public void claimHit(String roomCode, String reporterToken, long shotId, long snapshotTick) {
+        Room room = getRoom(roomCode);
+        room.claimHit(reporterToken, shotId, snapshotTick);
+        eventBroadcaster.broadcast(room.snapshot());
+    }
+
     private Room getRoom(String roomCode) {
         return roomRepository.findByCode(normalizeRoomCode(roomCode))
                 .orElseThrow(() -> new NoSuchElementException("Room not found"));

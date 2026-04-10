@@ -48,4 +48,11 @@ interface GameSocketCommand {
             return "sync";
         }
     }
+
+    record HitClaim(long shotId, long snapshotTick) implements GameSocketCommand {
+        @Override
+        public String type() {
+            return "hitClaim";
+        }
+    }
 }

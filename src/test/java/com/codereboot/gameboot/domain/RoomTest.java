@@ -23,7 +23,7 @@ class RoomTest {
     }
 
     @Test
-    void fireReducesOpponentHealth() {
+    void validatedHitClaimReducesOpponentHealth() {
         Room room = new Room("pulse");
         String host = room.addPlayer("Ada");
         String guest = room.addPlayer("Lin");
@@ -31,13 +31,19 @@ class RoomTest {
         room.setReady(host, true);
         room.setReady(guest, true);
         room.fire(host);
+        long shotId = room.snapshot().players().stream()
+            .filter(player -> player.token().equals(host))
+            .findFirst()
+            .orElseThrow()
+            .lastShotId();
+        room.claimHit(host, shotId, room.snapshot().simulationTick());
 
         PlayerSnapshot target = room.snapshot().players().stream()
                 .filter(player -> player.token().equals(guest))
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(2, target.health());
+        assertEquals(Room.STARTING_HEALTH - 1, target.health());
     }
 
     @Test
@@ -114,12 +120,18 @@ class RoomTest {
         shooter.face(45.0);
 
         room.fire(host);
+        long shotId = room.snapshot().players().stream()
+            .filter(player -> player.token().equals(host))
+            .findFirst()
+            .orElseThrow()
+            .lastShotId();
+        room.claimHit(host, shotId, room.snapshot().simulationTick());
 
         PlayerSnapshot targetSnapshot = room.snapshot().players().stream()
                 .filter(player -> player.token().equals(guest))
                 .findFirst()
                 .orElseThrow();
-        assertEquals(2, targetSnapshot.health());
+        assertEquals(Room.STARTING_HEALTH - 1, targetSnapshot.health());
     }
 
     @Test
@@ -138,11 +150,17 @@ class RoomTest {
         shooter.face(225.0);
 
         room.fire(host);
+        long shotId = room.snapshot().players().stream()
+            .filter(player -> player.token().equals(host))
+            .findFirst()
+            .orElseThrow()
+            .lastShotId();
+        room.claimHit(host, shotId, room.snapshot().simulationTick());
 
         PlayerSnapshot targetSnapshot = room.snapshot().players().stream()
                 .filter(player -> player.token().equals(guest))
                 .findFirst()
                 .orElseThrow();
-        assertEquals(3, targetSnapshot.health());
+        assertEquals(Room.STARTING_HEALTH, targetSnapshot.health());
     }
 }

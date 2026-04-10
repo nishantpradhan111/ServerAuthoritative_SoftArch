@@ -27,6 +27,10 @@ class GameSocketCommandParser {
             case "fire" -> new GameSocketCommand.Fire();
             case "input" -> new GameSocketCommand.Input(inputFrame(payload));
             case "sync" -> new GameSocketCommand.Sync();
+            case "hitClaim" -> new GameSocketCommand.HitClaim(
+                    payload.path("shotId").asLong(-1L),
+                    payload.path("snapshotTick").asLong(-1L)
+            );
             default -> throw new IllegalArgumentException("Unknown websocket command: " + type);
         };
     }

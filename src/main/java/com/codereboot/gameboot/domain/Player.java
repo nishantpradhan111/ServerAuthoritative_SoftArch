@@ -14,6 +14,7 @@ public class Player {
     private int ammo = Room.STARTING_AMMO;
     private boolean ready;
     private long lastInputSequence;
+    private long lastShotId;
 
     public Player(String token, String name) {
         this.token = token;
@@ -70,6 +71,10 @@ public class Player {
 
     public long lastInputSequence() {
         return lastInputSequence;
+    }
+
+    public long lastShotId() {
+        return lastShotId;
     }
 
     public boolean ready() {
@@ -147,6 +152,11 @@ public class Player {
         this.health = Room.STARTING_HEALTH;
         this.ammo = Room.STARTING_AMMO;
         this.lastInputSequence = 0L;
+        this.lastShotId = 0L;
+    }
+
+    public void setLastShotId(long shotId) {
+        this.lastShotId = shotId;
     }
 
     public void damage(int amount) {

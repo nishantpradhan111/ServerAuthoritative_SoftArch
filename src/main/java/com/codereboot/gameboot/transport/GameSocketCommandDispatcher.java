@@ -54,6 +54,16 @@ class GameSocketCommandDispatcher {
             return;
         }
 
+        if (command instanceof GameSocketCommand.HitClaim hitClaim) {
+            roomService.claimHit(
+                    roomCode(session),
+                    token(session),
+                    hitClaim.shotId(),
+                    hitClaim.snapshotTick()
+            );
+            return;
+        }
+
         throw new IllegalArgumentException("Unsupported websocket command: " + command.type());
     }
 

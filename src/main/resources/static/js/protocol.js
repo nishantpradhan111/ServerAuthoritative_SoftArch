@@ -4,7 +4,8 @@ export const SocketCommand = {
     MOVE: "move",
     FIRE: "fire",
     INPUT: "input",
-    SYNC: "sync"
+    SYNC: "sync",
+    HIT_CLAIM: "hitClaim"
 };
 
 export const SocketEvent = {
