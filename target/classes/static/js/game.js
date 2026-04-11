@@ -20,19 +20,16 @@ if (!profile?.roomCode || !profile?.token) {
 const gameTitle = document.querySelector("#game-title");
 const gameRoomTitle = document.querySelector("#game-room-title");
 const gameSubtitle = document.querySelector("#game-subtitle");
-const roomCodeBadge = document.querySelector("#room-code-badge");
 const phaseBadge = document.querySelector("#phase-badge");
 const tickBadge = document.querySelector("#tick-badge");
 const eventBanner = document.querySelector("#event-banner");
 const canvas = document.querySelector("#game-canvas");
 const fpsStage = document.querySelector("#fps-stage");
 const aimCursor = document.querySelector("#aim-cursor");
-const hudHealth = document.querySelector("#hud-health");
 const hudAmmo = document.querySelector("#hud-ammo");
 const hudLatency = document.querySelector("#hud-latency");
 const hudCorrection = document.querySelector("#hud-correction");
 const fireActionButton = document.querySelector("#fire-action-button");
-const scoreboard = document.querySelector("#scoreboard");
 const gameLog = document.querySelector("#game-log");
 const endOverlay = document.querySelector("#end-overlay");
 const endTitle = document.querySelector("#end-title");
@@ -97,8 +94,8 @@ const keyState = {
 };
 
 const worldMetrics = {
-    boardWidth: 7,
-    boardHeight: 5
+    boardWidth: 20,
+    boardHeight: 15
 };
 
 function logLine(message) {
@@ -407,27 +404,6 @@ function reconcileSelf(authoritativeSelf) {
     }
 }
 
-function renderScoreboard(snapshot) {
-    scoreboard.innerHTML = snapshot.players
-        .map((player) => {
-            const isSelf = player.token === profile.token;
-            const speed = Math.hypot(player.velocityX, player.velocityY).toFixed(2);
-            return `
-                <div class="score-row">
-                    <div class="score-meta">
-                        <span class="score-name">${player.name}${isSelf ? " (you)" : ""}</span>
-                        <span class="score-subtext">Aim ${Math.round(player.aimDegrees)}° | Speed ${speed}</span>
-                    </div>
-                    <div class="score-meta score-stats">
-                        <span class="score-name">HP ${player.health}</span>
-                        <span class="score-subtext">Ammo ${player.ammo}</span>
-                    </div>
-                </div>
-            `;
-        })
-        .join("");
-}
-
 function showEndState(snapshot) {
     const endPresentation = resolveEndPresentation(snapshot, profile.token, selectedEndMatchKey, selectedEndMessage);
     if (!endPresentation.visible) {
@@ -518,7 +494,7 @@ function drawScene() {
 
     const cameraX = displaySelf ? displaySelf.x : selfSnapshot.positionX;
     const cameraY = displaySelf ? displaySelf.y : selfSnapshot.positionY;
-    const scale = Math.max(40, Math.min(width / worldMetrics.boardWidth, height / worldMetrics.boardHeight) * 1.22);
+    const scale = Math.max(46, Math.min(width / worldMetrics.boardWidth, height / worldMetrics.boardHeight) * 1.34);
     const selfRenderX = displaySelf ? displaySelf.x : selfSnapshot.positionX;
     const selfRenderY = displaySelf ? displaySelf.y : selfSnapshot.positionY;
     const selfScreen = worldToScreen(selfRenderX, selfRenderY, cameraX, cameraY, scale, width, height);
@@ -561,7 +537,6 @@ function resizeCanvasIfNeeded() {
 function updateHud() {
     const self = latestSnapshot?.players.find((player) => player.token === profile.token);
     if (self) {
-        hudHealth.textContent = String(self.health);
         hudAmmo.textContent = String(self.ammo);
     }
 
@@ -653,15 +628,13 @@ function renderSnapshot(snapshot) {
 
     gameTitle.textContent = "Neon Duel";
     gameRoomTitle.textContent = `Room ${snapshot.code}`;
-    roomCodeBadge.textContent = `Room ${snapshot.code}`;
     phaseBadge.textContent = snapshot.phase;
     tickBadge.textContent = `Tick ${snapshot.simulationTick}`;
     eventBanner.textContent = snapshot.lastEvent ?? "The arena is quiet.";
     gameSubtitle.textContent = snapshot.phase === "COMPLETE"
         ? "The duel has ended. Return to the room to rematch."
-        : "WASD to strafe, mouse to look, click or space to fire.";
+        : "WASD/Arrows move, mouse aim, click or Space to fire.";
 
-    renderScoreboard(snapshot);
     showEndState(snapshot);
 
     if (self) {
