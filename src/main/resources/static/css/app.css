@@ -139,6 +139,14 @@ h2 {
     font-size: 1.02rem;
 }
 
+.author-name-glow {
+    font-weight: 800;
+    color: #f2eee3;
+    text-shadow:
+        0 0 4px rgba(242, 238, 227, 0.55),
+        0 0 10px rgba(242, 238, 227, 0.28);
+}
+
 .hero-points {
     display: flex;
     flex-wrap: wrap;
