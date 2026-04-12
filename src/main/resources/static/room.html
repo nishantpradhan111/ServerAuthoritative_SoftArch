@@ -6,41 +6,57 @@
     <title>CodeReboot | Room</title>
     <link rel="stylesheet" href="/css/app.css">
 </head>
-<body>
+<body class="lobby-page">
 <main class="shell page-shell">
-    <header class="page-header card">
-        <div>
+    <header class="page-header card lobby-hero">
+        <div class="lobby-hero-copy">
             <p class="eyebrow">Room lobby</p>
             <h1 id="room-title">Awaiting room</h1>
             <p id="room-subtitle" class="muted">Create or join a room to bring another pilot into the arena.</p>
+            <div class="status-row lobby-status-row">
+                <span class="badge" id="room-status-text">Waiting</span>
+                <span class="badge ghost" id="player-count-badge">0/2 Players</span>
+            </div>
         </div>
-        <div class="header-actions">
+        <div class="header-actions lobby-hero-actions">
+            <button class="secondary-button" id="copy-room-code-button" type="button">Copy Code</button>
             <button class="secondary-button" id="return-login-button" type="button">Log Out</button>
         </div>
     </header>
 
-    <section class="room-grid">
-        <article class="card stack-card">
-            <div class="card-heading">
-                <p class="eyebrow">Matchmaking</p>
-                <h2>Create or join</h2>
-            </div>
-            <form id="create-room-form" class="form-stack compact">
-                <button class="primary-button" type="submit">Create room</button>
-            </form>
-            <form id="join-room-form" class="form-stack compact">
-                <label class="field">
-                    <span>Room code</span>
-                    <input id="join-code-input" name="roomCode" maxlength="5" placeholder="AB12C" autocomplete="off">
-                </label>
-                <button class="secondary-button" type="submit">Join room</button>
-            </form>
-            <p id="room-notice" class="notice">Pick a room flow. The lobby will stay live once the socket connects.</p>
-        </article>
+    <section class="room-grid lobby-grid">
+        <div class="lobby-left-col">
+            <article class="card stack-card lobby-control-panel">
+                <div class="card-heading">
+                    <p class="eyebrow">Matchmaking Control</p>
+                    <h2>Create or join</h2>
+                </div>
 
-        <article class="card stack-card">
+                <form id="create-room-form" class="form-stack compact">
+                    <button class="primary-button cta-glow" type="submit">Create Room</button>
+                </form>
+
+                <form id="join-room-form" class="form-stack compact">
+                    <label class="field">
+                        <span>Room code</span>
+                        <div class="input-shell">
+                            <span class="input-icon">RC</span>
+                            <input id="join-code-input" name="roomCode" maxlength="5" placeholder="AB12C" autocomplete="off">
+                            <button class="password-toggle" id="paste-code-button" type="button">Paste</button>
+                        </div>
+                    </label>
+                    <div class="lobby-join-actions">
+                        <button class="secondary-button" type="submit">Join Room</button>
+                    </div>
+                </form>
+
+                <p id="room-notice" class="notice">Pick a room flow. The lobby will stay live once the socket connects.</p>
+            </article>
+        </div>
+
+        <article class="card stack-card lobby-status-panel">
             <div class="card-heading">
-                <p class="eyebrow">Lobby state</p>
+                <p class="eyebrow">Live room status</p>
                 <h2 id="lobby-state-title">No room selected</h2>
             </div>
             <div class="status-row">
@@ -48,9 +64,10 @@
                 <span class="badge ghost" id="connection-badge">Offline</span>
             </div>
             <div id="player-list" class="player-list"></div>
-            <div class="lobby-actions">
-                <button id="ready-button" class="primary-button" type="button" disabled>Ready up</button>
-                <button id="leave-button" class="secondary-button" type="button">Leave room</button>
+
+            <div class="lobby-actions action-bar">
+                <button id="ready-button" class="primary-button cta-glow" type="button" disabled>Ready Up</button>
+                <button id="leave-button" class="secondary-button" type="button">Leave Room</button>
             </div>
         </article>
     </section>

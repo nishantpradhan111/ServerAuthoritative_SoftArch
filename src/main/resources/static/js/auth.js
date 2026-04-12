@@ -5,9 +5,47 @@ const loginTab = document.querySelector('[data-tab="login"]');
 const registerTab = document.querySelector('[data-tab="register"]');
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");
+const authTabs = document.querySelector(".auth-tabs");
 
 loginTab?.addEventListener("click", () => switchTab("login"));
 registerTab?.addEventListener("click", () => switchTab("register"));
+
+document.querySelectorAll(".password-toggle").forEach((toggle) => {
+    toggle.addEventListener("click", () => {
+        const targetId = toggle.getAttribute("data-target");
+        const input = targetId ? document.getElementById(targetId) : null;
+        if (!input) {
+            return;
+        }
+
+        const showPassword = input.type === "password";
+        input.type = showPassword ? "text" : "password";
+        toggle.textContent = showPassword ? "Hide" : "Show";
+        toggle.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
+    });
+});
+
+window.requestAnimationFrame(() => {
+    document.body.classList.add("page-ready");
+});
+
+document.querySelectorAll(".stat-value[data-target]").forEach((el) => {
+    const target = Number(el.getAttribute("data-target"));
+    if (!Number.isFinite(target) || target <= 0) {
+        return;
+    }
+
+    const start = performance.now();
+    const durationMs = 900;
+    const tick = (now) => {
+        const progress = Math.min(1, (now - start) / durationMs);
+        el.textContent = String(Math.round(progress * target));
+        if (progress < 1) {
+            window.requestAnimationFrame(tick);
+        }
+    };
+    window.requestAnimationFrame(tick);
+});
 
 function switchTab(tab) {
     // Update tab buttons
@@ -23,7 +61,13 @@ function switchTab(tab) {
     // Clear previous messages
     document.getElementById("login-message").textContent = "";
     document.getElementById("register-message").textContent = "";
+
+    if (authTabs) {
+        authTabs.style.setProperty("--tab-index", tab === "register" ? "1" : "0");
+    }
 }
+
+switchTab("login");
 
 // Login form handler
 loginForm?.addEventListener("submit", async (event) => {
