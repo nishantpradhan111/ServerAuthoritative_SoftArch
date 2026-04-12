@@ -31,6 +31,9 @@ Windows launcher options:
 
 # Enable hit-claim diagnostics logging
 ./run.ps1 -SkipBuild -EnableHitClaimDiagnostics
+
+# Start only Cloudflare tunnel (outside-LAN sharing)
+./run-public.ps1
 ```
 
 Notes:
@@ -41,6 +44,23 @@ Notes:
 Then open:
 
 - http://localhost:8080/login.html
+
+## Public access
+
+For outside-LAN access without a domain, use a tunnel service pointed at your local server:
+
+```powershell
+./run.ps1 -SkipBuild
+cloudflared tunnel --url http://localhost:8080
+```
+
+Or use the helper script that starts only the tunnel (start `run.ps1` separately first):
+
+```powershell
+./run-public.ps1
+```
+
+Then open the tunnel URL from a device outside your LAN. If you later buy a domain, you can switch to a reverse proxy or router port forwarding, but you do not need that for the first public test.
 
 ## Architecture
 

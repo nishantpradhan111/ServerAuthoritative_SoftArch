@@ -1,6 +1,7 @@
 param(
     [switch]$SkipBuild,
     [int]$Port = 8080,
+    [string]$ServerAddress = '0.0.0.0',
     [switch]$EnableHitClaimDiagnostics
 )
 
@@ -48,20 +49,21 @@ try {
 }
 
 if ($listener) {
-    $pid = $listener.OwningProcess
+    $processId = $listener.OwningProcess
     $processName = 'unknown'
     try {
-        $process = Get-Process -Id $pid -ErrorAction Stop
+        $process = Get-Process -Id $processId -ErrorAction Stop
         $processName = $process.ProcessName
     } catch {
     }
 
-    Write-Host "Port $Port is already in use by PID $pid ($processName)." -ForegroundColor Yellow
+    Write-Host "Port $Port is already in use by PID $processId ($processName)." -ForegroundColor Yellow
     Write-Host "Stop the process or run with a different port, e.g. ./run.ps1 -Port 8081" -ForegroundColor Yellow
     exit 1
 }
 
 Write-Host 'Starting CodeReboot Arena...' -ForegroundColor Green
+$env:SERVER_ADDRESS = $ServerAddress
 $mavenRunArgs = @(
     'spring-boot:run',
     "-Dspring-boot.run.arguments=--server.port=$Port"
