@@ -1,168 +1,115 @@
-# CodeReboot Arena - Setup & Running Instructions
+# CodeReboot Arena Setup
 
-A small real-time 1v1 multiplayer browser duel with Java backend and HTML/CSS/JS frontend.
+This file is only for local setup and daily run commands.
 
 ## Prerequisites
 
-- **Java 21** (or higher): Required to run the application
-  - Check: `java -version`
-- **Maven 3.9.14**: Required to build and run the project
-  - System location: `C:\Users\Nishant Pradhan\.maven\maven-3.9.14\bin`
+- Java 21
+- Maven 3.9+
+- PostgreSQL running locally (default DB config is in `src/main/resources/application.properties`)
 
-## Quick Start
-
-### 1. Navigate to the Project Directory
+Quick checks:
 
 ```powershell
-cd "C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot"
+java -version
+mvn -version
 ```
 
-### 2. Build the Project (First Time Only)
+## First-Time Setup
+
+1. Create database and users table
+
+- Follow `POSTGRES_SETUP.md`.
+- Default local credentials expected by the app:
+   - DB: `codereboot`
+   - User: `codereboot_user`
+   - Password: `codereboot_pass`
+
+2. Build once
 
 ```powershell
-& "C:\Users\Nishant Pradhan\.maven\maven-3.9.14\bin\mvn.cmd" clean package -DskipTests
+mvn clean package -DskipTests
 ```
 
-This will:
-- Compile all 19 Java source files
-- Run 3 unit tests (all pass)
-- Package the application into a JAR file at `target/codereboot-0.0.1-SNAPSHOT.jar`
+## Run Locally
 
-### 3. Start the Server
-
-**Option A: Using Maven (Recommended)**
+Recommended on Windows:
 
 ```powershell
-& "C:\Users\Nishant Pradhan\.maven\maven-3.9.14\bin\mvn.cmd" spring-boot:run
+./run.ps1
 ```
 
-**Option B: Using the JAR directly**
+Useful variants:
 
 ```powershell
-java -jar "target\codereboot-0.0.1-SNAPSHOT.jar"
+# Faster startup during iteration
+./run.ps1 -SkipBuild
+
+# Custom port
+./run.ps1 -SkipBuild -Port 8081
+
+# Enable hit-claim diagnostics
+./run.ps1 -SkipBuild -EnableHitClaimDiagnostics
 ```
 
-### 4. Access the Game
+Alternative (without script):
 
-Once the server is running (you'll see "Tomcat started on port 8080"), open your browser and go to:
-
-```
-http://localhost:8080/login.html
+```powershell
+mvn spring-boot:run
 ```
 
-## How to Play
+## Verify Startup
 
-### Login Page
-1. Enter your pilot name (or leave blank for "Guest")
-2. Click "Enter lobby"
+After startup, open:
 
-### Room Lobby
-1. **Create Room**: Click the "Create room" button to start a new match
-2. **Join Room**: Enter a room code and click "Join room" to join an existing match
-3. Share the room code with another player so they can join
-4. When both players are present, click "Ready up"
-5. When both players mark ready, the match starts automatically
+- `http://localhost:8080/login.html`
+- `http://localhost:8080/api/system/health`
 
-### Game Arena
-1. **Move**: Use WASD or arrow keys to move your ship
-2. **Fire**: Press Space or Enter to fire a pulse at your opponent
-3. **Objective**: Land 3 hits on your opponent to win
-4. **Line of Sight**: You can only hit targets in a straight line along your facing direction (up to 4 cells away)
+## Common Commands
 
-## Application Structure
+```powershell
+# Run tests
+mvn test
 
-```
-CodeReboot/
-├── pom.xml                          # Maven build configuration
-├── src/main/java/com/codereboot/
-│   └── gameboot/
-│       ├── GameBootApplication.java # Spring Boot entry point
-│       ├── api/                     # HTTP endpoints (create/join room)
-│       ├── application/             # Business logic (RoomService)
-│       ├── config/                  # WebSocket configuration
-│       ├── domain/                  # Game rules & state (Room, Player)
-│       ├── infra/                   # Repository implementations
-│       └── transport/               # WebSocket handlers
-├── src/main/resources/static/
-│   ├── login.html                   # Login page
-│   ├── room.html                    # Room lobby page
-│   ├── game.html                    # Game arena page
-│   ├── css/app.css                  # Complete styling system
-│   └── js/
-│       ├── common.js                # Shared utilities
-│       ├── socket.js                # WebSocket client
-│       ├── login.js                 # Login controller
-│       ├── room.js                  # Room lobby controller
-│       └── game.js                  # Game arena controller
-├── src/test/java/
-│   └── RoomTest.java               # Unit tests for game rules
-├── README.md                        # Architecture overview
-└── SETUP.md                         # This file
+# Full verification
+mvn verify
+
+# Clean artifacts
+mvn clean
 ```
 
 ## Troubleshooting
 
-### Server won't start
+### Port already in use
 
-1. **Port 8080 already in use**
-   - Find the process using port 8080 and terminate it, or change the port in `src/main/resources/application.properties`
+- `run.ps1` already checks this and exits with guidance.
+- Use another port: `./run.ps1 -Port 8081`
 
-2. **Maven command not found**
-   - Use the full path: `& "C:\Users\Nishant Pradhan\.maven\maven-3.9.14\bin\mvn.cmd"`
+### Maven not found
 
-3. **Java not installed**
-   - Download and install Java 21 from oracle.com
+- Install Maven and add `mvn`/`mvn.cmd` to `PATH`.
+- Or use the repo script `./run.ps1`, which also checks common local Maven locations.
 
-### Can't connect to WebSocket
+### Database/auth errors on startup
 
-- Make sure you're entering a valid room code (5 uppercase letters/numbers)
-- Check browser console for error messages (F12)
-- Verify both players are in the same room before starting the match
+- Confirm PostgreSQL is running.
+- Confirm DB/user/password match `application.properties` or environment variables.
+- Re-run steps in `POSTGRES_SETUP.md`.
 
-### Room not updating in real-time
+## Environment Variable Overrides (Optional)
 
-- Ensure WebSocket is connected (check the badge in the lobby that says "Live" or "Offline")
-- Reload the page if connection drops
-- Both players must have the page open in active browser tabs
+You can override defaults without editing files:
 
-## Development Commands
+- `SERVER_PORT`
+- `SERVER_ADDRESS`
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `APP_JWT_SECRET`
+- `APP_AUTH_TOKEN_TTL_MINUTES`
 
-### Run tests only
-```powershell
-& "C:\Users\Nishant Pradhan\.maven\maven-3.9.14\bin\mvn.cmd" test
-```
+## Related Docs
 
-### View test results
-```powershell
-& "C:\Users\Nishant Pradhan\.maven\maven-3.9.14\bin\mvn.cmd" verify
-```
-
-### Clean build artifacts
-```powershell
-& "C:\Users\Nishant Pradhan\.maven\maven-3.9.14\bin\mvn.cmd" clean
-```
-
-## Architecture Notes
-
-- **Backend**: Java 17, Spring Boot 3.3.4, WebSocket for real-time sync
-- **Frontend**: HTML5, vanilla JavaScript (ES6 modules), CSS3 with CSS Grid/Flexbox
-- **Multiplayer**: Room-based with unique 5-character codes; WebSocket broadcasts state to all connected players
-- **Game Rules**: Turn-based movement and firing; auto-draw if both players defeated simultaneously
-- **Auth**: Design-ready (guest identity stored locally); ready for real login implementation later
-- **Persistence**: In-memory (first pass); repositoryinterfaces ready for database migration
-
-## Next Steps for Enhancement
-
-- Implement real user authentication
-- Add persistent database storage
-- Integrate payment processing
-- Add match history and rankings
-- Implement reconnection logic for dropped sessions
-- Add game chat and emotes
-- Support more than 2 players (free-for-all or teams)
-
----
-
-**Server running?** http://localhost:8080/login.html
-
-**Need to close?** Press Ctrl+C in the terminal where the server is running
+- `README.md` for overview and architecture
+- `POSTGRES_SETUP.md` for database initialization
+- `DEPLOYMENT.md` for public access/deployment notes

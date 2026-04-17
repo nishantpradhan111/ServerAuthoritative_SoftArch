@@ -1,55 +1,55 @@
-<mxfile host="app.diagrams.net">
-  <diagram id="module-view-1" name="Module View">
-    <mxGraphModel dx="1201" dy="764" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=40;fontStyle=1;" value="CodeReboot - Module View" vertex="1">
-          <mxGeometry height="34" width="540" x="350" y="55" as="geometry" />
-        </mxCell>
-        <mxCell id="api" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;API Module&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;div&gt;- AuthController&lt;br&gt;- RoomController&lt;br&gt;- SystemController&lt;br&gt;- ApiExceptionHandler&lt;/div&gt;" vertex="1">
-          <mxGeometry height="135" width="250" x="90" y="140" as="geometry" />
-        </mxCell>
-        <mxCell id="application" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Application Module&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- AuthService&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- RoomService&lt;br&gt;- GameSimulationService&lt;/div&gt;" vertex="1">
-          <mxGeometry height="135" width="250" x="495" y="140" as="geometry" />
-        </mxCell>
-        <mxCell id="domain" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Domain Module&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;div&gt;- Room&lt;br&gt;- Player&lt;br&gt;- RoomCombatLifecycle&lt;br&gt;- ShotTracker / TickHistoryTracker&lt;/div&gt;" vertex="1">
-          <mxGeometry height="135" width="250" x="900" y="140" as="geometry" />
-        </mxCell>
-        <mxCell id="security" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=15;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Security Module&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;div&gt;- SecurityConfig&lt;br&gt;- JwtAuthenticationFilter&lt;br&gt;- JwtTokenService&lt;br&gt;- RequestIdFilter&lt;/div&gt;" vertex="1">
-          <mxGeometry height="135" width="250" x="90" y="380" as="geometry" />
-        </mxCell>
-        <mxCell id="transport" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Transport Module&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;div&gt;- GameSocketHandler&lt;br&gt;- GameSocketCommandDispatcher&lt;br&gt;- WebSocketRoomBroadcaster&lt;/div&gt;" vertex="1">
-          <mxGeometry height="135" width="250" x="495" y="380" as="geometry" />
-        </mxCell>
-        <mxCell id="infra" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Infrastructure Module&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;div&gt;- UserRepository&lt;br&gt;- RoomRepository&lt;br&gt;- InMemoryRoomRepository&lt;/div&gt;" vertex="1">
-          <mxGeometry height="135" width="250" x="900" y="380" as="geometry" />
-        </mxCell>
-        <mxCell id="e1" edge="1" parent="1" source="api" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" target="application" value="delegates">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e2" edge="1" parent="1" source="api" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" target="security" value="auth + request-id">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e3" edge="1" parent="1" source="application" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" target="domain" value="uses">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e4" edge="1" parent="1" source="application" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" target="infra" value="uses">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e5" edge="1" parent="1" source="application" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" target="security" value="password + jwt ports">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e6" edge="1" parent="1" source="transport" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" target="application" value="command dispatch">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e7" edge="1" parent="1" source="transport" style="endArrow=block;html=1;rounded=0;dashed=1;strokeWidth=2;fontSize=14;" target="security" value="token validation">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=20;" value="Connections reflect current code-level dependencies and runtime call paths." vertex="1">
-          <mxGeometry height="56" width="1080" x="80" y="560" as="geometry" />
-        </mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
+<mxfile host="65bd71144e">
+    <diagram id="module-view-1" name="Module View">
+        <mxGraphModel dx="1251" dy="982" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="CodeReboot - Module View" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=40;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="350" y="55" width="540" height="34" as="geometry"/>
+                </mxCell>
+                <mxCell id="api" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;API Module&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;div&gt;- AuthController&lt;br&gt;- RoomController&lt;br&gt;- SystemController&lt;br&gt;- ApiExceptionHandler&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="90" y="140" width="250" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="application" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Application Module&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- AuthService&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- RoomService&lt;br&gt;- GameSimulationService&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="495" y="140" width="250" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="domain" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Domain Module&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;div&gt;- Room&lt;br&gt;- Player&lt;br&gt;- RoomCombatLifecycle&lt;br&gt;- ShotTracker / TickHistoryTracker&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="140" width="250" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="security" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Security Module&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;div&gt;- SecurityConfig&lt;br&gt;- JwtAuthenticationFilter&lt;br&gt;- JwtTokenService&lt;br&gt;- RequestIdFilter&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="90" y="380" width="250" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="transport" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Transport Module&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;div&gt;- GameSocketHandler&lt;br&gt;- GameSocketCommandDispatcher&lt;br&gt;- WebSocketRoomBroadcaster&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="495" y="380" width="250" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="infra" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Infrastructure Module&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;div&gt;- UserRepository&lt;br&gt;- RoomRepository&lt;br&gt;- InMemoryRoomRepository&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="380" width="250" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" value="delegates" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" parent="1" source="api" target="application" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" value="auth + request-id" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" parent="1" source="api" target="security" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" value="uses" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" parent="1" source="application" target="domain" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" value="uses" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" parent="1" source="application" target="infra" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" value="password + jwt ports" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" parent="1" source="application" target="security" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" value="command dispatch" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=14;" parent="1" source="transport" target="application" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" value="token validation" style="endArrow=block;html=1;rounded=0;dashed=1;strokeWidth=2;fontSize=14;" parent="1" source="transport" target="security" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="note" value="Connections reflect current code-level dependencies and runtime call paths." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="560" width="1080" height="56" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>

@@ -2,6 +2,9 @@
 
 Small multiplayer browser duel built as a clean Java backend plus HTML/CSS/JS client.
 
+GitHub Link: https://github.com/nishantpradhan111/ServerAuthoritative_SoftArch
+
+
 ## What is implemented
 
 - JWT-based login and registration

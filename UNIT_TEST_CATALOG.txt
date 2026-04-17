@@ -1,0 +1,83 @@
+CodeReboot Unit Test Catalog
+Generated: 2026-04-17
+
+Scope: JUnit test methods discovered under src/test/java via @Test/@ParameterizedTest/@RepeatedTest/@TestFactory/@TestTemplate.
+Total unit tests: 64
+
+Format: [#] ClassName.testMethod - Path:Line
+
+=== API Layer Tests ===
+[1] AuthControllerTest.registerReturnsCreatedUserResponse - src/test/java/com/codereboot/gameboot/api/AuthControllerTest.java:38
+[2] AuthControllerTest.loginReturnsOkUserResponse - src/test/java/com/codereboot/gameboot/api/AuthControllerTest.java:59
+[3] AuthControllerTest.duplicateRegistrationReturnsBadRequestMessage - src/test/java/com/codereboot/gameboot/api/AuthControllerTest.java:79
+[4] RoomControllerTest.createRoomReturnsEntryResponse - src/test/java/com/codereboot/gameboot/api/RoomControllerTest.java:40
+[5] RoomControllerTest.joinRoomReturnsEntryResponse - src/test/java/com/codereboot/gameboot/api/RoomControllerTest.java:57
+[6] RoomControllerTest.snapshotReturnsRoomSnapshot - src/test/java/com/codereboot/gameboot/api/RoomControllerTest.java:73
+[7] RoomControllerTest.leaveRoomCallsService - src/test/java/com/codereboot/gameboot/api/RoomControllerTest.java:87
+[8] SystemControllerTest.healthReturnsRuntimeSnapshot - src/test/java/com/codereboot/gameboot/api/SystemControllerTest.java:29
+
+=== Application Layer Tests ===
+[9] AuthServiceTest.registerHashesPasswordAndSavesUser - src/test/java/com/codereboot/gameboot/application/AuthServiceTest.java:33
+[10] AuthServiceTest.registerRejectsDuplicateUsername - src/test/java/com/codereboot/gameboot/application/AuthServiceTest.java:49
+[11] AuthServiceTest.registerTrimsUsernameAndEmailBeforePersisting - src/test/java/com/codereboot/gameboot/application/AuthServiceTest.java:63
+[12] AuthServiceTest.authenticateReturnsUserForValidCredentials - src/test/java/com/codereboot/gameboot/application/AuthServiceTest.java:74
+[13] AuthServiceTest.authenticateRejectsWrongPassword - src/test/java/com/codereboot/gameboot/application/AuthServiceTest.java:85
+[14] AuthServiceTest.registerTranslatesDataIntegrityViolationToDuplicateMessage - src/test/java/com/codereboot/gameboot/application/AuthServiceTest.java:99
+[15] GameSimulationServiceTest.completedRoomIsDeletedAfterTtl - src/test/java/com/codereboot/gameboot/application/GameSimulationServiceTest.java:19
+[16] GameSimulationServiceTest.changedRoomBroadcastsSnapshot - src/test/java/com/codereboot/gameboot/application/GameSimulationServiceTest.java:40
+[17] RoomServiceTest.setReadyBroadcastsSnapshotAfterMutation - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:20
+[18] RoomServiceTest.moveBroadcastsSnapshotAfterMutation - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:40
+[19] RoomServiceTest.leaveRoomDeletesWhenRoomBecomesEmpty - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:67
+[20] RoomServiceTest.requestReturnToRoomRejectsNonCompletePhase - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:86
+[21] RoomServiceTest.createRoomFailsAfterTooManyCodeCollisions - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:102
+[22] RoomServiceTest.mutationFailsWhenBroadcastThrows - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:116
+
+=== Config Layer Tests ===
+[23] WebSocketConfigTest.registerWebSocketHandlersDoesNotSetOriginsWhenConfigBlank - src/test/java/com/codereboot/gameboot/config/WebSocketConfigTest.java:18
+[24] WebSocketConfigTest.registerWebSocketHandlersTrimsConfiguredOrigins - src/test/java/com/codereboot/gameboot/config/WebSocketConfigTest.java:31
+
+=== Domain Layer Tests ===
+[25] ReplayRequestTrackerTest.recordsPendingTokensInInsertionOrder - src/test/java/com/codereboot/gameboot/domain/ReplayRequestTrackerTest.java:13
+[26] ReplayRequestTrackerTest.cleanupExpiredReturnsTrueOnlyWhenTrackerBecomesEmpty - src/test/java/com/codereboot/gameboot/domain/ReplayRequestTrackerTest.java:23
+[27] ReplayRequestTrackerTest.readinessRequiresAllRequestedTokens - src/test/java/com/codereboot/gameboot/domain/ReplayRequestTrackerTest.java:38
+[28] RoomTest.startsWhenBothPlayersAreReady - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:14
+[29] RoomTest.validatedHitClaimReducesOpponentHealth - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:28
+[30] RoomTest.timeExpiredShotIsRejected - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:52
+[31] RoomTest.preFireSnapshotTickCannotRegisterHit - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:86
+[32] RoomTest.fireDecrementsShooterAmmo - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:119
+[33] RoomTest.movementStaysInsideBoard - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:137
+[34] RoomTest.inputFrameAdvancesContinuousPosition - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:150
+[35] RoomTest.diagonalAimCanHitWithinRange - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:177
+[36] RoomTest.aimingAwayStillMisses - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:207
+[37] RoomTest.leavingLobbyFreesSlotForAnotherPlayer - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:237
+[38] RoomTest.replayRequestAppearsInSnapshotForAllClients - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:252
+[39] RoomTest.replayPendingClearsWhenReplayIsMatched - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:266
+[40] RoomTest.replayRequestExpiresUsingInjectedClock - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:280
+[41] ShotTrackerTest.registersAndFindsActiveShot - src/test/java/com/codereboot/gameboot/domain/ShotTrackerTest.java:13
+[42] ShotTrackerTest.consumedShotIsNotActive - src/test/java/com/codereboot/gameboot/domain/ShotTrackerTest.java:24
+[43] ShotTrackerTest.expiryAndPruneBehaviorAreConsistent - src/test/java/com/codereboot/gameboot/domain/ShotTrackerTest.java:34
+[44] TickHistoryTrackerTest.recordsPlayerStateForTick - src/test/java/com/codereboot/gameboot/domain/TickHistoryTrackerTest.java:14
+[45] TickHistoryTrackerTest.enforcesMaxHistoryWithFifoEviction - src/test/java/com/codereboot/gameboot/domain/TickHistoryTrackerTest.java:32
+
+=== Security Layer Tests ===
+[46] RequestIdFilterTest.generatesRequestIdWhenHeaderMissing - src/test/java/com/codereboot/gameboot/security/RequestIdFilterTest.java:18
+[47] RequestIdFilterTest.preservesIncomingRequestId - src/test/java/com/codereboot/gameboot/security/RequestIdFilterTest.java:33
+
+=== Transport Layer Tests ===
+[48] GameSocketCommandDispatcherTest.nonSubscribeCommandWithoutSessionContextReturnsActionableError - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:25
+[49] GameSocketCommandDispatcherTest.subscribeRegistersSessionAndSendsInitialSnapshot - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:43
+[50] GameSocketCommandDispatcherTest.replayDispatchSendsRedirectForEachParticipant - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:80
+[51] GameSocketCommandDispatcherTest.reconnectRaceEarlyCommandRejectedThenAcceptedAfterSubscribe - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:104
+[52] GameSocketCommandParserTest.malformedJsonIsRejected - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:15
+[53] GameSocketCommandParserTest.missingTypeFieldIsRejected - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:25
+[54] GameSocketCommandParserTest.unknownCommandTypeIsRejected - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:35
+[55] GameSocketCommandParserTest.moveWithoutDirectionIsRejected - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:45
+[56] GameSocketCommandParserTest.subscribeRequiresRoomCodeAndToken - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:55
+[57] GameSocketCommandParserTest.inputParsesWithDefaultsWhenOptionalFieldsOmitted - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:70
+[58] WebSocketRoomBroadcasterTest.broadcastReturnsNoneWhenNoSessionsRegistered - src/test/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcasterTest.java:18
+[59] WebSocketRoomBroadcasterTest.closedSessionIsCountedAsFailed - src/test/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcasterTest.java:30
+[60] WebSocketSessionRegistryTest.registerStoresSessionByRoomAndToken - src/test/java/com/codereboot/gameboot/transport/WebSocketSessionRegistryTest.java:16
+[61] WebSocketSessionRegistryTest.unregisterRemovesSessionAndEmptiesRoomBucket - src/test/java/com/codereboot/gameboot/transport/WebSocketSessionRegistryTest.java:27
+[62] WebSocketSessionRegistryTest.removeClearsMappedSessionId - src/test/java/com/codereboot/gameboot/transport/WebSocketSessionRegistryTest.java:40
+[63] WebSocketSessionRegistryTest.unregisterOfStaleSessionDoesNotRemoveReplacement - src/test/java/com/codereboot/gameboot/transport/WebSocketSessionRegistryTest.java:56
+[64] WebSocketSessionRegistryTest.removeWithStaleSessionIdDoesNotRemoveReplacement - src/test/java/com/codereboot/gameboot/transport/WebSocketSessionRegistryTest.java:73

@@ -25,8 +25,10 @@ You can run the tunnel step with:
 
 What it does:
 
-1. Starts `cloudflared` tunnel in the current window using HTTP/2 for compatibility.
+1. Starts a `cloudflared` tunnel in the current window to `http://localhost:<port>`.
 2. Prints the `https://...trycloudflare.com` URL to share.
+
+The helper script defaults to Cloudflare protocol `auto`. You can force a protocol with `-Protocol http2` or `-Protocol quic`.
 
 Start your app separately first, for example:
 

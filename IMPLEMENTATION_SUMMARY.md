@@ -151,10 +151,6 @@ Representative coverage areas:
 - request correlation filter behavior,
 - health endpoint payload contract.
 
-Current project status:
-- build: passing,
-- automated test suite: passing.
-
 ## 9. Scope Boundaries
 
 Known intentional scope boundaries:

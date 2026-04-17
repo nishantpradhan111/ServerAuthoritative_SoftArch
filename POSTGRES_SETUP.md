@@ -1,58 +1,41 @@
-# PostgreSQL Authentication Setup Guide
+# PostgreSQL Setup
 
-The authentication system requires a PostgreSQL database. This guide walks through the setup process.
+This project requires PostgreSQL for authentication data (`users` table).
 
 ## Prerequisites
 
-- PostgreSQL 12+ installed ([Download here](https://www.postgresql.org/download/))
-- Access to PostgreSQL command-line tools (`psql`)
-- Administrator or superuser password for PostgreSQL
+- PostgreSQL 12+
+- `psql` available in your terminal
+- Access to a superuser account (usually `postgres`)
 
-## Quick Setup (Windows with PostgreSQL Installed)
+## 1. Create Database and User
 
-### 1. Create Database and User
-
-Open PowerShell and run:
+Open `psql` as a superuser:
 
 ```powershell
-# Set PostgreSQL password (replace with your setup password)
-$pgPassword = "your-superuser-password"
-
-# Create the user and database
-$sqlCommands = @"
-CREATE USER codereboot_user WITH PASSWORD 'codereboot_pass';
-CREATE DATABASE codereboot OWNER codereboot_user;
-GRANT ALL PRIVILEGES ON DATABASE codereboot TO codereboot_user;
-"@
-
-$sqlCommands | & psql -U postgres
+psql -U postgres
 ```
 
-Or manually using `psql`:
+Run:
 
 ```sql
--- Connect to default 'postgres' database as superuser
-psql -U postgres
-
--- Inside psql prompt:
 CREATE USER codereboot_user WITH PASSWORD 'codereboot_pass';
 CREATE DATABASE codereboot OWNER codereboot_user;
 GRANT ALL PRIVILEGES ON DATABASE codereboot TO codereboot_user;
 \q
 ```
 
-### 2. Initialize Database Schema
+## 2. Create Schema
 
-Connect as the new user and create the users table:
+Connect as the application user:
 
-```bash
+```powershell
 psql -U codereboot_user -d codereboot
 ```
 
-Then in the psql prompt:
+Run:
 
 ```sql
--- Create users table with BCrypt password hashes
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -62,108 +45,37 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for faster lookups
 CREATE INDEX idx_username ON users (username);
 CREATE INDEX idx_email ON users (email);
-
--- Verify table was created
-\dt users
 \q
 ```
 
-## Verify Connection
+## 3. App Configuration Mapping
 
-Test the connection from your application:
+The app reads DB config from environment variables with defaults in `src/main/resources/application.properties`:
 
-```bash
-# In the CodeReboot project directory
-cd "C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot"
+- `DB_URL` (default: `jdbc:postgresql://localhost:5432/codereboot`)
+- `DB_USERNAME` (default: `codereboot_user`)
+- `DB_PASSWORD` (default: `codereboot_pass`)
 
-# Start the Spring Boot application
-./run.ps1
+If you used the defaults above, no extra configuration is required.
+
+## 4. Verify
+
+Start the app:
+
+```powershell
+./run.ps1 -SkipBuild
 ```
 
-If successful, you'll see:
-```
-Tomcat started on port 8080 (http) with context path '/'
-```
+Then check:
 
-## Configuration Details
+- `http://localhost:8080/api/system/health`
+- `http://localhost:8080/login.html`
 
-The database connection is configured in `application.properties`:
+Optional API sanity check:
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/codereboot
-spring.datasource.username=codereboot_user
-spring.datasource.password=codereboot_pass
-spring.jpa.hibernate.ddl-auto=validate
-```
-
-### Configuration Parameters
-
-- **url**: PostgreSQL connection string. Change `localhost:5432` if your PostgreSQL is on another host/port
-- **username**: Database user (created above)
-- **password**: Database password (created above)
-- **ddl-auto=validate**: Only validates existing schema; does NOT auto-create tables
-  - Change to `update` if you want Hibernate to auto-create tables on startup
-  - Recommended for development: `update`
-  - Recommended for production: `validate` (requires pre-created schema)
-
-## Troubleshooting
-
-### Error: "password authentication failed for user codereboot_user"
-
-The credentials in `application.properties` don't match the database. Verify:
-1. User `codereboot_user` exists: `SELECT * FROM pg_user WHERE usename='codereboot_user';`
-2. Password is correct: `psql -U codereboot_user -d codereboot`
-3. Update password if needed:
-   ```sql
-   psql -U postgres
-   ALTER USER codereboot_user WITH PASSWORD 'new_password';
-   -- Then update application.properties
-   ```
-
-### Error: "database codereboot does not exist"
-
-The database wasn't created. Run:
-```sql
-psql -U postgres
-CREATE DATABASE codereboot OWNER codereboot_user;
-\q
-```
-
-### Error: "relation users does not exist" (at login/register)
-
-The users table wasn't created. Run the SQL schema commands in step 2 above.
-
-## Changing Connection Settings
-
-If your PostgreSQL is on a different host/port:
-
-1. Edit `src/main/resources/application.properties`
-2. Update `spring.datasource.url`:
-   ```properties
-   spring.datasource.url=jdbc:postgresql://your-host:your-port/codereboot
-   ```
-3. Recompile and restart: `./run.ps1 -SkipBuild=false`
-
-## Advanced: Auto-Schema Creation for Development
-
-For faster development iterations, change `ddl-auto` to `create-drop` (careful: drops schema on shutdown):
-
-```properties
-spring.jpa.hibernate.ddl-auto=create-drop
-```
-
-This automatically creates/updates the schema on startup. NOT recommended for production.
-
-## Testing Authentication Endpoints
-
-Once the server is running:
-
-### Register a User
-
-```bash
+```powershell
 $body = @{
     username = "test_user"
     email = "test@example.com"
@@ -176,113 +88,37 @@ Invoke-WebRequest -Uri "http://localhost:8080/api/auth/register" `
     -Body $body
 ```
 
-Expected response (201 Created):
-```json
-{
-    "userId": 1,
-    "username": "test_user",
-    "email": "test@example.com",
-    "message": "Registration successful"
-}
-```
+Expected successful auth responses include `accessToken`.
 
-### Login
+## Troubleshooting
 
-```bash
-$body = @{
-    username = "test_user"
-    password = "SecurePass123"
-} | ConvertTo-Json
+### Password authentication failed
 
-Invoke-WebRequest -Uri "http://localhost:8080/api/auth/login" `
-    -Method POST `
-    -Headers @{"Content-Type"="application/json"} `
-    -Body $body
-```
-
-Expected response (200 OK):
-```json
-{
-    "userId": 1,
-    "username": "test_user",
-    "email": "test@example.com",
-    "message": "Login successful"
-}
-```
-
-### Invalid Login
-
-```bash
-$body = @{
-    username = "test_user"
-    password = "WrongPassword"
-} | ConvertTo-Json
-
-Invoke-WebRequest -Uri "http://localhost:8080/api/auth/login" `
-    -Method POST `
-    -Headers @{"Content-Type"="application/json"} `
-    -Body $body
-```
-
-Expected response (400 Bad Request):
-```json
-{
-    "message": "Invalid username or password"
-}
-```
-
-## Browser Testing
-
-1. Navigate to `http://localhost:8080/login.html`
-2. Click the "Register" tab
-3. Fill in username (3-20 alphanumeric + underscore), email, and password (8+ chars)
-4. Click "Create account"
-5. On success, you're automatically logged in and redirected to room lobby
-6. Create or join a room and start playing!
-
-## Database Maintenance
-
-### Backup User Data
-
-```bash
-# Backup the database
-pg_dump -U codereboot_user -d codereboot > codereboot_backup.sql
-
-# Restore from backup
-psql -U codereboot_user -d codereboot < codereboot_backup.sql
-```
-
-### View All Registered Users
+- Confirm user exists:
 
 ```sql
-psql -U codereboot_user -d codereboot
-
-SELECT id, username, email, created_at FROM users ORDER BY created_at DESC;
-\q
+psql -U postgres
+SELECT usename FROM pg_user WHERE usename = 'codereboot_user';
 ```
 
-### Delete a User
+- Reset password if needed:
 
 ```sql
-psql -U codereboot_user -d codereboot
-
-DELETE FROM users WHERE username = 'username_to_delete';
-\q
+ALTER USER codereboot_user WITH PASSWORD 'codereboot_pass';
 ```
 
-## Security Notes
+### Database does not exist
 
-1. **Never commit credentials**: `application.properties` should be .gitignored in production
-2. **Use environment variables**: Override with `SPRING_DATASOURCE_PASSWORD` on production servers
-3. **BCrypt Strength**: Passwords are hashed with BCrypt (strength 12), strong against GPU brute-force
-4. **SQL Injection Prevention**: All queries use JPA parameterized queries automatically
-5. **HTTPS**: Use HTTPS in production to protect credentials in transit
+```sql
+psql -U postgres
+CREATE DATABASE codereboot OWNER codereboot_user;
+```
 
-## Next Steps
+### Relation `users` does not exist
 
-- [x] PostgreSQL setup
-- [x] Database schema initialized
-- [ ] Deploy to Azure Container Apps or App Service
-- [ ] Configure managed identity instead of hardcoded credentials
-- [ ] Add JWT token authentication (currently stateless session-based)
-- [ ] Implement account recovery and email verification
+Run the schema creation block from section 2.
+
+## Notes
+
+- Keep production credentials out of source control.
+- For production/staging, set `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` via environment.
