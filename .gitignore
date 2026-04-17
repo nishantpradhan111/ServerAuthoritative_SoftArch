@@ -1,4 +1,5 @@
 # Maven
+target/
 .m2/
 *.jar
 *.war
