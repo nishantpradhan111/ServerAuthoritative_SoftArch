@@ -1,0 +1,37 @@
+# Maven
+.m2/
+*.jar
+*.war
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.properties.local
+
+# Logs
+*.log
+logs/
+
+# Runtime
+*.class
+*.pid
+
+# IDE temporary files
+*.swp
+*.swo
+*~
+.classpath
+.project
+.settings/

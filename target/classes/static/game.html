@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeReboot | Duel</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="game-page">
+<main class="shell page-shell game-screen">
+    <section class="game-layout">
+        <article class="card arena-card">
+            <div class="arena-topbar">
+                <div class="arena-topline">
+                    <div class="match-intro">
+                        <p class="eyebrow">Arena match</p>
+                        <div class="match-title-row">
+                            <h1 id="game-title">Neon Duel</h1>
+                            <span class="room-title-inline" id="game-room-title">Room -----</span>
+                        </div>
+                    </div>
+                    <div class="arena-meta">
+                        <div class="status-row">
+                            <span class="badge" id="phase-badge">ACTIVE</span>
+                            <span class="badge ghost" id="tick-badge">Tick 0</span>
+                        </div>
+                        <div class="header-actions">
+                            <button class="secondary-button" id="back-to-room-button" type="button">Back to room</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="arena-subline">
+                    <p id="game-subtitle" class="muted">WASD/Arrows move, mouse aim, click or Space to fire.</p>
+                    <div id="event-banner" class="event-banner">Waiting for match state...</div>
+                </div>
+            </div>
+            <div class="fps-stage" id="fps-stage">
+                <canvas id="game-canvas" aria-label="Arena viewport"></canvas>
+                <div id="aim-cursor" class="aim-cursor" aria-hidden="true"><span></span></div>
+                <div class="hud-row top-right">
+                    <div class="hud-chip"><label>Ammo</label><strong id="hud-ammo">30</strong></div>
+                    <div class="hud-chip"><label>Latency</label><strong id="hud-latency">-- ms</strong></div>
+                    <div class="hud-chip"><label>Correction</label><strong id="hud-correction">0.000</strong></div>
+                    <button id="fire-action-button" class="hud-fire-button" type="button">Fire</button>
+                </div>
+            </div>
+            <p class="fine-print">Mouse stays visible. Move it inside the arena to aim, click or press space to fire.</p>
+        </article>
+
+        <section class="card stack-card game-log-panel">
+            <div class="card-heading">
+                <p class="eyebrow">Player telemetry</p>
+                <h2>Match feed</h2>
+            </div>
+            <div id="game-log" class="event-log"></div>
+        </section>
+    </section>
+
+    <section id="end-overlay" class="modal">
+        <div class="modal-card card">
+            <p class="eyebrow">Match result</p>
+            <h2 id="end-title">The duel is over</h2>
+            <p id="end-message" class="muted"></p>
+            <span id="replay-status-badge" class="badge ghost replay-status" hidden>Replay idle</span>
+            <button id="replay-button" class="primary-button" type="button">Replay</button>
+            <button id="return-room-button" class="primary-button" type="button">Return to room</button>
+        </div>
+    </section>
+</main>
+
+<script type="module" src="/js/game.js"></script>
+</body>
+</html>

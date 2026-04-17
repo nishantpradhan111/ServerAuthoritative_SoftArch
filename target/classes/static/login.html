@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeReboot | Login</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="landing-page">
+<div class="landing-particles" aria-hidden="true">
+    <span style="--i:0"></span>
+    <span style="--i:1"></span>
+    <span style="--i:2"></span>
+    <span style="--i:3"></span>
+    <span style="--i:4"></span>
+    <span style="--i:5"></span>
+    <span style="--i:6"></span>
+    <span style="--i:7"></span>
+    <span style="--i:8"></span>
+    <span style="--i:9"></span>
+</div>
+<main class="hero-shell shell">
+    <section class="hero-copy premium-hero">
+        <p class="eyebrow">Software Architecture Project</p>
+        <h1><span class="brand-nowrap">CodeReboot</span><br>Arena</h1>
+        <p class="hero-lead">
+            Enter a room, face a rival, and trade pulses across a grid.<br>
+            Built by<br>
+            <span class="author-name-glow">Nishant Pradhan</span><br>
+            <span class="author-name-glow">2023A7PS0030P</span>
+        </p>
+        <div class="hero-points">
+            <span>Room multiplayer</span>
+            <span>1v1 battles</span>
+            <span>Server authoritative</span>
+        </div>
+        <div class="hero-stats" aria-label="platform stats">
+            <article class="stat-card">
+                <p class="stat-label">Tick Rate</p>
+                <p class="stat-value" data-target="30">0</p>
+                <p class="stat-sub">sync updates / second</p>
+            </article>
+            <article class="stat-card">
+                <p class="stat-label">Transport</p>
+                <p class="stat-value">WS</p>
+                <p class="stat-sub">low latency room stream</p>
+            </article>
+            <article class="stat-card">
+                <p class="stat-label">Protocol</p>
+                <p class="stat-value" data-target="9">0</p>
+                <p class="stat-sub">typed socket commands</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="card stack-card auth-panel">
+        <div class="card-heading">
+            <p class="eyebrow">Secure Access</p>
+            <h2>Join the arena</h2>
+        </div>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" type="button" data-tab="login">Login</button>
+            <button class="auth-tab" type="button" data-tab="register">Register</button>
+        </div>
+
+        <form id="login-form" class="auth-form form-stack active">
+            <label class="field">
+                <span>Username</span>
+                <div class="input-shell">
+                    <span class="input-icon">ID</span>
+                    <input id="login-username" name="username" maxlength="20" placeholder="nova_strike" autocomplete="username" required>
+                </div>
+            </label>
+            <label class="field">
+                <span>Password</span>
+                <div class="input-shell">
+                    <span class="input-icon">PW</span>
+                    <input id="login-password" name="password" type="password" placeholder="********" autocomplete="current-password" required>
+                    <button class="password-toggle" type="button" data-target="login-password">Show</button>
+                </div>
+            </label>
+            <button class="primary-button cta-glow" type="submit">Login</button>
+            <p class="form-message" id="login-message"></p>
+        </form>
+
+        <form id="register-form" class="auth-form form-stack">
+            <label class="field">
+                <span>Username</span>
+                <div class="input-shell">
+                    <span class="input-icon">ID</span>
+                    <input id="register-username" name="username" maxlength="20" placeholder="nova_strike" autocomplete="username" required>
+                </div>
+            </label>
+            <label class="field">
+                <span>Email</span>
+                <div class="input-shell">
+                    <span class="input-icon">@</span>
+                    <input id="register-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+                </div>
+            </label>
+            <label class="field">
+                <span>Password</span>
+                <div class="input-shell">
+                    <span class="input-icon">PW</span>
+                    <input id="register-password" name="password" type="password" placeholder="********" autocomplete="new-password" required>
+                    <button class="password-toggle" type="button" data-target="register-password">Show</button>
+                </div>
+            </label>
+            <p class="fine-print">Password must be at least 8 characters. Username: 3-20 alphanumeric + underscore only.</p>
+            <button class="primary-button cta-glow" type="submit">Create account</button>
+            <p class="form-message" id="register-message"></p>
+        </form>
+    </section>
+</main>
+
+<script type="module" src="/js/auth.js"></script>
+</body>
+</html>
