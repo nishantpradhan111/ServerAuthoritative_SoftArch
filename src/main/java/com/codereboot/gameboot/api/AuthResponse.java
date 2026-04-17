@@ -8,6 +8,7 @@ public record AuthResponse(
     Long userId,
     String username,
     String email,
-    String message
+    String message,
+    String accessToken
 ) {
 }

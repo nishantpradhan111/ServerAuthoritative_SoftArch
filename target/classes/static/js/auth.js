@@ -86,11 +86,19 @@ loginForm?.addEventListener("submit", async (event) => {
             body: JSON.stringify({ username, password })
         });
 
+        const issuedToken = String(result.accessToken ?? result.authToken ?? result.token ?? "").trim();
+        if (!issuedToken) {
+            throw new Error("Login succeeded but no access token was returned. Please try again.");
+        }
+
         // Save user profile and redirect
         const profile = {
             userId: result.userId,
             username: result.username,
-            email: result.email
+            email: result.email,
+            authToken: issuedToken,
+            accessToken: issuedToken,
+            token: issuedToken
         };
         saveProfile(profile);
 
@@ -125,6 +133,11 @@ registerForm?.addEventListener("submit", async (event) => {
             body: JSON.stringify({ username, email, password })
         });
 
+        const issuedToken = String(result.accessToken ?? result.authToken ?? result.token ?? "").trim();
+        if (!issuedToken) {
+            throw new Error("Registration succeeded but no access token was returned. Please try logging in.");
+        }
+
         messageEl.textContent = "✓ Account created! Logging you in...";
         messageEl.className = "form-message success";
 
@@ -133,7 +146,10 @@ registerForm?.addEventListener("submit", async (event) => {
             const profile = {
                 userId: result.userId,
                 username: result.username,
-                email: result.email
+                email: result.email,
+                authToken: issuedToken,
+                accessToken: issuedToken,
+                token: issuedToken
             };
             saveProfile(profile);
             window.location.href = "/room.html";

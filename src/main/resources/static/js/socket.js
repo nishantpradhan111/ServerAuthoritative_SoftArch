@@ -1,14 +1,24 @@
-import { wsUrl } from "./common.js";
+import { loadProfile, wsUrl } from "./common.js";
 import { SocketCommand, SocketEvent } from "./protocol.js";
 
 export function openRoomSocket({ roomCode, token, onSnapshot, onError, onReplayRedirect, onRoomReturn, onOpen, onClose }) {
     const socket = new WebSocket(wsUrl("/ws"));
+    const authToken = loadProfile()?.authToken;
 
     socket.addEventListener("open", () => {
+        if (!authToken) {
+            socket.close();
+            if (onError) {
+                onError("Missing authentication token. Please log in again.");
+            }
+            return;
+        }
+
         socket.send(JSON.stringify({
             type: SocketCommand.SUBSCRIBE,
             roomCode,
-            token
+            token,
+            authToken
         }));
         if (onOpen) {
             onOpen();

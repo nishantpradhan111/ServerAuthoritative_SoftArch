@@ -3,6 +3,7 @@ package com.codereboot.gameboot.application;
 import com.codereboot.gameboot.domain.User;
 import com.codereboot.gameboot.infra.UserRepository;
 import com.codereboot.gameboot.security.PasswordEncoder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,23 +43,28 @@ public class AuthService {
      * @throws IllegalArgumentException if validation fails or user exists
      */
     public User register(String username, String email, String rawPassword) {
+        username = normalize(username);
+        email = normalizeEmail(email);
+
         // Validate inputs
         validateUsername(username);
         validateEmail(email);
         validatePassword(rawPassword);
 
-        // Check uniqueness
-        if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("Username already taken");
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email already registered");
-        }
-
         // Hash password and persist
         String passwordHash = passwordEncoder.encode(rawPassword);
         User user = new User(username, email, passwordHash);
-        return userRepository.save(user);
+        try {
+            return userRepository.save(user);
+        } catch (DataIntegrityViolationException exception) {
+            if (userRepository.existsByUsername(username)) {
+                throw new IllegalArgumentException("Username already taken");
+            }
+            if (userRepository.existsByEmail(email)) {
+                throw new IllegalArgumentException("Email already registered");
+            }
+            throw new IllegalArgumentException("Registration failed due to conflicting user data");
+        }
     }
 
     /**
@@ -70,6 +76,8 @@ public class AuthService {
      * @throws IllegalArgumentException if user not found or password mismatch
      */
     public User authenticate(String username, String rawPassword) {
+        username = normalize(username);
+
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("Invalid username or password");
@@ -123,5 +131,14 @@ public class AuthService {
                 "Password must be at least " + MIN_PASSWORD_LENGTH + " characters"
             );
         }
+    }
+
+    private String normalize(String value) {
+        return value == null ? null : value.trim();
+    }
+
+    private String normalizeEmail(String value) {
+        String normalized = normalize(value);
+        return normalized == null ? null : normalized.toLowerCase();
     }
 }

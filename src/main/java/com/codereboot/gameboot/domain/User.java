@@ -76,15 +76,6 @@ public class User {
         return updatedAt;
     }
 
-    // Setters (minimal, as User is mostly immutable after creation)
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
     @Override
     public String toString() {
         return "User{" +

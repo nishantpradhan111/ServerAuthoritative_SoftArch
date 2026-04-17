@@ -31,17 +31,16 @@ public class Room {
     private static final long REPLAY_REQUEST_TIMEOUT_MS = 10_000L;
 
     private final String code;
-    private final LongSupplier nowMs;
-    private final ConeHitValidationPolicy hitValidation;
     private final LinkedHashMap<String, Player> players = new LinkedHashMap<>();
     private RoomPhase phase = RoomPhase.LOBBY;
     private String winnerToken;
     private String lastEvent = "Create or join a room to begin";
     private long simulationTick;
     private long nextShotId = 1L;
-    private final TickHistoryTracker tickHistory;
-    private final ShotTracker shots;
     private final ReplayRequestTracker replayRequests;
+    private final RoomMovementRules movementRules;
+    private final RoomReplayLifecycle replayLifecycle;
+    private final RoomCombatLifecycle combatLifecycle;
 
     public record ReplayParticipant(String token, String name) {
     }
@@ -50,17 +49,28 @@ public class Room {
         this(code, System::currentTimeMillis, new ConeHitValidationPolicy());
     }
 
-    Room(String code, LongSupplier nowMs) {
+    public Room(String code, LongSupplier nowMs) {
         this(code, nowMs, new ConeHitValidationPolicy());
     }
 
     Room(String code, LongSupplier nowMs, ConeHitValidationPolicy hitValidation) {
         this.code = code.toUpperCase();
-        this.nowMs = Objects.requireNonNull(nowMs, "nowMs");
-        this.hitValidation = Objects.requireNonNull(hitValidation, "hitValidation");
-        this.tickHistory = new TickHistoryTracker(MAX_TICK_HISTORY);
-        this.shots = new ShotTracker(MAX_SHOT_AGE_MS);
+        LongSupplier clock = Objects.requireNonNull(nowMs, "nowMs");
+        ConeHitValidationPolicy validation = Objects.requireNonNull(hitValidation, "hitValidation");
+        TickHistoryTracker tickHistory = new TickHistoryTracker(MAX_TICK_HISTORY);
+        ShotTracker shots = new ShotTracker(MAX_SHOT_AGE_MS);
         this.replayRequests = new ReplayRequestTracker(REPLAY_REQUEST_TIMEOUT_MS);
+        this.movementRules = new RoomMovementRules(BOARD_WIDTH, BOARD_HEIGHT, PLAYER_RADIUS);
+        this.replayLifecycle = new RoomReplayLifecycle(replayRequests, clock);
+        this.combatLifecycle = new RoomCombatLifecycle(
+            shots,
+            tickHistory,
+            validation,
+            clock,
+            FIRE_RANGE,
+            PLAYER_RADIUS,
+            FIRE_CONE_HALF_ANGLE_DEGREES
+        );
     }
 
     public String code() {
@@ -98,15 +108,14 @@ public class Room {
 
         Player leavingPlayer = requirePlayer(token);
         players.remove(token);
-        replayRequests.remove(token);
+        replayLifecycle.remove(token);
 
         if (players.isEmpty()) {
             winnerToken = null;
             phase = RoomPhase.LOBBY;
             simulationTick = 0L;
-            tickHistory.clear();
-            shots.clear();
-            replayRequests.clear();
+            combatLifecycle.clear();
+            replayLifecycle.clear();
             lastEvent = leavingPlayer.name() + " left the room";
             return;
         }
@@ -133,15 +142,11 @@ public class Room {
     public synchronized void move(String token, Direction direction) {
         ensureActive();
         Player player = requirePlayer(token);
-        double nextX = clamp(player.positionX() + direction.deltaX(), 0.0, BOARD_WIDTH - 1.0);
-        double nextY = clamp(player.positionY() + direction.deltaY(), 0.0, BOARD_HEIGHT - 1.0);
-        if (!isCellFree(nextX, nextY, token)) {
-            player.face(direction);
+        if (!movementRules.tryMove(players, player, direction)) {
             lastEvent = player.name() + " tried to move but the path was blocked";
             return;
         }
-        player.moveTo(nextX, nextY);
-        player.face(direction);
+
         lastEvent = player.name() + " moved " + direction.name().toLowerCase();
     }
 
@@ -169,85 +174,31 @@ public class Room {
 
     public synchronized void fire(String token) {
         ensureActive();
-        Player shooter = requirePlayer(token);
-        if (shooter.ammo() <= 0) {
-            lastEvent = shooter.name() + " tried to fire but has no ammo";
-            return;
+        combatLifecycle.recordTickState(phase, simulationTick, players.values());
+        RoomCombatLifecycle.FireOutcome outcome = combatLifecycle.fire(players, token, simulationTick, nextShotId);
+        nextShotId = outcome.nextShotId();
+        if (outcome.event() != null) {
+            lastEvent = outcome.event();
         }
-
-        recordTickState();
-        shooter.consumeAmmo(1);
-        Player target = players.values().stream()
-                .filter(player -> !player.token().equals(token))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Second player is missing"));
-
-        long shotId = nextShotId++;
-        shooter.setLastShotId(shotId);
-        shots.register(shotId, shooter.token(), target.token(), nowMs(), simulationTick);
-        shots.pruneExpired(nowMs());
-        lastEvent = shooter.name() + " fired a pulse";
     }
 
     public synchronized void claimHit(String reporterToken, long shotId, long snapshotTick) {
         ensureActive();
-        Player reporter = requirePlayer(reporterToken);
-        ShotTracker.TrackedShot shot = shots.findActive(shotId);
-        if (shot == null) {
-            logHitClaimRejection("SHOT_NOT_FOUND_OR_CONSUMED", reporter, shotId, snapshotTick, null);
-            return;
-        }
-
-        if (shots.isExpired(shot, nowMs())) {
-            lastEvent = reporter.name() + " reported an expired hit";
-            logHitClaimRejection("SHOT_EXPIRED", reporter, shotId, snapshotTick, shot);
-            shots.discard(shotId);
-            return;
-        }
-
-        if (snapshotTick < shot.firedTick()) {
-            lastEvent = reporter.name() + " reported an invalid hit";
-            logHitClaimRejection("SNAPSHOT_BEFORE_FIRE", reporter, shotId, snapshotTick, shot);
-            return;
-        }
-
-        Player attacker = requirePlayer(shot.attackerToken());
-        Player target = requirePlayer(shot.targetToken());
-        if (!reporter.token().equals(attacker.token()) && !reporter.token().equals(target.token())) {
-            throw new IllegalArgumentException("Reporter must be attacker or target");
-        }
-
-        Map<String, PlayerTickState> tickState = tickHistory.snapshotAt(snapshotTick);
-        if (tickState == null) {
-            lastEvent = reporter.name() + " reported a stale hit";
-            logHitClaimRejection("TICK_NOT_FOUND", reporter, shotId, snapshotTick, shot);
-            return;
-        }
-
-        PlayerTickState attackerAtTick = tickState.get(attacker.token());
-        PlayerTickState targetAtTick = tickState.get(target.token());
-        if (attackerAtTick == null || targetAtTick == null) {
-            lastEvent = reporter.name() + " reported an invalid hit";
-            logHitClaimRejection("PLAYER_STATE_MISSING", reporter, shotId, snapshotTick, shot);
-            return;
-        }
-
-        if (!canHit(attackerAtTick, targetAtTick)) {
-            lastEvent = reporter.name() + " reported an invalid hit";
-            logHitClaimRejection("CONE_VALIDATION_FAILED", reporter, shotId, snapshotTick, shot);
-            return;
-        }
-
-        shots.markConsumed(shotId);
-        target.damage(1);
-        if (target.defeated()) {
-            winnerToken = attacker.token();
+        RoomCombatLifecycle.HitOutcome outcome = combatLifecycle.claimHit(
+                players,
+                reporterToken,
+                shotId,
+                snapshotTick,
+                simulationTick,
+                this::logHitClaimRejection
+        );
+        if (outcome.complete()) {
+            winnerToken = outcome.winnerToken();
             phase = RoomPhase.COMPLETE;
-            lastEvent = attacker.name() + " landed the final pulse";
-            return;
         }
-
-        lastEvent = attacker.name() + " hit " + target.name();
+        if (outcome.event() != null) {
+            lastEvent = outcome.event();
+        }
     }
 
     public synchronized boolean tick(double deltaSeconds) {
@@ -255,54 +206,25 @@ public class Room {
             return false;
         }
 
-        boolean changed = false;
-        double[] previousX = new double[players.size()];
-        double[] previousY = new double[players.size()];
-        int index = 0;
-        for (Player player : players.values()) {
-            previousX[index] = player.positionX();
-            previousY[index] = player.positionY();
-            index++;
-        }
-
-        for (Player player : players.values()) {
-            changed |= player.advance(deltaSeconds);
-            changed |= clampPlayer(player);
-        }
-
-        changed |= resolveOverlap(previousX, previousY);
+        boolean changed = movementRules.tick(players, deltaSeconds);
         simulationTick++;
-        recordTickState();
-        shots.pruneExpired(nowMs());
+        combatLifecycle.recordTickState(phase, simulationTick, players.values());
+        combatLifecycle.pruneExpiredShots();
         return changed;
     }
 
     public synchronized List<ReplayParticipant> requestReplay(String token) {
         Player requester = requirePlayer(token);
-        if (phase != RoomPhase.COMPLETE) {
-            throw new IllegalStateException("Replay can only be requested after match completion");
-        }
-
-        long now = System.currentTimeMillis();
-        cleanupExpiredReplayRequests(now);
-        replayRequests.record(token, now);
-
-        if (isReplayReady()) {
-            List<ReplayParticipant> participants = players.values().stream()
-                    .map(player -> new ReplayParticipant(player.token(), player.name()))
-                    .toList();
-            replayRequests.clear();
-            lastEvent = "Replay matched. Entering new room...";
-            return participants;
-        }
-
-        lastEvent = requester.name() + " requested replay. Waiting for opponent...";
-        return List.of();
+        RoomReplayLifecycle.ReplayOutcome outcome =
+                replayLifecycle.requestReplay(requester, phase, players.values(), players.keySet());
+        lastEvent = outcome.event();
+        return outcome.participants();
     }
 
     public synchronized RoomSnapshot snapshot() {
-        if (phase == RoomPhase.COMPLETE) {
-            cleanupExpiredReplayRequests(System.currentTimeMillis());
+        String replayEvent = replayLifecycle.cleanupExpiredForSnapshot(phase);
+        if (replayEvent != null) {
+            lastEvent = replayEvent;
         }
 
         List<PlayerSnapshot> playerSnapshots = new ArrayList<>();
@@ -330,8 +252,8 @@ public class Room {
                     player.lastShotId()
             ));
         }
-                List<String> replayPendingTokens = replayRequests.pendingTokens();
-                return new RoomSnapshot(
+            List<String> replayPendingTokens = replayLifecycle.pendingTokens();
+            return new RoomSnapshot(
                     code,
                     phase,
                     BOARD_WIDTH,
@@ -359,9 +281,8 @@ public class Room {
         simulationTick = 0L;
         nextShotId = 1L;
         lastEvent = "Match started";
-        shots.clear();
-        tickHistory.clear();
-        replayRequests.clear();
+        combatLifecycle.clear();
+        replayLifecycle.clear();
 
         int index = 0;
         for (Player player : players.values()) {
@@ -373,7 +294,7 @@ public class Room {
             index++;
         }
 
-        recordTickState();
+        combatLifecycle.recordTickState(phase, simulationTick, players.values());
     }
 
     private boolean canStart() {
@@ -388,87 +309,8 @@ public class Room {
         }
     }
 
-    private boolean isCellFree(double x, double y, String movingToken) {
-        return players.values().stream()
-                .filter(player -> !player.token().equals(movingToken))
-                .noneMatch(player -> player.x() == Math.round(x) && player.y() == Math.round(y));
-    }
-
-    private boolean canHit(Player shooter, Player target) {
-        return canHit(
-                new PlayerTickState(shooter.positionX(), shooter.positionY(), shooter.aimDegrees()),
-                new PlayerTickState(target.positionX(), target.positionY(), target.aimDegrees())
-        );
-    }
-
-    private boolean canHit(PlayerTickState shooter, PlayerTickState target) {
-        return hitValidation.canHit(
-                shooter.positionX(),
-                shooter.positionY(),
-                shooter.aimDegrees(),
-                target.positionX(),
-                target.positionY(),
-                FIRE_RANGE,
-                PLAYER_RADIUS,
-                FIRE_CONE_HALF_ANGLE_DEGREES
-        );
-    }
-
-    private void recordTickState() {
-        if (phase != RoomPhase.ACTIVE) {
-            return;
-        }
-        tickHistory.record(simulationTick, players.values());
-    }
-
-    private void cleanupExpiredReplayRequests(long nowMs) {
-        if (replayRequests.cleanupExpired(nowMs)) {
-            lastEvent = "Replay request expired. Press Replay again within 10 seconds.";
-        }
-    }
-
-    private boolean isReplayReady() {
-        return players.size() == 2 && replayRequests.isReady(players.keySet());
-    }
-
-    private boolean clampPlayer(Player player) {
-        double clampedX = clamp(player.positionX(), PLAYER_RADIUS, BOARD_WIDTH - 1.0 - PLAYER_RADIUS);
-        double clampedY = clamp(player.positionY(), PLAYER_RADIUS, BOARD_HEIGHT - 1.0 - PLAYER_RADIUS);
-        boolean changed = clampedX != player.positionX() || clampedY != player.positionY();
-        if (changed) {
-            player.moveTo(clampedX, clampedY);
-        }
-        return changed;
-    }
-
-    private boolean resolveOverlap(double[] previousX, double[] previousY) {
-        if (players.size() < 2) {
-            return false;
-        }
-
-        Player[] pair = players.values().toArray(new Player[0]);
-        Player first = pair[0];
-        Player second = pair[1];
-        double deltaX = first.positionX() - second.positionX();
-        double deltaY = first.positionY() - second.positionY();
-        double minimumSeparation = PLAYER_RADIUS * 2.0;
-        if ((deltaX * deltaX) + (deltaY * deltaY) >= minimumSeparation * minimumSeparation) {
-            return false;
-        }
-
-        first.moveTo(previousX[0], previousY[0]);
-        second.moveTo(previousX[1], previousY[1]);
-        first.stop();
-        second.stop();
-        return true;
-    }
-
     private double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
-    }
-
-    private long nowMs() {
-        return nowMs.getAsLong();
     }
 
     private void logHitClaimRejection(

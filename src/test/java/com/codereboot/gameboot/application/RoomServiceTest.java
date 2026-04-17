@@ -20,14 +20,17 @@ class RoomServiceTest {
     void setReadyBroadcastsSnapshotAfterMutation() {
         RoomRepository repository = org.mockito.Mockito.mock(RoomRepository.class);
         RoomEventBroadcaster broadcaster = org.mockito.Mockito.mock(RoomEventBroadcaster.class);
-        RoomService service = new RoomService(repository, broadcaster);
+        AppClock clock = org.mockito.Mockito.mock(AppClock.class);
+        when(clock.nowMillis()).thenReturn(1_000L);
+        RoomService service = new RoomService(repository, broadcaster, clock);
+        when(broadcaster.broadcast(any())).thenReturn(BroadcastResult.none());
 
         Room room = new Room("ABCDE");
         String host = room.addPlayer("Ada");
         room.addPlayer("Lin");
         when(repository.findByCode("ABCDE")).thenReturn(Optional.of(room));
 
-        service.setReady("abcde", host, true);
+        service.setReady("abcde", host, "Ada", true);
 
         assertEquals(true, room.requirePlayer(host).ready());
         verify(broadcaster, times(1)).broadcast(any());
@@ -37,7 +40,10 @@ class RoomServiceTest {
     void moveBroadcastsSnapshotAfterMutation() {
         RoomRepository repository = org.mockito.Mockito.mock(RoomRepository.class);
         RoomEventBroadcaster broadcaster = org.mockito.Mockito.mock(RoomEventBroadcaster.class);
-        RoomService service = new RoomService(repository, broadcaster);
+        AppClock clock = org.mockito.Mockito.mock(AppClock.class);
+        when(clock.nowMillis()).thenReturn(1_000L);
+        RoomService service = new RoomService(repository, broadcaster, clock);
+        when(broadcaster.broadcast(any())).thenReturn(BroadcastResult.none());
 
         Room room = new Room("ABCDE");
         String host = room.addPlayer("Ada");
@@ -52,7 +58,7 @@ class RoomServiceTest {
 
         when(repository.findByCode("ABCDE")).thenReturn(Optional.of(room));
 
-        service.move("ABCDE", host, Direction.RIGHT);
+        service.move("ABCDE", host, "Ada", Direction.RIGHT);
 
         verify(broadcaster, times(1)).broadcast(any());
     }
@@ -61,13 +67,16 @@ class RoomServiceTest {
     void leaveRoomDeletesWhenRoomBecomesEmpty() {
         RoomRepository repository = org.mockito.Mockito.mock(RoomRepository.class);
         RoomEventBroadcaster broadcaster = org.mockito.Mockito.mock(RoomEventBroadcaster.class);
-        RoomService service = new RoomService(repository, broadcaster);
+        AppClock clock = org.mockito.Mockito.mock(AppClock.class);
+        when(clock.nowMillis()).thenReturn(1_000L);
+        RoomService service = new RoomService(repository, broadcaster, clock);
+        when(broadcaster.broadcast(any())).thenReturn(BroadcastResult.none());
 
         Room room = new Room("ABCDE");
         String host = room.addPlayer("Ada");
         when(repository.findByCode("ABCDE")).thenReturn(Optional.of(room));
 
-        service.leaveRoom("ABCDE", host);
+        service.leaveRoom("ABCDE", host, "Ada");
 
         verify(repository, times(1)).deleteByCode("ABCDE");
         verify(broadcaster, never()).broadcast(any());
@@ -77,12 +86,47 @@ class RoomServiceTest {
     void requestReturnToRoomRejectsNonCompletePhase() {
         RoomRepository repository = org.mockito.Mockito.mock(RoomRepository.class);
         RoomEventBroadcaster broadcaster = org.mockito.Mockito.mock(RoomEventBroadcaster.class);
-        RoomService service = new RoomService(repository, broadcaster);
+        AppClock clock = org.mockito.Mockito.mock(AppClock.class);
+        when(clock.nowMillis()).thenReturn(1_000L);
+        RoomService service = new RoomService(repository, broadcaster, clock);
+        when(broadcaster.broadcast(any())).thenReturn(BroadcastResult.none());
 
         Room room = new Room("ABCDE");
         String host = room.addPlayer("Ada");
         when(repository.findByCode("ABCDE")).thenReturn(Optional.of(room));
 
-        assertThrows(IllegalStateException.class, () -> service.requestReturnToRoom("ABCDE", host));
+        assertThrows(IllegalStateException.class, () -> service.requestReturnToRoom("ABCDE", host, "Ada"));
+    }
+
+    @Test
+    void createRoomFailsAfterTooManyCodeCollisions() {
+        RoomRepository repository = org.mockito.Mockito.mock(RoomRepository.class);
+        RoomEventBroadcaster broadcaster = org.mockito.Mockito.mock(RoomEventBroadcaster.class);
+        AppClock clock = org.mockito.Mockito.mock(AppClock.class);
+        when(clock.nowMillis()).thenReturn(1_000L);
+        RoomService service = new RoomService(repository, broadcaster, clock);
+        when(broadcaster.broadcast(any())).thenReturn(BroadcastResult.none());
+
+        when(repository.findByCode(any())).thenReturn(Optional.of(new Room("ABCDE")));
+
+        assertThrows(IllegalStateException.class, () -> service.createRoom("Ada"));
+    }
+
+    @Test
+    void mutationFailsWhenBroadcastThrows() {
+        RoomRepository repository = org.mockito.Mockito.mock(RoomRepository.class);
+        RoomEventBroadcaster broadcaster = org.mockito.Mockito.mock(RoomEventBroadcaster.class);
+        AppClock clock = org.mockito.Mockito.mock(AppClock.class);
+        when(clock.nowMillis()).thenReturn(1_000L);
+        RoomService service = new RoomService(repository, broadcaster, clock);
+
+        Room room = new Room("ABCDE");
+        String host = room.addPlayer("Ada");
+        room.addPlayer("Lin");
+        when(repository.findByCode("ABCDE")).thenReturn(Optional.of(room));
+        when(broadcaster.broadcast(any())).thenThrow(new IllegalStateException("transport down"));
+
+        assertThrows(IllegalStateException.class, () -> service.setReady("ABCDE", host, "Ada", true));
+        assertEquals(true, room.requirePlayer(host).ready());
     }
 }

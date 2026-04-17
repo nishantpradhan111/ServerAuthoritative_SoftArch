@@ -1,6 +1,8 @@
 package com.codereboot.gameboot.transport;
 
 import com.codereboot.gameboot.application.RoomSessionGateway;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.lang.NonNull;
 import org.springframework.web.socket.CloseStatus;
@@ -10,6 +12,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Component
 public class GameSocketHandler extends TextWebSocketHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameSocketHandler.class);
 
     private final GameSocketCommandParser commandParser;
     private final GameSocketCommandDispatcher commandDispatcher;
@@ -31,12 +35,14 @@ public class GameSocketHandler extends TextWebSocketHandler {
             GameSocketCommand command = commandParser.parse(message.getPayload());
             commandDispatcher.dispatch(session, command);
         } catch (RuntimeException exception) {
-            sessionGateway.sendError(session, exception.getMessage());
+            LOGGER.debug("Websocket command processing failed for session {}", session.getId(), exception);
+            sessionGateway.sendError(session, "Unable to process websocket command");
         }
     }
 
     @Override
     public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) {
+        commandDispatcher.clearSessionContext(session);
         sessionGateway.unregister(session);
     }
 

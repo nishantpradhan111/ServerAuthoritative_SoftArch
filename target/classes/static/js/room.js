@@ -275,7 +275,7 @@ async function joinRoom(roomCode) {
         setNotice(`Joining ${normalizedCode}...`);
         const response = await apiJson("/api/rooms/join", {
             method: "POST",
-            body: JSON.stringify({ roomCode: normalizedCode, name: displayName })
+            body: JSON.stringify({ roomCode: normalizedCode })
         });
         currentRoomCode = response.roomCode;
         currentToken = response.token;
@@ -303,7 +303,11 @@ async function hydrateFromStorage() {
     updateLeaveButtonState();
 
     try {
-        const snapshot = await apiJson(`/api/rooms/${encodeURIComponent(profile.roomCode)}?token=${encodeURIComponent(profile.token)}`);
+        const snapshot = await apiJson(`/api/rooms/${encodeURIComponent(profile.roomCode)}`, {
+            headers: {
+                "X-Player-Token": profile.token
+            }
+        });
         const shouldRedirect = applySnapshot(snapshot);
         if (!shouldRedirect) {
             connectRoom(profile.roomCode, profile.token);
@@ -319,8 +323,7 @@ createRoomForm.addEventListener("submit", async (event) => {
     try {
         setNotice("Creating room...");
         const response = await apiJson("/api/rooms", {
-            method: "POST",
-            body: JSON.stringify({ name: displayName })
+            method: "POST"
         });
         currentRoomCode = response.roomCode;
         currentToken = response.token;
@@ -390,8 +393,11 @@ leaveButton.addEventListener("click", () => {
 
     const roomCode = currentRoomCode;
     const token = currentToken;
-    apiJson(`/api/rooms/${encodeURIComponent(roomCode)}/leave?token=${encodeURIComponent(token)}`, {
-        method: "POST"
+    apiJson(`/api/rooms/${encodeURIComponent(roomCode)}/leave`, {
+        method: "POST",
+        headers: {
+            "X-Player-Token": token
+        }
     })
         .catch((error) => {
             setNotice(error.message, "warn");

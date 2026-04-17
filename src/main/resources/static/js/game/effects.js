@@ -5,7 +5,7 @@ const BULLET_LENGTH = 0.22;
 const BULLET_THICKNESS = 0.065;
 const BULLET_OFFSET = 0.42;
 const BULLET_TTL_SECONDS = 0.36;
-const BULLET_HIT_RADIUS = 0.24;
+const BULLET_HIT_RADIUS = 0.35;
 const BULLET_WORLD_PADDING = 0.05;
 
 const bullets = [];

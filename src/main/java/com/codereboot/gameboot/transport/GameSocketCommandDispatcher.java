@@ -3,7 +3,11 @@ package com.codereboot.gameboot.transport;
 import com.codereboot.gameboot.application.RoomService;
 import com.codereboot.gameboot.application.RoomSessionGateway;
 import com.codereboot.gameboot.domain.RoomSnapshot;
+import com.codereboot.gameboot.security.JwtTokenService;
+import io.jsonwebtoken.Claims;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
@@ -11,15 +15,23 @@ import org.springframework.web.socket.WebSocketSession;
 @Component
 class GameSocketCommandDispatcher {
 
-    private static final String ROOM_CODE_KEY = "roomCode";
-    private static final String TOKEN_KEY = "token";
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameSocketCommandDispatcher.class);
 
     private final RoomService roomService;
     private final RoomSessionGateway sessionGateway;
+    private final WebSocketSessionContextRegistry sessionContextRegistry;
+    private final JwtTokenService jwtTokenService;
 
-    GameSocketCommandDispatcher(RoomService roomService, RoomSessionGateway sessionGateway) {
+    GameSocketCommandDispatcher(
+            RoomService roomService,
+            RoomSessionGateway sessionGateway,
+            WebSocketSessionContextRegistry sessionContextRegistry,
+            JwtTokenService jwtTokenService
+    ) {
         this.roomService = roomService;
         this.sessionGateway = sessionGateway;
+        this.sessionContextRegistry = sessionContextRegistry;
+        this.jwtTokenService = jwtTokenService;
     }
 
     void dispatch(@NonNull WebSocketSession session, GameSocketCommand command) {
@@ -33,93 +45,103 @@ class GameSocketCommandDispatcher {
             return;
         }
 
-        if (command instanceof GameSocketCommand.Ready) {
-            roomService.setReady(roomCode(session), token(session), true);
-            return;
-        }
+        String roomCode = roomCode(session);
+        String token = token(session);
+        String username = username(session);
 
-        if (command instanceof GameSocketCommand.Move move) {
-            roomService.move(roomCode(session), token(session), move.direction());
-            return;
-        }
-
-        if (command instanceof GameSocketCommand.Fire) {
-            roomService.fire(roomCode(session), token(session));
-            return;
-        }
-
-        if (command instanceof GameSocketCommand.Input input) {
-            roomService.applyInput(roomCode(session), token(session), input.inputFrame());
-            return;
-        }
-
-        if (command instanceof GameSocketCommand.Sync) {
-            RoomSnapshot snapshot = roomService.snapshot(roomCode(session), token(session));
-            sessionGateway.sendSnapshot(session, snapshot);
-            return;
-        }
-
-        if (command instanceof GameSocketCommand.HitClaim hitClaim) {
-            roomService.claimHit(
-                    roomCode(session),
-                    token(session),
+        switch (command) {
+            case GameSocketCommand.Ready ignored -> roomService.setReady(roomCode, token, username, true);
+            case GameSocketCommand.Move move -> roomService.move(roomCode, token, username, move.direction());
+            case GameSocketCommand.Fire ignored -> roomService.fire(roomCode, token, username);
+            case GameSocketCommand.Input input -> roomService.applyInput(roomCode, token, username, input.inputFrame());
+            case GameSocketCommand.Sync ignored -> {
+                RoomSnapshot snapshot = roomService.snapshot(roomCode, token, username);
+                sessionGateway.sendSnapshot(session, snapshot);
+            }
+            case GameSocketCommand.HitClaim hitClaim -> roomService.claimHit(
+                    roomCode,
+                    token,
+                    username,
                     hitClaim.shotId(),
                     hitClaim.snapshotTick()
             );
-            return;
-        }
-
-        if (command instanceof GameSocketCommand.Replay) {
-            String currentRoomCode = roomCode(session);
-            for (RoomService.ReplayRedirect redirect : roomService.requestReplay(currentRoomCode, token(session))) {
-                sessionGateway.sendReplayRedirect(currentRoomCode, redirect.oldToken(), redirect.roomCode(), redirect.token());
+            case GameSocketCommand.Replay ignored -> {
+                for (RoomService.ReplayRedirect redirect : roomService.requestReplay(roomCode, token, username)) {
+                    sessionGateway.sendReplayRedirect(roomCode, redirect.oldToken(), redirect.roomCode(), redirect.token());
+                }
             }
-            return;
+            case GameSocketCommand.ReturnToRoom ignored -> {
+                String message = roomService.requestReturnToRoom(roomCode, token, username);
+                sessionGateway.sendRoomReturn(roomCode, message);
+            }
+            default -> throw new IllegalArgumentException("Unsupported websocket command: " + command.type());
         }
-
-        if (command instanceof GameSocketCommand.ReturnToRoom) {
-            String currentRoomCode = roomCode(session);
-            String message = roomService.requestReturnToRoom(currentRoomCode, token(session));
-            sessionGateway.sendRoomReturn(currentRoomCode, message);
-            return;
-        }
-
-        throw new IllegalArgumentException("Unsupported websocket command: " + command.type());
     }
 
     private void handleSubscribe(WebSocketSession session, GameSocketCommand.Subscribe command) {
-        session.getAttributes().put(ROOM_CODE_KEY, command.roomCode());
-        session.getAttributes().put(TOKEN_KEY, command.token());
+        Claims claims = requireValidClaims(command.authToken());
+        String username = claims.getSubject();
+        SessionContext context = new SessionContext(command.roomCode(), command.token(), username);
+        sessionContextRegistry.bind(session.getId(), context);
 
         try {
-            RoomSnapshot snapshot = roomService.snapshot(command.roomCode(), command.token());
+            RoomSnapshot snapshot = roomService.snapshot(command.roomCode(), command.token(), username);
             sessionGateway.register(command.roomCode(), command.token(), session);
             sessionGateway.sendSnapshot(session, snapshot);
         } catch (RuntimeException exception) {
-            sessionGateway.sendError(session, exception.getMessage());
+            sessionContextRegistry.clear(session.getId());
+            LOGGER.debug("Websocket subscribe failed for session {}", session.getId(), exception);
+            sessionGateway.sendError(session, "Unable to subscribe to room");
             closeQuietly(session);
         }
     }
 
     private String roomCode(WebSocketSession session) {
-        Object value = session.getAttributes().get(ROOM_CODE_KEY);
-        if (value == null) {
+        SessionContext context = sessionContext(session);
+        if (context == null) {
             throw new IllegalStateException("Websocket session has no room code");
         }
-        return value.toString();
+        return context.roomCode();
     }
 
     private String token(WebSocketSession session) {
-        Object value = session.getAttributes().get(TOKEN_KEY);
-        if (value == null) {
+        SessionContext context = sessionContext(session);
+        if (context == null) {
             throw new IllegalStateException("Websocket session has no player token");
         }
-        return value.toString();
+        return context.token();
+    }
+
+    private String username(WebSocketSession session) {
+        SessionContext context = sessionContext(session);
+        if (context == null) {
+            throw new IllegalStateException("Websocket session has no authenticated user");
+        }
+        return context.username();
     }
 
     private boolean hasSessionContext(WebSocketSession session) {
-        return session.getAttributes().get(ROOM_CODE_KEY) != null
-                && session.getAttributes().get(TOKEN_KEY) != null;
+        return sessionContext(session) != null;
+    }
+
+    private SessionContext sessionContext(WebSocketSession session) {
+        return sessionContextRegistry.get(session.getId());
+    }
+
+    void clearSessionContext(WebSocketSession session) {
+        sessionContextRegistry.clear(session.getId());
+    }
+
+    private Claims requireValidClaims(String authToken) {
+        if (authToken == null || authToken.isBlank() || !jwtTokenService.isValid(authToken)) {
+            throw new IllegalArgumentException("Invalid websocket auth token");
+        }
+
+        Claims claims = jwtTokenService.parseClaims(authToken);
+        if (claims.getSubject() == null || claims.getSubject().isBlank()) {
+            throw new IllegalArgumentException("Invalid websocket auth token");
+        }
+        return claims;
     }
 
     private void closeQuietly(WebSocketSession session) {

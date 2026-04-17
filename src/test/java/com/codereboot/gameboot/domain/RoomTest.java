@@ -276,6 +276,21 @@ class RoomTest {
         assertTrue(room.snapshot().replayPendingTokens().isEmpty());
     }
 
+    @Test
+    void replayRequestExpiresUsingInjectedClock() {
+        AtomicLong nowMs = new AtomicLong(1_000L);
+        Room room = new Room("rply3", nowMs::get);
+        String host = room.addPlayer("Ada");
+        String guest = room.addPlayer("Lin");
+        finishMatch(room, host, guest);
+
+        room.requestReplay(host);
+        assertTrue(room.snapshot().replayPendingTokens().contains(host));
+
+        nowMs.addAndGet(11_000L);
+        assertTrue(room.snapshot().replayPendingTokens().isEmpty());
+    }
+
     private void finishMatch(Room room, String attacker, String targetToken) {
         room.setReady(attacker, true);
         room.setReady(targetToken, true);

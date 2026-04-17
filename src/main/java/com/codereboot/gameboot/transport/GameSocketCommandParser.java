@@ -21,7 +21,11 @@ class GameSocketCommandParser {
         String type = text(payload, "type");
 
         return switch (type) {
-            case "subscribe" -> new GameSocketCommand.Subscribe(text(payload, "roomCode"), text(payload, "token"));
+                case "subscribe" -> new GameSocketCommand.Subscribe(
+                    text(payload, "roomCode"),
+                    text(payload, "token"),
+                    text(payload, "authToken")
+                );
             case "ready" -> new GameSocketCommand.Ready();
             case "move" -> new GameSocketCommand.Move(Direction.from(text(payload, "direction")));
             case "fire" -> new GameSocketCommand.Fire();

@@ -7,7 +7,7 @@ interface GameSocketCommand {
 
     String type();
 
-    record Subscribe(String roomCode, String token) implements GameSocketCommand {
+    record Subscribe(String roomCode, String token, String authToken) implements GameSocketCommand {
         @Override
         public String type() {
             return "subscribe";

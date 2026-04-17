@@ -1,10 +1,39 @@
 const PROFILE_KEY = "codereboot.profile";
 
+function resolveAuthToken(profile) {
+    if (!profile || typeof profile !== "object") {
+        return "";
+    }
+
+    return String(profile.authToken ?? profile.accessToken ?? profile.token ?? "").trim();
+}
+
+function normalizeProfile(profile) {
+    if (!profile || typeof profile !== "object") {
+        return {};
+    }
+
+    const authToken = resolveAuthToken(profile);
+    if (!authToken) {
+        return profile;
+    }
+
+    // Keep legacy aliases during migration to avoid mixed-cache client breakage.
+    return {
+        ...profile,
+        authToken,
+        accessToken: authToken,
+        token: profile.token ?? authToken
+    };
+}
+
 export function loadProfile() {
     const sessionRaw = sessionStorage.getItem(PROFILE_KEY);
     if (sessionRaw) {
         try {
-            return JSON.parse(sessionRaw);
+            const profile = normalizeProfile(JSON.parse(sessionRaw));
+            sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+            return profile;
         } catch {
             sessionStorage.removeItem(PROFILE_KEY);
             return {};
@@ -18,7 +47,7 @@ export function loadProfile() {
     }
 
     try {
-        const profile = JSON.parse(legacyRaw);
+        const profile = normalizeProfile(JSON.parse(legacyRaw));
         sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
         localStorage.removeItem(PROFILE_KEY);
         return profile;
@@ -29,7 +58,7 @@ export function loadProfile() {
 }
 
 export function saveProfile(profile) {
-    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(normalizeProfile(profile)));
 }
 
 export function clearProfile() {
@@ -39,7 +68,7 @@ export function clearProfile() {
 
 export function ensureProfile() {
     const profile = loadProfile();
-    if (!profile.userId && !profile.name) {
+    if (!resolveAuthToken(profile)) {
         window.location.href = "/login.html";
         return null;
     }
@@ -48,6 +77,11 @@ export function ensureProfile() {
 
 export async function apiJson(path, options = {}) {
     const headers = new Headers(options.headers ?? {});
+    const profile = loadProfile();
+    const authToken = resolveAuthToken(profile);
+    if (authToken && !headers.has("Authorization")) {
+        headers.set("Authorization", `Bearer ${authToken}`);
+    }
     const body = options.body;
     if (body && !(body instanceof FormData)) {
         headers.set("Content-Type", "application/json");

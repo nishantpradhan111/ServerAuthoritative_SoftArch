@@ -3,6 +3,7 @@ package com.codereboot.gameboot.application;
 import com.codereboot.gameboot.api.dto.RoomEntryResponse;
 import com.codereboot.gameboot.domain.Direction;
 import com.codereboot.gameboot.domain.GameInputFrame;
+import com.codereboot.gameboot.domain.Player;
 import com.codereboot.gameboot.domain.Room;
 import com.codereboot.gameboot.domain.RoomPhase;
 import com.codereboot.gameboot.domain.RoomSnapshot;
@@ -12,50 +13,60 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RoomService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoomService.class);
+
     private static final String ROOM_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    private static final int ROOM_CODE_LENGTH = 5;
+    private static final int MAX_ROOM_CODE_ATTEMPTS = 100;
 
     private final RoomRepository roomRepository;
     private final RoomEventBroadcaster eventBroadcaster;
+    private final AppClock clock;
 
     public record ReplayRedirect(String oldToken, String roomCode, String token) {
     }
 
-    public RoomService(RoomRepository roomRepository, RoomEventBroadcaster eventBroadcaster) {
+    public RoomService(RoomRepository roomRepository, RoomEventBroadcaster eventBroadcaster, AppClock clock) {
         this.roomRepository = roomRepository;
         this.eventBroadcaster = eventBroadcaster;
+        this.clock = clock;
     }
 
-    public RoomEntryResponse createRoom(String playerName) {
+    public RoomEntryResponse createRoom(String authenticatedUsername) {
         String roomCode = generateRoomCode();
-        Room room = new Room(roomCode);
+        Room room = new Room(roomCode, clock::nowMillis);
         roomRepository.save(room);
-        String token = room.addPlayer(normalizeName(playerName));
+        String token = room.addPlayer(normalizeName(authenticatedUsername));
         RoomSnapshot snapshot = room.snapshot();
-        eventBroadcaster.broadcast(snapshot);
+        safeBroadcast(snapshot);
         return new RoomEntryResponse(roomCode, token, snapshot);
     }
 
-    public RoomEntryResponse joinRoom(String roomCode, String playerName) {
+    public RoomEntryResponse joinRoom(String roomCode, String authenticatedUsername) {
         Room room = getRoom(roomCode);
-        String token = room.addPlayer(normalizeName(playerName));
+        String token = room.addPlayer(normalizeName(authenticatedUsername));
         RoomSnapshot snapshot = room.snapshot();
-        eventBroadcaster.broadcast(snapshot);
+        safeBroadcast(snapshot);
         return new RoomEntryResponse(room.code(), token, snapshot);
     }
 
-    public RoomSnapshot snapshot(String roomCode, String token) {
+    public RoomSnapshot snapshot(String roomCode, String token, String authenticatedUsername) {
         Room room = getRoom(roomCode);
-        room.requirePlayer(token);
+        requireAuthorizedPlayer(room, token, authenticatedUsername);
         return room.snapshot();
     }
 
-    public void leaveRoom(String roomCode, String token) {
+    public void leaveRoom(String roomCode, String token, String authenticatedUsername) {
         Room room = getRoom(roomCode);
+        requireAuthorizedPlayer(room, token, authenticatedUsername);
         room.removePlayer(token);
 
         if (room.empty()) {
@@ -63,40 +74,51 @@ public class RoomService {
             return;
         }
 
-        eventBroadcaster.broadcast(room.snapshot());
+        safeBroadcast(room.snapshot());
     }
 
-    public void setReady(String roomCode, String token, boolean ready) {
-        mutateAndBroadcast(roomCode, room -> room.setReady(token, ready));
+    public void setReady(String roomCode, String token, String authenticatedUsername, boolean ready) {
+        mutateAndBroadcast(roomCode, token, authenticatedUsername, room -> room.setReady(token, ready));
     }
 
-    public void move(String roomCode, String token, Direction direction) {
-        mutateAndBroadcast(roomCode, room -> room.move(token, direction));
+    public void move(String roomCode, String token, String authenticatedUsername, Direction direction) {
+        mutateAndBroadcast(roomCode, token, authenticatedUsername, room -> room.move(token, direction));
     }
 
-    public void fire(String roomCode, String token) {
-        mutateAndBroadcast(roomCode, room -> room.fire(token));
+    public void fire(String roomCode, String token, String authenticatedUsername) {
+        mutateAndBroadcast(roomCode, token, authenticatedUsername, room -> room.fire(token));
     }
 
-    public void applyInput(String roomCode, String token, GameInputFrame input) {
-        mutateAndBroadcast(roomCode, room -> room.applyInput(token, input));
+    public void applyInput(String roomCode, String token, String authenticatedUsername, GameInputFrame input) {
+        mutateAndBroadcast(roomCode, token, authenticatedUsername, room -> room.applyInput(token, input));
     }
 
-    public void claimHit(String roomCode, String reporterToken, long shotId, long snapshotTick) {
-        mutateAndBroadcast(roomCode, room -> room.claimHit(reporterToken, shotId, snapshotTick));
+    public void claimHit(
+            String roomCode,
+            String reporterToken,
+            String authenticatedUsername,
+            long shotId,
+            long snapshotTick
+    ) {
+        mutateAndBroadcast(
+                roomCode,
+                reporterToken,
+                authenticatedUsername,
+                room -> room.claimHit(reporterToken, shotId, snapshotTick)
+        );
     }
 
-    public List<ReplayRedirect> requestReplay(String roomCode, String token) {
+    public List<ReplayRedirect> requestReplay(String roomCode, String token, String authenticatedUsername) {
         Room room = getRoom(roomCode);
-        room.requirePlayer(token);
+        requireAuthorizedPlayer(room, token, authenticatedUsername);
         List<Room.ReplayParticipant> participants = room.requestReplay(token);
-        eventBroadcaster.broadcast(room.snapshot());
+        safeBroadcast(room.snapshot());
         if (participants.isEmpty()) {
             return List.of();
         }
 
         String newRoomCode = generateRoomCode();
-        Room replayRoom = new Room(newRoomCode);
+        Room replayRoom = new Room(newRoomCode, clock::nowMillis);
         roomRepository.save(replayRoom);
 
         List<ReplayRedirect> redirects = new ArrayList<>();
@@ -105,17 +127,17 @@ public class RoomService {
             redirects.add(new ReplayRedirect(participant.token(), newRoomCode, newToken));
         }
 
-        eventBroadcaster.broadcast(replayRoom.snapshot());
+        safeBroadcast(replayRoom.snapshot());
         return redirects;
     }
 
-    public String requestReturnToRoom(String roomCode, String token) {
+    public String requestReturnToRoom(String roomCode, String token, String authenticatedUsername) {
         Room room = getRoom(roomCode);
         if (room.phase() != RoomPhase.COMPLETE) {
             throw new IllegalStateException("Return-to-room broadcast is only available after match completion");
         }
 
-        return room.requirePlayer(token).name() + " returned to room";
+        return requireAuthorizedPlayer(room, token, authenticatedUsername).name() + " returned to room";
     }
 
     private Room getRoom(String roomCode) {
@@ -123,10 +145,38 @@ public class RoomService {
                 .orElseThrow(() -> new NoSuchElementException("Room not found"));
     }
 
-    private void mutateAndBroadcast(String roomCode, Consumer<Room> mutation) {
+    private void mutateAndBroadcast(
+            String roomCode,
+            String token,
+            String authenticatedUsername,
+            Consumer<Room> mutation
+    ) {
         Room room = getRoom(roomCode);
+        requireAuthorizedPlayer(room, token, authenticatedUsername);
         mutation.accept(room);
-        eventBroadcaster.broadcast(room.snapshot());
+        safeBroadcast(room.snapshot());
+    }
+
+    private Player requireAuthorizedPlayer(Room room, String token, String authenticatedUsername) {
+        Player player = room.requirePlayer(token);
+        String normalizedUsername = normalizeName(authenticatedUsername);
+        if (!player.name().equals(normalizedUsername)) {
+            throw new AccessDeniedException("Player token is not bound to authenticated user");
+        }
+        return player;
+    }
+
+    private void safeBroadcast(RoomSnapshot snapshot) {
+        BroadcastResult result = eventBroadcaster.broadcast(snapshot);
+        if (result.failed() > 0) {
+            LOGGER.warn(
+                    "Snapshot broadcast completed with failures: roomCode={}, attempted={}, delivered={}, failed={}",
+                    snapshot.code(),
+                    result.attempted(),
+                    result.delivered(),
+                    result.failed()
+            );
+        }
     }
 
     private String normalizeName(String value) {
@@ -142,15 +192,18 @@ public class RoomService {
     }
 
     private String generateRoomCode() {
-        String code;
-        do {
-            StringBuilder builder = new StringBuilder(5);
-            for (int index = 0; index < 5; index++) {
+        for (int attempt = 0; attempt < MAX_ROOM_CODE_ATTEMPTS; attempt++) {
+            StringBuilder builder = new StringBuilder(ROOM_CODE_LENGTH);
+            for (int index = 0; index < ROOM_CODE_LENGTH; index++) {
                 int alphabetIndex = ThreadLocalRandom.current().nextInt(ROOM_ALPHABET.length());
                 builder.append(ROOM_ALPHABET.charAt(alphabetIndex));
             }
-            code = builder.toString();
-        } while (roomRepository.findByCode(code).isPresent());
-        return code;
+            String code = builder.toString();
+            if (roomRepository.findByCode(code).isEmpty()) {
+                return code;
+            }
+        }
+
+        throw new IllegalStateException("Unable to allocate a unique room code");
     }
 }

@@ -2,6 +2,8 @@ package com.codereboot.gameboot.api;
 
 import com.codereboot.gameboot.application.AuthService;
 import com.codereboot.gameboot.domain.User;
+import com.codereboot.gameboot.security.JwtTokenService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +14,13 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
     private final AuthService authService;
+    private final JwtTokenService jwtTokenService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, JwtTokenService jwtTokenService) {
         this.authService = authService;
+        this.jwtTokenService = jwtTokenService;
     }
 
     /**
@@ -29,13 +32,15 @@ public class AuthController {
      * @throws IllegalArgumentException if validation fails or user exists (caught by ApiExceptionHandler → 400)
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         User user = authService.register(request.username(), request.email(), request.password());
+        String accessToken = jwtTokenService.issueToken(user);
         AuthResponse response = new AuthResponse(
             user.getId(),
             user.getUsername(),
             user.getEmail(),
-            "Registration successful"
+            "Registration successful",
+            accessToken
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -49,13 +54,15 @@ public class AuthController {
      * @throws IllegalArgumentException if credentials invalid (caught by ApiExceptionHandler → 400)
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         User user = authService.authenticate(request.username(), request.password());
+        String accessToken = jwtTokenService.issueToken(user);
         AuthResponse response = new AuthResponse(
             user.getId(),
             user.getUsername(),
             user.getEmail(),
-            "Login successful"
+            "Login successful",
+            accessToken
         );
         return ResponseEntity.ok(response);
     }

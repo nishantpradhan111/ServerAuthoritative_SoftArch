@@ -1,5 +1,6 @@
 package com.codereboot.gameboot.transport;
 
+import com.codereboot.gameboot.application.BroadcastResult;
 import com.codereboot.gameboot.application.RoomEventBroadcaster;
 import com.codereboot.gameboot.application.RoomSessionGateway;
 import com.codereboot.gameboot.domain.RoomSnapshot;
@@ -9,7 +10,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +29,11 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
     private static final CloseStatus SEND_FAILURE_STATUS = new CloseStatus(1011, "Server send failure");
 
     private final ObjectMapper objectMapper;
-    private final ConcurrentMap<String, ConcurrentMap<String, WebSocketSession>> sessionsByRoom = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, SessionRef> sessionRefs = new ConcurrentHashMap<>();
+    private final WebSocketSessionRegistry sessionRegistry;
 
-    public WebSocketRoomBroadcaster(ObjectMapper objectMapper) {
+    public WebSocketRoomBroadcaster(ObjectMapper objectMapper, WebSocketSessionRegistry sessionRegistry) {
         this.objectMapper = objectMapper;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @Override
@@ -43,8 +43,7 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
                 SEND_TIME_LIMIT_MS,
                 BUFFER_SIZE_LIMIT_BYTES
         );
-        sessionsByRoom.computeIfAbsent(roomCode, ignored -> new ConcurrentHashMap<>()).put(token, safeSession);
-        sessionRefs.put(session.getId(), new SessionRef(roomCode, token));
+        sessionRegistry.register(roomCode, token, session.getId(), safeSession);
     }
 
     @Override
@@ -53,36 +52,35 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
             return;
         }
 
-        SessionRef ref = sessionRefs.remove(session.getId());
-        if (ref == null) {
-            return;
-        }
-
-        ConcurrentMap<String, WebSocketSession> roomSessions = sessionsByRoom.get(ref.roomCode());
-        if (roomSessions == null) {
-            return;
-        }
-
-        roomSessions.remove(ref.token());
-        if (roomSessions.isEmpty()) {
-            sessionsByRoom.remove(ref.roomCode(), roomSessions);
-        }
+        sessionRegistry.unregister(session.getId());
     }
 
     @Override
-    public void broadcast(RoomSnapshot snapshot) {
-        ConcurrentMap<String, WebSocketSession> roomSessions = sessionsByRoom.get(snapshot.code());
+    public BroadcastResult broadcast(RoomSnapshot snapshot) {
+        ConcurrentMap<String, WebSocketSession> roomSessions = sessionRegistry.sessionsForRoom(snapshot.code());
         if (roomSessions == null) {
-            return;
+            return BroadcastResult.none();
         }
+
+        int attempted = 0;
+        int delivered = 0;
+        int failed = 0;
         for (Map.Entry<String, WebSocketSession> entry : roomSessions.entrySet()) {
+            attempted++;
             WebSocketSession session = entry.getValue();
             if (session == null || !session.isOpen()) {
                 removeSession(snapshot.code(), entry.getKey(), session);
+                failed++;
                 continue;
             }
-            sendSnapshot(session, snapshot);
+            if (send(session, envelope("snapshot", snapshot))) {
+                delivered++;
+            } else {
+                failed++;
+            }
         }
+
+        return new BroadcastResult(attempted, delivered, failed);
     }
 
     @Override
@@ -97,12 +95,7 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
 
     @Override
     public void sendReplayRedirect(String roomCode, String token, String newRoomCode, String newToken) {
-        ConcurrentMap<String, WebSocketSession> roomSessions = sessionsByRoom.get(roomCode);
-        if (roomSessions == null) {
-            return;
-        }
-
-        WebSocketSession session = roomSessions.get(token);
+        WebSocketSession session = sessionRegistry.sessionFor(roomCode, token);
         if (session == null || !session.isOpen()) {
             removeSession(roomCode, token, session);
             return;
@@ -117,7 +110,7 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
 
     @Override
     public void sendRoomReturn(String roomCode, String message) {
-        ConcurrentMap<String, WebSocketSession> roomSessions = sessionsByRoom.get(roomCode);
+        ConcurrentMap<String, WebSocketSession> roomSessions = sessionRegistry.sessionsForRoom(roomCode);
         if (roomSessions == null) {
             return;
         }
@@ -150,31 +143,24 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
     }
 
     @SuppressWarnings("null")
-    private void send(WebSocketSession session, Object payload) {
+    private boolean send(WebSocketSession session, Object payload) {
         try {
             String encoded = objectMapper.writeValueAsString(payload);
             session.sendMessage(new TextMessage(encoded.getBytes(StandardCharsets.UTF_8)));
+            return true;
         } catch (JsonProcessingException exception) {
-            throw new IllegalStateException("Unable to encode websocket payload", exception);
+            LOGGER.warn("Unable to encode websocket payload for session {}", session.getId(), exception);
+            return false;
         } catch (IOException | IllegalStateException exception) {
             LOGGER.debug("WebSocket send failed for session {}", session.getId(), exception);
             closeQuietly(session);
             unregister(session);
+            return false;
         }
     }
 
     private void removeSession(String roomCode, String token, WebSocketSession session) {
-        ConcurrentMap<String, WebSocketSession> roomSessions = sessionsByRoom.get(roomCode);
-        if (roomSessions != null) {
-            roomSessions.remove(token);
-            if (roomSessions.isEmpty()) {
-                sessionsByRoom.remove(roomCode, roomSessions);
-            }
-        }
-
-        if (session != null) {
-            sessionRefs.remove(session.getId());
-        }
+        sessionRegistry.remove(roomCode, token, session == null ? null : session.getId());
     }
 
     @SuppressWarnings("null")
@@ -187,8 +173,5 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
         } catch (IOException ignored) {
             // Nothing to do.
         }
-    }
-
-    private record SessionRef(String roomCode, String token) {
     }
 }
