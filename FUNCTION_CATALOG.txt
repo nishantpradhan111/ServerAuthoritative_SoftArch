@@ -1,313 +1,172 @@
-﻿CodeReboot Function Catalog
+CodeReboot Function Catalog
 Generated: 2026-04-17
 
 Format: Function Name - Path - One-line Definition
 
-notFound - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:15 - Implements core 'notFound' behavior for this module.
-badRequest - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:20 - Implements core 'badRequest' behavior for this module.
-build - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:24 - Creates and returns a new value or domain object.
-AuthController - src/main/java/com/codereboot/gameboot/api/AuthController.java:19 - Constructs and initializes this component with required dependencies and defaults.
-register - src/main/java/com/codereboot/gameboot/api/AuthController.java:32 - Manages lifecycle, simulation, or session transitions for this module.
-login - src/main/java/com/codereboot/gameboot/api/AuthController.java:52 - Implements core 'login' behavior for this module.
-CreateRoomRequest - src/main/java/com/codereboot/gameboot/api/CreateRoomRequest.java:3 - Constructs and initializes this component with required dependencies and defaults.
-RoomEntryResponse - src/main/java/com/codereboot/gameboot/api/dto/RoomEntryResponse.java:5 - Constructs and initializes this component with required dependencies and defaults.
-JoinRoomRequest - src/main/java/com/codereboot/gameboot/api/JoinRoomRequest.java:3 - Constructs and initializes this component with required dependencies and defaults.
-RoomController - src/main/java/com/codereboot/gameboot/api/RoomController.java:20 - Constructs and initializes this component with required dependencies and defaults.
-createRoom - src/main/java/com/codereboot/gameboot/api/RoomController.java:25 - Creates and returns a new value or domain object.
-joinRoom - src/main/java/com/codereboot/gameboot/api/RoomController.java:30 - Implements core 'joinRoom' behavior for this module.
-snapshot - src/main/java/com/codereboot/gameboot/api/RoomController.java:35 - Retrieves and returns data needed by the current flow.
-leaveRoom - src/main/java/com/codereboot/gameboot/api/RoomController.java:40 - Manages lifecycle, simulation, or session transitions for this module.
-AuthService - src/main/java/com/codereboot/gameboot/application/AuthService.java:29 - Constructs and initializes this component with required dependencies and defaults.
-register - src/main/java/com/codereboot/gameboot/application/AuthService.java:44 - Manages lifecycle, simulation, or session transitions for this module.
-authenticate - src/main/java/com/codereboot/gameboot/application/AuthService.java:72 - Implements core 'authenticate' behavior for this module.
-validateUsername - src/main/java/com/codereboot/gameboot/application/AuthService.java:90 - Validates inputs or state and enforces business constraints.
-validateEmail - src/main/java/com/codereboot/gameboot/application/AuthService.java:104 - Validates inputs or state and enforces business constraints.
-validatePassword - src/main/java/com/codereboot/gameboot/application/AuthService.java:117 - Validates inputs or state and enforces business constraints.
-GameSimulationService - src/main/java/com/codereboot/gameboot/application/GameSimulationService.java:24 - Constructs and initializes this component with required dependencies and defaults.
-tickRooms - src/main/java/com/codereboot/gameboot/application/GameSimulationService.java:30 - Manages lifecycle, simulation, or session transitions for this module.
-ReplayRedirect - src/main/java/com/codereboot/gameboot/application/RoomService.java:25 - Implements core 'ReplayRedirect' behavior for this module.
-RoomService - src/main/java/com/codereboot/gameboot/application/RoomService.java:28 - Constructs and initializes this component with required dependencies and defaults.
-createRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:33 - Creates and returns a new value or domain object.
-joinRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:43 - Implements core 'joinRoom' behavior for this module.
-snapshot - src/main/java/com/codereboot/gameboot/application/RoomService.java:51 - Retrieves and returns data needed by the current flow.
-leaveRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:57 - Manages lifecycle, simulation, or session transitions for this module.
-setReady - src/main/java/com/codereboot/gameboot/application/RoomService.java:69 - Updates in-memory state or persists values for later use.
-move - src/main/java/com/codereboot/gameboot/application/RoomService.java:73 - Manages lifecycle, simulation, or session transitions for this module.
-fire - src/main/java/com/codereboot/gameboot/application/RoomService.java:77 - Manages lifecycle, simulation, or session transitions for this module.
-applyInput - src/main/java/com/codereboot/gameboot/application/RoomService.java:81 - Handles runtime behavior by applying feature-specific logic.
-claimHit - src/main/java/com/codereboot/gameboot/application/RoomService.java:85 - Implements core 'claimHit' behavior for this module.
-requestReplay - src/main/java/com/codereboot/gameboot/application/RoomService.java:89 - Implements core 'requestReplay' behavior for this module.
-requestReturnToRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:112 - Implements core 'requestReturnToRoom' behavior for this module.
-getRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:121 - Retrieves and returns data needed by the current flow.
-mutateAndBroadcast - src/main/java/com/codereboot/gameboot/application/RoomService.java:126 - Implements core 'mutateAndBroadcast' behavior for this module.
-normalizeName - src/main/java/com/codereboot/gameboot/application/RoomService.java:132 - Converts incoming values into normalized internal representation.
-normalizeRoomCode - src/main/java/com/codereboot/gameboot/application/RoomService.java:140 - Converts incoming values into normalized internal representation.
-generateRoomCode - src/main/java/com/codereboot/gameboot/application/RoomService.java:144 - Creates and returns a new value or domain object.
-WebSocketConfig - src/main/java/com/codereboot/gameboot/config/WebSocketConfig.java:16 - Constructs and initializes this component with required dependencies and defaults.
-registerWebSocketHandlers - src/main/java/com/codereboot/gameboot/config/WebSocketConfig.java:21 - Manages lifecycle, simulation, or session transitions for this module.
-Direction - src/main/java/com/codereboot/gameboot/domain/Direction.java:15 - Constructs and initializes this component with required dependencies and defaults.
-deltaX - src/main/java/com/codereboot/gameboot/domain/Direction.java:21 - Implements core 'deltaX' behavior for this module.
-deltaY - src/main/java/com/codereboot/gameboot/domain/Direction.java:25 - Implements core 'deltaY' behavior for this module.
-aimDegrees - src/main/java/com/codereboot/gameboot/domain/Direction.java:29 - Implements core 'aimDegrees' behavior for this module.
-from - src/main/java/com/codereboot/gameboot/domain/Direction.java:33 - Converts incoming values into normalized internal representation.
-fromVector - src/main/java/com/codereboot/gameboot/domain/Direction.java:37 - Converts incoming values into normalized internal representation.
-fromDegrees - src/main/java/com/codereboot/gameboot/domain/Direction.java:44 - Converts incoming values into normalized internal representation.
-Player - src/main/java/com/codereboot/gameboot/domain/Player.java:19 - Constructs and initializes this component with required dependencies and defaults.
-token - src/main/java/com/codereboot/gameboot/domain/Player.java:24 - Converts incoming values into normalized internal representation.
-name - src/main/java/com/codereboot/gameboot/domain/Player.java:28 - Implements core 'name' behavior for this module.
-x - src/main/java/com/codereboot/gameboot/domain/Player.java:32 - Implements core 'x' behavior for this module.
-y - src/main/java/com/codereboot/gameboot/domain/Player.java:36 - Implements core 'y' behavior for this module.
-positionX - src/main/java/com/codereboot/gameboot/domain/Player.java:40 - Implements core 'positionX' behavior for this module.
-positionY - src/main/java/com/codereboot/gameboot/domain/Player.java:44 - Implements core 'positionY' behavior for this module.
-velocityX - src/main/java/com/codereboot/gameboot/domain/Player.java:48 - Implements core 'velocityX' behavior for this module.
-velocityY - src/main/java/com/codereboot/gameboot/domain/Player.java:52 - Implements core 'velocityY' behavior for this module.
-aimDegrees - src/main/java/com/codereboot/gameboot/domain/Player.java:56 - Implements core 'aimDegrees' behavior for this module.
-facing - src/main/java/com/codereboot/gameboot/domain/Player.java:60 - Implements core 'facing' behavior for this module.
-health - src/main/java/com/codereboot/gameboot/domain/Player.java:64 - Implements core 'health' behavior for this module.
-ammo - src/main/java/com/codereboot/gameboot/domain/Player.java:68 - Implements core 'ammo' behavior for this module.
-lastInputSequence - src/main/java/com/codereboot/gameboot/domain/Player.java:72 - Implements core 'lastInputSequence' behavior for this module.
-lastShotId - src/main/java/com/codereboot/gameboot/domain/Player.java:76 - Implements core 'lastShotId' behavior for this module.
-ready - src/main/java/com/codereboot/gameboot/domain/Player.java:80 - Retrieves and returns data needed by the current flow.
-ready - src/main/java/com/codereboot/gameboot/domain/Player.java:84 - Retrieves and returns data needed by the current flow.
-place - src/main/java/com/codereboot/gameboot/domain/Player.java:88 - Implements core 'place' behavior for this module.
-place - src/main/java/com/codereboot/gameboot/domain/Player.java:92 - Implements core 'place' behavior for this module.
-moveTo - src/main/java/com/codereboot/gameboot/domain/Player.java:99 - Manages lifecycle, simulation, or session transitions for this module.
-moveTo - src/main/java/com/codereboot/gameboot/domain/Player.java:103 - Manages lifecycle, simulation, or session transitions for this module.
-translate - src/main/java/com/codereboot/gameboot/domain/Player.java:108 - Implements core 'translate' behavior for this module.
-face - src/main/java/com/codereboot/gameboot/domain/Player.java:113 - Implements core 'face' behavior for this module.
-face - src/main/java/com/codereboot/gameboot/domain/Player.java:118 - Implements core 'face' behavior for this module.
-setVelocity - src/main/java/com/codereboot/gameboot/domain/Player.java:123 - Updates in-memory state or persists values for later use.
-stop - src/main/java/com/codereboot/gameboot/domain/Player.java:128 - Manages lifecycle, simulation, or session transitions for this module.
-advance - src/main/java/com/codereboot/gameboot/domain/Player.java:133 - Manages lifecycle, simulation, or session transitions for this module.
-setLastInputSequence - src/main/java/com/codereboot/gameboot/domain/Player.java:142 - Updates in-memory state or persists values for later use.
-resetForMatch - src/main/java/com/codereboot/gameboot/domain/Player.java:146 - Manages lifecycle, simulation, or session transitions for this module.
-setLastShotId - src/main/java/com/codereboot/gameboot/domain/Player.java:158 - Updates in-memory state or persists values for later use.
-damage - src/main/java/com/codereboot/gameboot/domain/Player.java:162 - Implements core 'damage' behavior for this module.
-consumeAmmo - src/main/java/com/codereboot/gameboot/domain/Player.java:166 - Updates in-memory state or persists values for later use.
-defeated - src/main/java/com/codereboot/gameboot/domain/Player.java:170 - Computes a boolean decision used to control flow.
-normalizeDegrees - src/main/java/com/codereboot/gameboot/domain/Player.java:174 - Converts incoming values into normalized internal representation.
-ReplayRequestTracker - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:14 - Constructs and initializes this component with required dependencies and defaults.
-clear - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:18 - Manages lifecycle, simulation, or session transitions for this module.
-remove - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:22 - Manages lifecycle, simulation, or session transitions for this module.
-record - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:26 - Updates in-memory state or persists values for later use.
-cleanupExpired - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:30 - Manages lifecycle, simulation, or session transitions for this module.
-isReady - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:36 - Computes a boolean decision used to control flow.
-pendingTokens - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:49 - Implements core 'pendingTokens' behavior for this module.
-ReplayParticipant - src/main/java/com/codereboot/gameboot/domain/Room.java:46 - Implements core 'ReplayParticipant' behavior for this module.
-Room - src/main/java/com/codereboot/gameboot/domain/Room.java:49 - Constructs and initializes this component with required dependencies and defaults.
-Room - src/main/java/com/codereboot/gameboot/domain/Room.java:53 - Constructs and initializes this component with required dependencies and defaults.
-Room - src/main/java/com/codereboot/gameboot/domain/Room.java:57 - Constructs and initializes this component with required dependencies and defaults.
-code - src/main/java/com/codereboot/gameboot/domain/Room.java:66 - Implements core 'code' behavior for this module.
-phase - src/main/java/com/codereboot/gameboot/domain/Room.java:70 - Implements core 'phase' behavior for this module.
-addPlayer - src/main/java/com/codereboot/gameboot/domain/Room.java:74 - Implements core 'addPlayer' behavior for this module.
-removePlayer - src/main/java/com/codereboot/gameboot/domain/Room.java:94 - Manages lifecycle, simulation, or session transitions for this module.
-empty - src/main/java/com/codereboot/gameboot/domain/Room.java:117 - Computes a boolean decision used to control flow.
-setReady - src/main/java/com/codereboot/gameboot/domain/Room.java:121 - Updates in-memory state or persists values for later use.
-move - src/main/java/com/codereboot/gameboot/domain/Room.java:133 - Manages lifecycle, simulation, or session transitions for this module.
-applyInput - src/main/java/com/codereboot/gameboot/domain/Room.java:148 - Handles runtime behavior by applying feature-specific logic.
-fire - src/main/java/com/codereboot/gameboot/domain/Room.java:170 - Manages lifecycle, simulation, or session transitions for this module.
-claimHit - src/main/java/com/codereboot/gameboot/domain/Room.java:192 - Implements core 'claimHit' behavior for this module.
-tick - src/main/java/com/codereboot/gameboot/domain/Room.java:253 - Manages lifecycle, simulation, or session transitions for this module.
-requestReplay - src/main/java/com/codereboot/gameboot/domain/Room.java:280 - Implements core 'requestReplay' behavior for this module.
-snapshot - src/main/java/com/codereboot/gameboot/domain/Room.java:303 - Retrieves and returns data needed by the current flow.
-requirePlayer - src/main/java/com/codereboot/gameboot/domain/Room.java:348 - Retrieves and returns data needed by the current flow.
-startMatch - src/main/java/com/codereboot/gameboot/domain/Room.java:356 - Manages lifecycle, simulation, or session transitions for this module.
-canStart - src/main/java/com/codereboot/gameboot/domain/Room.java:379 - Computes a boolean decision used to control flow.
-ensureActive - src/main/java/com/codereboot/gameboot/domain/Room.java:385 - Validates inputs or state and enforces business constraints.
-isCellFree - src/main/java/com/codereboot/gameboot/domain/Room.java:391 - Computes a boolean decision used to control flow.
-canHit - src/main/java/com/codereboot/gameboot/domain/Room.java:397 - Computes a boolean decision used to control flow.
-canHit - src/main/java/com/codereboot/gameboot/domain/Room.java:404 - Computes a boolean decision used to control flow.
-recordTickState - src/main/java/com/codereboot/gameboot/domain/Room.java:417 - Updates in-memory state or persists values for later use.
-cleanupExpiredReplayRequests - src/main/java/com/codereboot/gameboot/domain/Room.java:424 - Manages lifecycle, simulation, or session transitions for this module.
-isReplayReady - src/main/java/com/codereboot/gameboot/domain/Room.java:430 - Computes a boolean decision used to control flow.
-clampPlayer - src/main/java/com/codereboot/gameboot/domain/Room.java:434 - Implements core 'clampPlayer' behavior for this module.
-resolveOverlap - src/main/java/com/codereboot/gameboot/domain/Room.java:444 - Handles runtime behavior by applying feature-specific logic.
-clamp - src/main/java/com/codereboot/gameboot/domain/Room.java:466 - Implements core 'clamp' behavior for this module.
-nowMs - src/main/java/com/codereboot/gameboot/domain/Room.java:470 - Implements core 'nowMs' behavior for this module.
-ShotTracker - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:17 - Constructs and initializes this component with required dependencies and defaults.
-clear - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:21 - Manages lifecycle, simulation, or session transitions for this module.
-register - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:26 - Manages lifecycle, simulation, or session transitions for this module.
-findActive - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:30 - Retrieves and returns data needed by the current flow.
-isExpired - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:38 - Computes a boolean decision used to control flow.
-markConsumed - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:42 - Updates in-memory state or persists values for later use.
-discard - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:47 - Implements core 'discard' behavior for this module.
-pruneExpired - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:51 - Implements core 'pruneExpired' behavior for this module.
-TickHistoryTracker - src/main/java/com/codereboot/gameboot/domain/TickHistoryTracker.java:11 - Constructs and initializes this component with required dependencies and defaults.
-clear - src/main/java/com/codereboot/gameboot/domain/TickHistoryTracker.java:15 - Manages lifecycle, simulation, or session transitions for this module.
-record - src/main/java/com/codereboot/gameboot/domain/TickHistoryTracker.java:19 - Updates in-memory state or persists values for later use.
-snapshotAt - src/main/java/com/codereboot/gameboot/domain/TickHistoryTracker.java:35 - Retrieves and returns data needed by the current flow.
-User - src/main/java/com/codereboot/gameboot/domain/User.java:37 - Constructs and initializes this component with required dependencies and defaults.
-User - src/main/java/com/codereboot/gameboot/domain/User.java:40 - Constructs and initializes this component with required dependencies and defaults.
-onUpdate - src/main/java/com/codereboot/gameboot/domain/User.java:50 - Implements core 'onUpdate' behavior for this module.
-getId - src/main/java/com/codereboot/gameboot/domain/User.java:55 - Retrieves and returns data needed by the current flow.
-getUsername - src/main/java/com/codereboot/gameboot/domain/User.java:59 - Retrieves and returns data needed by the current flow.
-getEmail - src/main/java/com/codereboot/gameboot/domain/User.java:63 - Retrieves and returns data needed by the current flow.
-getPasswordHash - src/main/java/com/codereboot/gameboot/domain/User.java:67 - Retrieves and returns data needed by the current flow.
-getCreatedAt - src/main/java/com/codereboot/gameboot/domain/User.java:71 - Retrieves and returns data needed by the current flow.
-getUpdatedAt - src/main/java/com/codereboot/gameboot/domain/User.java:75 - Retrieves and returns data needed by the current flow.
-setEmail - src/main/java/com/codereboot/gameboot/domain/User.java:80 - Updates in-memory state or persists values for later use.
-setPasswordHash - src/main/java/com/codereboot/gameboot/domain/User.java:84 - Updates in-memory state or persists values for later use.
-toString - src/main/java/com/codereboot/gameboot/domain/User.java:89 - Converts incoming values into normalized internal representation.
-main - src/main/java/com/codereboot/gameboot/GameBootApplication.java:11 - Application entry point that starts the service runtime.
-save - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:16 - Updates in-memory state or persists values for later use.
-findByCode - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:21 - Retrieves and returns data needed by the current flow.
-findAll - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:26 - Retrieves and returns data needed by the current flow.
-deleteByCode - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:31 - Implements core 'deleteByCode' behavior for this module.
-BCryptPasswordEncoderImpl - src/main/java/com/codereboot/gameboot/security/BCryptPasswordEncoderImpl.java:15 - Constructs and initializes this component with required dependencies and defaults.
-encode - src/main/java/com/codereboot/gameboot/security/BCryptPasswordEncoderImpl.java:21 - Implements core 'encode' behavior for this module.
-matches - src/main/java/com/codereboot/gameboot/security/BCryptPasswordEncoderImpl.java:29 - Implements core 'matches' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:12 - Implements core 'type' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:19 - Implements core 'type' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:26 - Implements core 'type' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:33 - Implements core 'type' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:40 - Implements core 'type' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:47 - Implements core 'type' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:54 - Implements core 'type' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:61 - Implements core 'type' behavior for this module.
-type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:68 - Implements core 'type' behavior for this module.
-GameSocketCommandDispatcher - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:20 - Constructs and initializes this component with required dependencies and defaults.
-dispatch - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:25 - Handles runtime behavior by applying feature-specific logic.
-handleSubscribe - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:90 - Handles runtime behavior by applying feature-specific logic.
-roomCode - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:104 - Implements core 'roomCode' behavior for this module.
-token - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:112 - Converts incoming values into normalized internal representation.
-hasSessionContext - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:120 - Computes a boolean decision used to control flow.
-closeQuietly - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:125 - Manages lifecycle, simulation, or session transitions for this module.
-GameSocketCommandParser - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandParser.java:15 - Constructs and initializes this component with required dependencies and defaults.
-parse - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandParser.java:19 - Converts incoming values into normalized internal representation.
-parsePayload - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandParser.java:40 - Converts incoming values into normalized internal representation.
-text - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandParser.java:48 - Implements core 'text' behavior for this module.
-inputFrame - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandParser.java:56 - Implements core 'inputFrame' behavior for this module.
-handleTextMessage - src/main/java/com/codereboot/gameboot/transport/GameSocketHandler.java:29 - Handles runtime behavior by applying feature-specific logic.
-afterConnectionClosed - src/main/java/com/codereboot/gameboot/transport/GameSocketHandler.java:39 - Implements core 'afterConnectionClosed' behavior for this module.
-afterConnectionEstablished - src/main/java/com/codereboot/gameboot/transport/GameSocketHandler.java:44 - Implements core 'afterConnectionEstablished' behavior for this module.
-WebSocketRoomBroadcaster - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:35 - Constructs and initializes this component with required dependencies and defaults.
-register - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:40 - Manages lifecycle, simulation, or session transitions for this module.
-unregister - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:51 - Manages lifecycle, simulation, or session transitions for this module.
-broadcast - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:73 - Implements core 'broadcast' behavior for this module.
-sendSnapshot - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:89 - Implements core 'sendSnapshot' behavior for this module.
-sendError - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:94 - Implements core 'sendError' behavior for this module.
-sendReplayRedirect - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:99 - Implements core 'sendReplayRedirect' behavior for this module.
-sendRoomReturn - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:119 - Implements core 'sendRoomReturn' behavior for this module.
-envelope - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:139 - Implements core 'envelope' behavior for this module.
-send - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:153 - Implements core 'send' behavior for this module.
-removeSession - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:166 - Manages lifecycle, simulation, or session transitions for this module.
-closeQuietly - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:181 - Manages lifecycle, simulation, or session transitions for this module.
-SessionRef - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:192 - Implements core 'SessionRef' behavior for this module.
-tick - src/main/resources/static/js/auth.js:40 - Manages lifecycle, simulation, or session transitions for this module.
-switchTab - src/main/resources/static/js/auth.js:50 - Implements core 'switchTab' behavior for this module.
-loadProfile - src/main/resources/static/js/common.js:3 - Retrieves and returns data needed by the current flow.
-saveProfile - src/main/resources/static/js/common.js:31 - Updates in-memory state or persists values for later use.
-clearProfile - src/main/resources/static/js/common.js:35 - Manages lifecycle, simulation, or session transitions for this module.
-ensureProfile - src/main/resources/static/js/common.js:40 - Validates inputs or state and enforces business constraints.
-apiJson - src/main/resources/static/js/common.js:49 - Implements core 'apiJson' behavior for this module.
-wsUrl - src/main/resources/static/js/common.js:79 - Implements core 'wsUrl' behavior for this module.
-badgeText - src/main/resources/static/js/common.js:84 - Implements core 'badgeText' behavior for this module.
-logLine - src/main/resources/static/js/game.js:101 - Implements core 'logLine' behavior for this module.
-resetClientPredictionState - src/main/resources/static/js/game.js:118 - Manages lifecycle, simulation, or session transitions for this module.
-setReplayStatus - src/main/resources/static/js/game.js:143 - Updates in-memory state or persists values for later use.
-mapKeyboardState - src/main/resources/static/js/game.js:147 - Converts incoming values into normalized internal representation.
-updateAimFromPointer - src/main/resources/static/js/game.js:172 - Updates in-memory state or persists values for later use.
-centerAimCursor - src/main/resources/static/js/game.js:194 - Implements core 'centerAimCursor' behavior for this module.
-movementVector - src/main/resources/static/js/game.js:199 - Manages lifecycle, simulation, or session transitions for this module.
-shouldFire - src/main/resources/static/js/game.js:219 - Verifies expected behavior through an automated test scenario.
-sendInstantFire - src/main/resources/static/js/game.js:238 - Implements core 'sendInstantFire' behavior for this module.
-spawnLocalBullet - src/main/resources/static/js/game.js:274 - Creates and returns a new value or domain object.
-sendHitClaim - src/main/resources/static/js/game.js:288 - Implements core 'sendHitClaim' behavior for this module.
-handleBulletImpact - src/main/resources/static/js/game.js:308 - Handles runtime behavior by applying feature-specific logic.
-applyInputToState - src/main/resources/static/js/game.js:330 - Handles runtime behavior by applying feature-specific logic.
-buildInputFrame - src/main/resources/static/js/game.js:344 - Creates and returns a new value or domain object.
-reconcileSelf - src/main/resources/static/js/game.js:358 - Implements core 'reconcileSelf' behavior for this module.
-showEndState - src/main/resources/static/js/game.js:407 - Implements core 'showEndState' behavior for this module.
-handleReplayRedirect - src/main/resources/static/js/game.js:445 - Handles runtime behavior by applying feature-specific logic.
-handleRoomReturn - src/main/resources/static/js/game.js:454 - Handles runtime behavior by applying feature-specific logic.
-updateSelfDisplay - src/main/resources/static/js/game.js:463 - Updates in-memory state or persists values for later use.
-drawScene - src/main/resources/static/js/game.js:479 - Handles runtime behavior by applying feature-specific logic.
-resizeCanvasIfNeeded - src/main/resources/static/js/game.js:524 - Implements core 'resizeCanvasIfNeeded' behavior for this module.
-updateHud - src/main/resources/static/js/game.js:537 - Updates in-memory state or persists values for later use.
-animationStep - src/main/resources/static/js/game.js:547 - Implements core 'animationStep' behavior for this module.
-renderSnapshot - src/main/resources/static/js/game.js:584 - Handles runtime behavior by applying feature-specific logic.
-connectRoom - src/main/resources/static/js/game.js:651 - Manages lifecycle, simulation, or session transitions for this module.
-maybeReconnect - src/main/resources/static/js/game.js:676 - Implements core 'maybeReconnect' behavior for this module.
-cleanupAndExit - src/main/resources/static/js/game.js:689 - Manages lifecycle, simulation, or session transitions for this module.
-createRoundedRectPath - src/main/resources/static/js/game/effects.js:15 - Creates and returns a new value or domain object.
-spawnBullet - src/main/resources/static/js/game/effects.js:31 - Creates and returns a new value or domain object.
-assignShotIdToLatestBullet - src/main/resources/static/js/game/effects.js:57 - Implements core 'assignShotIdToLatestBullet' behavior for this module.
-advanceBullets - src/main/resources/static/js/game/effects.js:86 - Manages lifecycle, simulation, or session transitions for this module.
-resolveBulletCollisions - src/main/resources/static/js/game/effects.js:104 - Handles runtime behavior by applying feature-specific logic.
-drawBullets - src/main/resources/static/js/game/effects.js:149 - Handles runtime behavior by applying feature-specific logic.
-clearBullets - src/main/resources/static/js/game/effects.js:179 - Manages lifecycle, simulation, or session transitions for this module.
-resolveEndPresentation - src/main/resources/static/js/game/end-state.js:27 - Handles runtime behavior by applying feature-specific logic.
-createHitClaimTracker - src/main/resources/static/js/game/hit-claim-tracker.js:1 - Creates and returns a new value or domain object.
-prune - src/main/resources/static/js/game/hit-claim-tracker.js:8 - Implements core 'prune' behavior for this module.
-clear - src/main/resources/static/js/game/hit-claim-tracker.js:26 - Manages lifecycle, simulation, or session transitions for this module.
-register - src/main/resources/static/js/game/hit-claim-tracker.js:30 - Manages lifecycle, simulation, or session transitions for this module.
-clamp - src/main/resources/static/js/game/math.js:1 - Implements core 'clamp' behavior for this module.
-normalizeDegrees - src/main/resources/static/js/game/math.js:5 - Converts incoming values into normalized internal representation.
-blend - src/main/resources/static/js/game/math.js:10 - Implements core 'blend' behavior for this module.
-distance2D - src/main/resources/static/js/game/math.js:14 - Implements core 'distance2D' behavior for this module.
-normalizeVector - src/main/resources/static/js/game/math.js:18 - Converts incoming values into normalized internal representation.
-drawRoundedRect - src/main/resources/static/js/game/rendering.js:3 - Handles runtime behavior by applying feature-specific logic.
-renderBackdrop - src/main/resources/static/js/game/rendering.js:14 - Handles runtime behavior by applying feature-specific logic.
-worldToScreen - src/main/resources/static/js/game/rendering.js:28 - Implements core 'worldToScreen' behavior for this module.
-drawArenaGrid - src/main/resources/static/js/game/rendering.js:35 - Handles runtime behavior by applying feature-specific logic.
-drawPlayer - src/main/resources/static/js/game/rendering.js:58 - Handles runtime behavior by applying feature-specific logic.
-drawAimTracer - src/main/resources/static/js/game/rendering.js:131 - Handles runtime behavior by applying feature-specific logic.
-getReplayPendingTokens - src/main/resources/static/js/game/replay-state.js:1 - Retrieves and returns data needed by the current flow.
-canRequestReplay - src/main/resources/static/js/game/replay-state.js:5 - Computes a boolean decision used to control flow.
-buildReplayUiState - src/main/resources/static/js/game/replay-state.js:14 - Creates and returns a new value or domain object.
-setReplayStatusBadge - src/main/resources/static/js/game/replay-ui.js:1 - Updates in-memory state or persists values for later use.
-navigateToReplayRoom - src/main/resources/static/js/game/room-navigation.js:3 - Implements core 'navigateToReplayRoom' behavior for this module.
-navigateToRoom - src/main/resources/static/js/game/room-navigation.js:13 - Implements core 'navigateToRoom' behavior for this module.
-addFeed - src/main/resources/static/js/room.js:39 - Implements core 'addFeed' behavior for this module.
-roomStateMeta - src/main/resources/static/js/room.js:58 - Implements core 'roomStateMeta' behavior for this module.
-setConnectionState - src/main/resources/static/js/room.js:91 - Updates in-memory state or persists values for later use.
-setNotice - src/main/resources/static/js/room.js:99 - Updates in-memory state or persists values for later use.
-setRoomTitle - src/main/resources/static/js/room.js:107 - Updates in-memory state or persists values for later use.
-updateLeaveButtonState - src/main/resources/static/js/room.js:120 - Updates in-memory state or persists values for later use.
-clearRoomSession - src/main/resources/static/js/room.js:124 - Manages lifecycle, simulation, or session transitions for this module.
-resetLobbyUI - src/main/resources/static/js/room.js:135 - Manages lifecycle, simulation, or session transitions for this module.
-renderPlayers - src/main/resources/static/js/room.js:149 - Handles runtime behavior by applying feature-specific logic.
-updateHeroStatus - src/main/resources/static/js/room.js:199 - Updates in-memory state or persists values for later use.
-updateActionBar - src/main/resources/static/js/room.js:209 - Updates in-memory state or persists values for later use.
-applySnapshot - src/main/resources/static/js/room.js:214 - Handles runtime behavior by applying feature-specific logic.
-connectRoom - src/main/resources/static/js/room.js:261 - Manages lifecycle, simulation, or session transitions for this module.
-joinRoom - src/main/resources/static/js/room.js:276 - Implements core 'joinRoom' behavior for this module.
-hydrateFromStorage - src/main/resources/static/js/room.js:301 - Implements core 'hydrateFromStorage' behavior for this module.
-openRoomSocket - src/main/resources/static/js/socket.js:4 - Manages lifecycle, simulation, or session transitions for this module.
-send - src/main/resources/static/js/socket.js:57 - Implements core 'send' behavior for this module.
-close - src/main/resources/static/js/socket.js:62 - Manages lifecycle, simulation, or session transitions for this module.
-setReadyBroadcastsSnapshotAfterMutation - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:20 - Updates in-memory state or persists values for later use.
-moveBroadcastsSnapshotAfterMutation - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:37 - Manages lifecycle, simulation, or session transitions for this module.
-leaveRoomDeletesWhenRoomBecomesEmpty - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:61 - Manages lifecycle, simulation, or session transitions for this module.
-requestReturnToRoomRejectsNonCompletePhase - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:77 - Exercises and validates a specific behavior in the test suite.
-recordsPendingTokensInInsertionOrder - src/test/java/com/codereboot/gameboot/domain/ReplayRequestTrackerTest.java:13 - Updates in-memory state or persists values for later use.
-cleanupExpiredReturnsTrueOnlyWhenTrackerBecomesEmpty - src/test/java/com/codereboot/gameboot/domain/ReplayRequestTrackerTest.java:23 - Manages lifecycle, simulation, or session transitions for this module.
-readinessRequiresAllRequestedTokens - src/test/java/com/codereboot/gameboot/domain/ReplayRequestTrackerTest.java:38 - Retrieves and returns data needed by the current flow.
-startsWhenBothPlayersAreReady - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:14 - Manages lifecycle, simulation, or session transitions for this module.
-validatedHitClaimReducesOpponentHealth - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:28 - Validates inputs or state and enforces business constraints.
-timeExpiredShotIsRejected - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:52 - Exercises and validates a specific behavior in the test suite.
-preFireSnapshotTickCannotRegisterHit - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:86 - Exercises and validates a specific behavior in the test suite.
-fireDecrementsShooterAmmo - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:119 - Manages lifecycle, simulation, or session transitions for this module.
-movementStaysInsideBoard - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:137 - Manages lifecycle, simulation, or session transitions for this module.
-inputFrameAdvancesContinuousPosition - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:150 - Exercises and validates a specific behavior in the test suite.
-diagonalAimCanHitWithinRange - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:177 - Exercises and validates a specific behavior in the test suite.
-aimingAwayStillMisses - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:207 - Exercises and validates a specific behavior in the test suite.
-leavingLobbyFreesSlotForAnotherPlayer - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:237 - Exercises and validates a specific behavior in the test suite.
-replayRequestAppearsInSnapshotForAllClients - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:252 - Exercises and validates a specific behavior in the test suite.
-replayPendingClearsWhenReplayIsMatched - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:266 - Exercises and validates a specific behavior in the test suite.
-finishMatch - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:279 - Exercises and validates a specific behavior in the test suite.
-registersAndFindsActiveShot - src/test/java/com/codereboot/gameboot/domain/ShotTrackerTest.java:13 - Manages lifecycle, simulation, or session transitions for this module.
-consumedShotIsNotActive - src/test/java/com/codereboot/gameboot/domain/ShotTrackerTest.java:24 - Updates in-memory state or persists values for later use.
-expiryAndPruneBehaviorAreConsistent - src/test/java/com/codereboot/gameboot/domain/ShotTrackerTest.java:34 - Exercises and validates a specific behavior in the test suite.
-recordsPlayerStateForTick - src/test/java/com/codereboot/gameboot/domain/TickHistoryTrackerTest.java:14 - Updates in-memory state or persists values for later use.
-enforcesMaxHistoryWithFifoEviction - src/test/java/com/codereboot/gameboot/domain/TickHistoryTrackerTest.java:32 - Exercises and validates a specific behavior in the test suite.
-nonSubscribeCommandWithoutSessionContextReturnsActionableError - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:24 - Exercises and validates a specific behavior in the test suite.
-subscribeRegistersSessionAndSendsInitialSnapshot - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:39 - Exercises and validates a specific behavior in the test suite.
-replayDispatchSendsRedirectForEachParticipant - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:69 - Exercises and validates a specific behavior in the test suite.
-reconnectRaceEarlyCommandRejectedThenAcceptedAfterSubscribe - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:92 - Exercises and validates a specific behavior in the test suite.
-malformedJsonIsRejected - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:15 - Exercises and validates a specific behavior in the test suite.
-missingTypeFieldIsRejected - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:25 - Exercises and validates a specific behavior in the test suite.
-unknownCommandTypeIsRejected - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:35 - Exercises and validates a specific behavior in the test suite.
-moveWithoutDirectionIsRejected - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:45 - Manages lifecycle, simulation, or session transitions for this module.
-subscribeRequiresRoomCodeAndToken - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:55 - Exercises and validates a specific behavior in the test suite.
-inputParsesWithDefaultsWhenOptionalFieldsOmitted - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandParserTest.java:70 - Exercises and validates a specific behavior in the test suite.
+=== API Layer ===
+AuthController - src/main/java/com/codereboot/gameboot/api/AuthController.java:15 - REST controller for registration and login flows.
+register - src/main/java/com/codereboot/gameboot/api/AuthController.java:34 - Registers a user and returns user profile plus JWT access token.
+login - src/main/java/com/codereboot/gameboot/api/AuthController.java:57 - Authenticates credentials and returns user profile plus JWT access token.
+
+RoomController - src/main/java/com/codereboot/gameboot/api/RoomController.java:15 - REST controller for authenticated room lifecycle operations.
+createRoom - src/main/java/com/codereboot/gameboot/api/RoomController.java:22 - Creates a room for the authenticated principal.
+joinRoom - src/main/java/com/codereboot/gameboot/api/RoomController.java:28 - Joins an existing room and returns room entry state.
+snapshot - src/main/java/com/codereboot/gameboot/api/RoomController.java:33 - Returns room snapshot after token-user ownership validation.
+leaveRoom - src/main/java/com/codereboot/gameboot/api/RoomController.java:42 - Removes authenticated player from room.
+
+SystemController - src/main/java/com/codereboot/gameboot/api/SystemController.java:13 - Lightweight operational endpoint controller.
+health - src/main/java/com/codereboot/gameboot/api/SystemController.java:16 - Returns UP status, Java version, uptime, and request correlation id.
+resolveRequestId - src/main/java/com/codereboot/gameboot/api/SystemController.java:25 - Extracts request id from request attribute/header for response payloads.
+
+ApiExceptionHandler - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:14 - Centralized JSON exception mapping for API errors.
+notFound - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:18 - Maps missing resources to HTTP 404 payload.
+badRequest - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:23 - Maps validation/state violations to sanitized HTTP 400 payload.
+validationFailed - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:28 - Maps bean validation errors to first actionable message.
+forbidden - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:37 - Maps authorization failures to HTTP 403 payload.
+build - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:41 - Builds error payload and appends request id when available.
+resolveRequestId - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:51 - Resolves request id from request attributes/headers.
+sanitizeMessage - src/main/java/com/codereboot/gameboot/api/ApiExceptionHandler.java:64 - Removes sensitive conflict details from public error messages.
+
+=== Application Layer ===
+AuthService - src/main/java/com/codereboot/gameboot/application/AuthService.java:29 - User registration/authentication service with input validation.
+register - src/main/java/com/codereboot/gameboot/application/AuthService.java:44 - Validates username/email/password, hashes password, persists user.
+authenticate - src/main/java/com/codereboot/gameboot/application/AuthService.java:72 - Verifies password hash and returns authenticated user.
+validateUsername - src/main/java/com/codereboot/gameboot/application/AuthService.java:90 - Enforces username constraints and uniqueness.
+validateEmail - src/main/java/com/codereboot/gameboot/application/AuthService.java:104 - Enforces email format and uniqueness.
+validatePassword - src/main/java/com/codereboot/gameboot/application/AuthService.java:117 - Enforces minimum password policy.
+
+RoomService - src/main/java/com/codereboot/gameboot/application/RoomService.java:22 - Authoritative room orchestration service.
+createRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:39 - Creates room, adds owner, broadcasts initial snapshot.
+joinRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:49 - Adds player to room and broadcasts updated snapshot.
+snapshot - src/main/java/com/codereboot/gameboot/application/RoomService.java:57 - Returns authorized room snapshot for token-bound user.
+leaveRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:63 - Removes player and deletes room when empty.
+setReady - src/main/java/com/codereboot/gameboot/application/RoomService.java:75 - Applies ready-state mutation with authorization checks.
+move - src/main/java/com/codereboot/gameboot/application/RoomService.java:79 - Applies directional movement mutation with authorization checks.
+fire - src/main/java/com/codereboot/gameboot/application/RoomService.java:83 - Applies fire action mutation with authorization checks.
+applyInput - src/main/java/com/codereboot/gameboot/application/RoomService.java:87 - Applies continuous input-frame mutation.
+claimHit - src/main/java/com/codereboot/gameboot/application/RoomService.java:91 - Applies server-side hit-claim validation mutation.
+requestReplay - src/main/java/com/codereboot/gameboot/application/RoomService.java:109 - Creates replay room and produces replay redirects.
+requestReturnToRoom - src/main/java/com/codereboot/gameboot/application/RoomService.java:136 - Validates post-match return request.
+mutateAndBroadcast - src/main/java/com/codereboot/gameboot/application/RoomService.java:149 - Shared mutate-then-broadcast primitive.
+requireAuthorizedPlayer - src/main/java/com/codereboot/gameboot/application/RoomService.java:159 - Enforces token-user binding against authenticated username.
+safeBroadcast - src/main/java/com/codereboot/gameboot/application/RoomService.java:169 - Broadcast wrapper with partial-delivery warning logs.
+generateRoomCode - src/main/java/com/codereboot/gameboot/application/RoomService.java:193 - Generates unique collision-safe short room codes.
+
+GameSimulationService - src/main/java/com/codereboot/gameboot/application/GameSimulationService.java:19 - Scheduled room simulation driver.
+tickRooms - src/main/java/com/codereboot/gameboot/application/GameSimulationService.java:28 - Advances active room ticks and publishes snapshots.
+
+=== Security Layer ===
+SecurityConfig - src/main/java/com/codereboot/gameboot/security/SecurityConfig.java:15 - Stateless security policy and route authorization map.
+securityFilterChain - src/main/java/com/codereboot/gameboot/security/SecurityConfig.java:27 - Configures auth entrypoint, route access policy, and JWT filter ordering.
+
+JwtAuthenticationFilter - src/main/java/com/codereboot/gameboot/security/JwtAuthenticationFilter.java:20 - Bearer-token authentication filter for HTTP requests.
+doFilterInternal - src/main/java/com/codereboot/gameboot/security/JwtAuthenticationFilter.java:29 - Validates JWT, creates authentication token, and populates security context.
+
+JwtTokenService - src/main/java/com/codereboot/gameboot/security/JwtTokenService.java:22 - JWT issue/parse/validate component.
+issueToken - src/main/java/com/codereboot/gameboot/security/JwtTokenService.java:49 - Issues signed JWT access token for authenticated user.
+isValid - src/main/java/com/codereboot/gameboot/security/JwtTokenService.java:66 - Performs signature/expiry validation for incoming token.
+parseClaims - src/main/java/com/codereboot/gameboot/security/JwtTokenService.java:84 - Parses claims payload for downstream auth checks.
+
+RequestIdFilter - src/main/java/com/codereboot/gameboot/security/RequestIdFilter.java:15 - Request correlation filter for operational traceability.
+doFilterInternal - src/main/java/com/codereboot/gameboot/security/RequestIdFilter.java:22 - Injects/propagates X-Request-Id into request, response, and MDC.
+
+BCryptPasswordEncoderImpl - src/main/java/com/codereboot/gameboot/security/BCryptPasswordEncoderImpl.java:15 - BCrypt adapter implementation.
+encode - src/main/java/com/codereboot/gameboot/security/BCryptPasswordEncoderImpl.java:21 - Returns BCrypt hash for plaintext password.
+matches - src/main/java/com/codereboot/gameboot/security/BCryptPasswordEncoderImpl.java:29 - Verifies plaintext against BCrypt hash.
+
+=== Transport and Realtime Layer ===
+WebSocketConfig - src/main/java/com/codereboot/gameboot/config/WebSocketConfig.java:11 - Registers websocket endpoint and origin allowlist policy.
+registerWebSocketHandlers - src/main/java/com/codereboot/gameboot/config/WebSocketConfig.java:27 - Binds GameSocketHandler to /ws endpoint.
+resolveAllowedOrigins - src/main/java/com/codereboot/gameboot/config/WebSocketConfig.java:35 - Parses comma-separated allowed origins config.
+
+GameSocketHandler - src/main/java/com/codereboot/gameboot/transport/GameSocketHandler.java:13 - WebSocket text handler entrypoint.
+handleTextMessage - src/main/java/com/codereboot/gameboot/transport/GameSocketHandler.java:29 - Parses command payload and dispatches domain action.
+afterConnectionClosed - src/main/java/com/codereboot/gameboot/transport/GameSocketHandler.java:42 - Clears session context and unregisters room socket.
+
+GameSocketCommandParser - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandParser.java:15 - Parses websocket text payload into typed commands.
+parse - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandParser.java:19 - Converts JSON payload into command variant.
+parsePayload - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandParser.java:40 - Parses command-specific payload for typed dispatch.
+
+GameSocketCommandDispatcher - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:20 - Dispatches websocket commands to RoomService.
+dispatch - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:25 - Executes command path with authorization and context checks.
+handleSubscribe - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:90 - Validates subscribe token and binds websocket session context.
+hasSessionContext - src/main/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcher.java:120 - Checks whether session has active room/token context.
+
+WebSocketRoomBroadcaster - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:35 - Room-scoped websocket broadcaster.
+register - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:40 - Registers websocket session for room/token stream.
+unregister - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:51 - Unregisters session safely using session-id-aware removal.
+broadcast - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:73 - Broadcasts room snapshots to all room sessions.
+sendError - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:94 - Sends standardized error envelope to session.
+sendReplayRedirect - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:99 - Sends replay room redirect event.
+sendRoomReturn - src/main/java/com/codereboot/gameboot/transport/WebSocketRoomBroadcaster.java:119 - Sends room return event after replay/end-state flow.
+
+=== Domain Layer (Core Gameplay Rules) ===
+Room - src/main/java/com/codereboot/gameboot/domain/Room.java:49 - Aggregate root for room lifecycle and combat state.
+addPlayer - src/main/java/com/codereboot/gameboot/domain/Room.java:74 - Adds player token/name into room if capacity permits.
+setReady - src/main/java/com/codereboot/gameboot/domain/Room.java:121 - Sets player ready flag and triggers match start when eligible.
+applyInput - src/main/java/com/codereboot/gameboot/domain/Room.java:148 - Applies continuous input frame to authoritative state.
+fire - src/main/java/com/codereboot/gameboot/domain/Room.java:170 - Registers shot with ammo validation and shot tracking.
+claimHit - src/main/java/com/codereboot/gameboot/domain/Room.java:192 - Validates hit claim against historical snapshots and shot state.
+tick - src/main/java/com/codereboot/gameboot/domain/Room.java:253 - Advances simulation tick and resolves movement/combat updates.
+requestReplay - src/main/java/com/codereboot/gameboot/domain/Room.java:280 - Coordinates replay consensus and participant extraction.
+snapshot - src/main/java/com/codereboot/gameboot/domain/Room.java:303 - Produces immutable room snapshot for API/websocket transport.
+requirePlayer - src/main/java/com/codereboot/gameboot/domain/Room.java:348 - Resolves player by token or raises authorization error.
+startMatch - src/main/java/com/codereboot/gameboot/domain/Room.java:356 - Initializes match phase state.
+
+RoomCombatLifecycle - src/main/java/com/codereboot/gameboot/domain/RoomCombatLifecycle.java:12 - Pure combat validation and damage application workflow.
+claimHit - src/main/java/com/codereboot/gameboot/domain/RoomCombatLifecycle.java:62 - Validates claim prerequisites and applies server-authoritative hit.
+
+ShotTracker - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:17 - Tracks active shots, TTL expiry, and consumption state.
+register - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:26 - Registers newly fired shot metadata.
+findActive - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:30 - Looks up active non-consumed shot by id.
+markConsumed - src/main/java/com/codereboot/gameboot/domain/ShotTracker.java:42 - Marks shot as consumed after accepted hit claim.
+
+TickHistoryTracker - src/main/java/com/codereboot/gameboot/domain/TickHistoryTracker.java:11 - Rolling history of authoritative per-tick player state.
+record - src/main/java/com/codereboot/gameboot/domain/TickHistoryTracker.java:19 - Appends per-tick player snapshot map.
+snapshotAt - src/main/java/com/codereboot/gameboot/domain/TickHistoryTracker.java:35 - Retrieves recorded state for a historical tick.
+
+Player - src/main/java/com/codereboot/gameboot/domain/Player.java:19 - Mutable authoritative player state model.
+advance - src/main/java/com/codereboot/gameboot/domain/Player.java:133 - Advances position based on current velocity.
+damage - src/main/java/com/codereboot/gameboot/domain/Player.java:162 - Applies non-negative health reduction.
+defeated - src/main/java/com/codereboot/gameboot/domain/Player.java:170 - Returns true when health reaches zero.
+
+ReplayRequestTracker - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:14 - Tracks replay intent and expiration by token.
+record - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:26 - Records replay request timestamp.
+isReady - src/main/java/com/codereboot/gameboot/domain/ReplayRequestTracker.java:36 - Returns true when all required players requested replay.
+
+=== Infrastructure Layer ===
+UserRepository - src/main/java/com/codereboot/gameboot/infra/UserRepository.java:8 - JPA repository for user persistence and uniqueness checks.
+RoomRepository - src/main/java/com/codereboot/gameboot/infra/RoomRepository.java:7 - Room persistence abstraction for service layer.
+InMemoryRoomRepository - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:13 - In-memory RoomRepository implementation.
+save - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:16 - Upserts room by room code.
+findByCode - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:21 - Returns room by uppercase code.
+findAll - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:26 - Returns all active rooms.
+deleteByCode - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:31 - Removes room by code.
+
+=== Frontend Runtime (Core JS Functions) ===
+auth.js
+switchTab - src/main/resources/static/js/auth.js:50 - Switches login/register tab state and visible form panel.
+
+common.js
+loadProfile - src/main/resources/static/js/common.js:3 - Loads persisted auth profile from browser storage.
+saveProfile - src/main/resources/static/js/common.js:31 - Persists auth profile and token.
+ensureProfile - src/main/resources/static/js/common.js:40 - Validates required profile fields before protected flows.
+apiJson - src/main/resources/static/js/common.js:49 - Executes JSON API call with standardized headers.
+wsUrl - src/main/resources/static/js/common.js:79 - Builds websocket URL from current origin.
+
+room.js
+applySnapshot - src/main/resources/static/js/room.js:214 - Applies room snapshot to lobby UI state.
+openRoomSocket - src/main/resources/static/js/socket.js:4 - Opens websocket and registers event callbacks.
+
+game.js
+buildInputFrame - src/main/resources/static/js/game.js:344 - Builds continuous input payload sent to server.
+renderSnapshot - src/main/resources/static/js/game.js:584 - Reconciles authoritative snapshot into client view state.
+sendHitClaim - src/main/resources/static/js/game.js:288 - Submits potential hit to server for validation.
+
+=== Automated Test Coverage (Representative Functions) ===
+RoomTest.validatedHitClaimReducesOpponentHealth - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:28 - Verifies accepted hit claim applies damage.
+RoomTest.preFireSnapshotTickCannotRegisterHit - src/test/java/com/codereboot/gameboot/domain/RoomTest.java:86 - Verifies stale/pre-fire snapshots cannot claim hits.
+RoomServiceTest.setReadyBroadcastsSnapshotAfterMutation - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:20 - Verifies mutation paths broadcast updated snapshots.
+GameSocketCommandDispatcherTest.subscribeRegistersSessionAndSendsInitialSnapshot - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:39 - Verifies subscribe flow binds context and emits initial snapshot.
+RequestIdFilterTest.generatesRequestIdWhenHeaderMissing - src/test/java/com/codereboot/gameboot/security/RequestIdFilterTest.java:17 - Verifies correlation id generation and propagation.
+SystemControllerTest.healthReturnsRuntimeSnapshot - src/test/java/com/codereboot/gameboot/api/SystemControllerTest.java:23 - Verifies health endpoint payload contract.

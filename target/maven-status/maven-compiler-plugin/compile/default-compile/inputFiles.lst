@@ -3,10 +3,12 @@ C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\jav
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\AuthResponse.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\CreateRoomRequest.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\dto\RoomEntryResponse.java
+C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\dto\SystemStatusResponse.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\JoinRoomRequest.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\LoginRequest.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\RegisterRequest.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\RoomController.java
+C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\api\SystemController.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\application\AppClock.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\application\AuthService.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\application\BroadcastResult.java
@@ -40,6 +42,8 @@ C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\jav
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\security\JwtAuthenticationFilter.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\security\JwtTokenService.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\security\PasswordEncoder.java
+C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\security\RequestIdFilter.java
+C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\security\RequestIdResolver.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\security\SecurityConfig.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\transport\GameSocketCommand.java
 C:\Nishant\Work\BITS - Engineering\3-2\Soft Arch\Project\CodeReboot\src\main\java\com\codereboot\gameboot\transport\GameSocketCommandDispatcher.java

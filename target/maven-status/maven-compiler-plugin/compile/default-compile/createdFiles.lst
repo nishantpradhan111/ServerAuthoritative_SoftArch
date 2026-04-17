@@ -1,4 +1,5 @@
 com\codereboot\gameboot\application\SystemAppClock.class
+com\codereboot\gameboot\api\dto\SystemStatusResponse.class
 com\codereboot\gameboot\api\AuthController.class
 com\codereboot\gameboot\application\AuthService.class
 com\codereboot\gameboot\application\RoomEventBroadcaster.class
@@ -12,6 +13,7 @@ com\codereboot\gameboot\security\JwtAuthenticationFilter.class
 com\codereboot\gameboot\api\dto\RoomEntryResponse.class
 com\codereboot\gameboot\api\RoomController.class
 com\codereboot\gameboot\api\ApiExceptionHandler.class
+com\codereboot\gameboot\api\SystemController.class
 com\codereboot\gameboot\domain\ShotTracker$TrackedShot.class
 com\codereboot\gameboot\security\JwtTokenService.class
 com\codereboot\gameboot\transport\WebSocketSessionRegistry$SessionRef.class
@@ -37,9 +39,11 @@ com\codereboot\gameboot\security\BCryptPasswordEncoderImpl.class
 com\codereboot\gameboot\domain\GameInputFrame.class
 com\codereboot\gameboot\application\RoomService.class
 com\codereboot\gameboot\transport\GameSocketCommand$HitClaim.class
+com\codereboot\gameboot\security\RequestIdResolver.class
 com\codereboot\gameboot\transport\WebSocketSessionContextRegistry.class
 com\codereboot\gameboot\api\RegisterRequest.class
 com\codereboot\gameboot\api\LoginRequest.class
+com\codereboot\gameboot\security\RequestIdFilter.class
 com\codereboot\gameboot\domain\PlayerTickState.class
 com\codereboot\gameboot\domain\RoomCombatLifecycle$FireOutcome.class
 com\codereboot\gameboot\domain\TickHistoryTracker.class

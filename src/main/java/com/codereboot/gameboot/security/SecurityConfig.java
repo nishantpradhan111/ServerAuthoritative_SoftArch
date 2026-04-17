@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/index.html", "/login.html", "/room.html", "/game.html").permitAll()
                     .requestMatchers("/favicon.ico", "/error").permitAll()
                         .requestMatchers("/css/**", "/js/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/system/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/ws").permitAll()
                         .requestMatchers("/api/rooms/**").authenticated()
