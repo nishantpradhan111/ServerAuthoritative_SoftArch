@@ -75,18 +75,16 @@ Then open the tunnel URL from a device outside your LAN. If you later buy a doma
 - `/api/system/health` provides a simple runtime check without bringing in Actuator or a monitoring stack
 - `X-Request-Id` is propagated through logs and API errors so requests can be traced end to end
 
-## Evaluation Mapping
+## Documentation
 
-This project is documented and implemented to align with the course evaluation scheme:
+Core project docs:
 
-- Correct application of architectural pattern: layered backend with explicit security, application, domain, transport, and infrastructure boundaries.
-- Fulfilment of functional requirements: auth, room lifecycle, live multiplayer loop, replay/return flow, and hit-claim behavior.
-- Architectural design quality: isolated responsibilities, clean dependency direction, and explicit server/client separation.
-- Documentation quality: this README, `IMPLEMENTATION_SUMMARY.md`, `DEPLOYMENT.md`, `SETUP.md`, and `docs/evaluation/architecture_views_mermaid.md` provide views, rationale, and setup guidance.
-- Architectural trade-offs: `docs/evaluation/architecture_decision_log.md` records the JWT, in-memory state, and server-authoritative hit-validation decisions.
-- Evidence map: `docs/evaluation/rubric_evidence.md` links rubric criteria to concrete code and documentation artifacts.
-- Design stance: the project intentionally stays lightweight and principles-driven instead of adding operational machinery that would distract from the core architecture.
-- Code quality and maintainability: small focused modules, named services, and passing automated tests.
+- `README.md` - project overview and quick start
+- `SETUP.md` - local setup and prerequisites
+- `POSTGRES_SETUP.md` - PostgreSQL initialization details
+- `DEPLOYMENT.md` - public sharing and deployment notes
+- `IMPLEMENTATION_SUMMARY.md` - architecture and implementation overview
+- `FUNCTION_CATALOG.txt` - concise function/class purpose index
 
 ## First-pass game loop
 

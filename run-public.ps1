@@ -2,7 +2,7 @@ param(
     [int]$Port = 8080,
     [string]$CloudflaredPath = "C:\Program Files (x86)\cloudflared\cloudflared.exe",
     [ValidateSet('http2', 'quic', 'auto')]
-    [string]$Protocol = 'http2',
+    [string]$Protocol = 'auto',
     [switch]$ShowUrlHint
 )
 

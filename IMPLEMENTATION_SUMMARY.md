@@ -133,17 +133,14 @@ Instead of heavy platform additions, the project provides:
 
 This satisfies practical debugging traceability while keeping architecture simple.
 
-## 7. Documentation and Evidence Set
+## 7. Documentation Set
 
-Primary architectural/evaluation artifacts:
+Primary project artifacts:
 - `README.md`
 - `FUNCTION_CATALOG.txt`
 - `DEPLOYMENT.md`
 - `SETUP.md`
-- `docs/evaluation/architecture_views_mermaid.md`
-- `docs/evaluation/architecture_decision_log.md`
-- `docs/evaluation/rubric_evidence.md`
-- `docs/evaluation/project_evaluation_report.md`
+- `POSTGRES_SETUP.md`
 
 ## 8. Test Evidence
 
@@ -158,16 +155,9 @@ Current project status:
 - build: passing,
 - automated test suite: passing.
 
-## 9. Strict-Evaluation Readiness Notes
+## 9. Scope Boundaries
 
-What this submission does well for strict review:
-- clear architectural boundaries,
-- direct traceability from design decisions to code,
-- functional completeness for stated scope,
-- explicit trade-off documentation,
-- coherent, synchronized documentation package.
-
-Known intentional scope boundaries (documented, not accidental):
+Known intentional scope boundaries:
 - single-instance in-memory room state,
 - no distributed cache/queue/orchestration stack,
 - lightweight operational visibility over enterprise observability platform.
