@@ -5,12 +5,13 @@ export function navigateToReplayRoom(roomCode, token, cleanup) {
         return;
     }
 
-    saveProfile({ ...loadProfile(), roomCode, token });
+    saveProfile({ ...loadProfile(), roomCode, token, stayInRoom: false });
     cleanup();
     window.location.href = "/room.html";
 }
 
 export function navigateToRoom(cleanup) {
+    saveProfile({ ...loadProfile(), stayInRoom: true });
     cleanup();
     window.location.href = "/room.html";
 }

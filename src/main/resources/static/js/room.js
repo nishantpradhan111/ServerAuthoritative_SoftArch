@@ -3,7 +3,7 @@ import { openRoomSocket } from "./socket.js";
 import { SocketCommand } from "./protocol.js";
 
 const profile = ensureProfile();
-const displayName = profile?.username ?? profile?.name ?? "pilot";
+const displayName = profile?.username ?? profile?.name ?? "player";
 
 const roomTitle = document.querySelector("#room-title");
 const roomSubtitle = document.querySelector("#room-subtitle");
@@ -156,7 +156,7 @@ function renderPlayers(snapshot) {
             <article class="roster-card">
                 <div class="roster-head">
                     <div>
-                        <div class="roster-name">Awaiting pilot</div>
+                        <div class="roster-name">Awaiting player</div>
                         <div class="roster-meta">No players in room yet.</div>
                     </div>
                     <span class="ping-badge">-- ms</span>
@@ -226,6 +226,10 @@ function applySnapshot(snapshot) {
     }
 
     if (snapshot.phase === "ACTIVE") {
+        const currentProfile = loadProfile();
+        if (currentProfile?.stayInRoom) {
+            return false;
+        }
         saveProfile({ ...loadProfile(), roomCode: snapshot.code, token: currentToken });
         setConnectionState("Live");
         roomSubtitle.textContent = "The duel has started. Loading the arena now...";
@@ -241,7 +245,7 @@ function applySnapshot(snapshot) {
     }
 
     setConnectionState("Live");
-    roomSubtitle.textContent = `Room ${snapshot.code} is open. Share the code and get the second pilot ready.`;
+    roomSubtitle.textContent = `Room ${snapshot.code} is open. Share the code and get the second player ready.`;
     return false;
 }
 
@@ -374,7 +378,7 @@ readyButton.addEventListener("click", () => {
         return;
     }
     socketHandle.send({ type: SocketCommand.READY });
-    setNotice("Readiness sent. Waiting on the second pilot.");
+    setNotice("Readiness sent. Waiting on the second player.");
 });
 
 leaveButton.addEventListener("click", () => {
