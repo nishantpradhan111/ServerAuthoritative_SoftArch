@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="cc-view-1" name="C and C View">
-        <mxGraphModel dx="1626" dy="722" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+        <mxGraphModel dx="1016" dy="451" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -29,7 +29,7 @@
                     <mxGeometry x="1030" y="320" width="350" height="140" as="geometry"/>
                 </mxCell>
                 <mxCell id="db" value="PostgreSQL&#xa;User data" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="705" width="220" height="140" as="geometry"/>
+                    <mxGeometry x="705" y="95" width="220" height="140" as="geometry"/>
                 </mxCell>
                 <mxCell id="e1" value="HTTPS JSON" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="browserA" target="restApi" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
