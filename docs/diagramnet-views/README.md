@@ -1,10 +1,11 @@
 # diagrams.net Architecture Views
 
-This folder contains editable diagrams.net (.drawio) files for the three requested architectural view types:
+This folder contains editable diagrams.net (.drawio) files for the requested architectural view types:
 
 - module-view.drawio
 - c-and-c-view.drawio
 - allocation-view.drawio
+- layered-view.drawio
 
 ## Open in app.diagrams.net
 
@@ -19,3 +20,5 @@ This folder contains editable diagrams.net (.drawio) files for the three request
 - These files are native diagrams.net XML, not Mermaid.
 - Labels and connectors are pre-filled for your current CodeReboot architecture.
 - You can restyle colors/layout without affecting the structure.
+- The layered view is the best one to use when you want to explain the codebase as a stack from presentation down to infrastructure.
+- The C&C view now has two pages in one file: Runtime Overview and Feature Extension Flow.

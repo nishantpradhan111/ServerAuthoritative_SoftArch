@@ -3,6 +3,60 @@ Generated: 2026-04-17
 
 Format: Function Name - Path - One-line Definition
 
+=== Bootstrap and Shared Support ===
+GameBootApplication - src/main/java/com/codereboot/gameboot/GameBootApplication.java:9 - Spring Boot entrypoint with scheduling enabled.
+main - src/main/java/com/codereboot/gameboot/GameBootApplication.java:11 - Starts the Spring application context.
+
+AppClock - src/main/java/com/codereboot/gameboot/application/AppClock.java:3 - Clock abstraction for time-based gameplay and replay logic.
+nowMillis - src/main/java/com/codereboot/gameboot/application/AppClock.java:5 - Returns current time in milliseconds.
+
+SystemAppClock - src/main/java/com/codereboot/gameboot/application/SystemAppClock.java:6 - System-backed AppClock implementation.
+nowMillis - src/main/java/com/codereboot/gameboot/application/SystemAppClock.java:9 - Returns System.currentTimeMillis().
+
+BroadcastResult - src/main/java/com/codereboot/gameboot/application/BroadcastResult.java:3 - Broadcast delivery summary for room snapshot pushes.
+none - src/main/java/com/codereboot/gameboot/application/BroadcastResult.java:5 - Returns an empty broadcast result.
+
+RoomEventBroadcaster - src/main/java/com/codereboot/gameboot/application/RoomEventBroadcaster.java:5 - Abstraction for broadcasting room snapshots.
+broadcast - src/main/java/com/codereboot/gameboot/application/RoomEventBroadcaster.java:7 - Broadcasts a room snapshot and returns delivery stats.
+
+RoomSessionGateway - src/main/java/com/codereboot/gameboot/application/RoomSessionGateway.java:5 - WebSocket session gateway used by the transport layer.
+register - src/main/java/com/codereboot/gameboot/application/RoomSessionGateway.java:7 - Registers a WebSocket session for a room/token pair.
+unregister - src/main/java/com/codereboot/gameboot/application/RoomSessionGateway.java:9 - Unregisters a WebSocket session.
+sendSnapshot - src/main/java/com/codereboot/gameboot/application/RoomSessionGateway.java:11 - Sends a snapshot payload to a session.
+sendError - src/main/java/com/codereboot/gameboot/application/RoomSessionGateway.java:13 - Sends a standardized error envelope.
+sendReplayRedirect - src/main/java/com/codereboot/gameboot/application/RoomSessionGateway.java:15 - Sends a replay-room redirect event.
+sendRoomReturn - src/main/java/com/codereboot/gameboot/application/RoomSessionGateway.java:17 - Sends a return-to-room event after replay flow.
+
+PasswordEncoder - src/main/java/com/codereboot/gameboot/security/PasswordEncoder.java:7 - Password hashing abstraction used by AuthService.
+encode - src/main/java/com/codereboot/gameboot/security/PasswordEncoder.java:13 - Encodes plaintext into a password hash.
+matches - src/main/java/com/codereboot/gameboot/security/PasswordEncoder.java:21 - Verifies plaintext against an encoded password hash.
+
+WebSocketSessionRegistry - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionRegistry.java:10 - Internal room/token to WebSocket session registry.
+register - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionRegistry.java:14 - Registers the active session for a room/token pair.
+unregister - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionRegistry.java:27 - Removes a session from the registry by session id.
+sessionsForRoom - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionRegistry.java:39 - Returns the live session map for a room.
+sessionFor - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionRegistry.java:43 - Looks up the current session for a room/token pair.
+remove - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionRegistry.java:48 - Removes a specific room/token/session combination.
+
+WebSocketSessionContextRegistry - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionContextRegistry.java:9 - Session context registry keyed by WebSocket session id.
+bind - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionContextRegistry.java:11 - Binds room/token/username context to a session id.
+get - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionContextRegistry.java:17 - Returns the stored context for a session id.
+clear - src/main/java/com/codereboot/gameboot/transport/WebSocketSessionContextRegistry.java:24 - Removes stored context for a session id.
+
+SessionContext - src/main/java/com/codereboot/gameboot/transport/SessionContext.java:3 - Immutable WebSocket session context record.
+
+GameSocketCommand - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:6 - Typed command hierarchy for websocket message dispatch.
+type - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:8 - Returns the command discriminator string.
+Subscribe - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:10 - Subscribe command carrying room, token, and auth token.
+Ready - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:17 - Ready-state command.
+Move - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:23 - Discrete movement command.
+Fire - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:30 - Fire command.
+Input - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:36 - Continuous input-frame command.
+Sync - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:43 - Snapshot sync command.
+HitClaim - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:49 - Server-side hit claim command.
+Replay - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:56 - Replay request command.
+ReturnToRoom - src/main/java/com/codereboot/gameboot/transport/GameSocketCommand.java:62 - Return-to-room command.
+
 === API Layer ===
 AuthController - src/main/java/com/codereboot/gameboot/api/AuthController.java:15 - REST controller for registration and login flows.
 register - src/main/java/com/codereboot/gameboot/api/AuthController.java:34 - Registers a user and returns user profile plus JWT access token.
@@ -143,6 +197,39 @@ findByCode - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.
 findAll - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:26 - Returns all active rooms.
 deleteByCode - src/main/java/com/codereboot/gameboot/infra/InMemoryRoomRepository.java:31 - Removes room by code.
 
+=== API DTOs ===
+AuthResponse - src/main/java/com/codereboot/gameboot/api/AuthResponse.java:5 - Authentication response payload with user identity and JWT.
+CreateRoomRequest - src/main/java/com/codereboot/gameboot/api/CreateRoomRequest.java:3 - Empty request DTO for room creation.
+JoinRoomRequest - src/main/java/com/codereboot/gameboot/api/JoinRoomRequest.java:3 - Request DTO for room join code validation.
+LoginRequest - src/main/java/com/codereboot/gameboot/api/LoginRequest.java:6 - Request DTO for login credentials.
+RegisterRequest - src/main/java/com/codereboot/gameboot/api/RegisterRequest.java:6 - Request DTO for new user registration.
+SystemStatusResponse - src/main/java/com/codereboot/gameboot/api/dto/SystemStatusResponse.java:3 - Health endpoint response payload.
+RoomEntryResponse - src/main/java/com/codereboot/gameboot/api/dto/RoomEntryResponse.java:3 - Room entry payload containing room code, token, and snapshot.
+
+=== Domain Support Types ===
+Direction - src/main/java/com/codereboot/gameboot/domain/Direction.java:5 - Direction enum with movement deltas and aim metadata.
+from - src/main/java/com/codereboot/gameboot/domain/Direction.java:28 - Parses a direction from string input.
+fromVector - src/main/java/com/codereboot/gameboot/domain/Direction.java:33 - Chooses a direction from an input vector.
+fromDegrees - src/main/java/com/codereboot/gameboot/domain/Direction.java:40 - Chooses a direction from an angle in degrees.
+
+GameInputFrame - src/main/java/com/codereboot/gameboot/domain/GameInputFrame.java:8 - Immutable continuous input command model.
+RoomPhase - src/main/java/com/codereboot/gameboot/domain/RoomPhase.java:3 - Room lifecycle phase enum.
+RoomMovementRules - src/main/java/com/codereboot/gameboot/domain/RoomMovementRules.java:5 - Movement and collision rules for room simulation.
+tryMove - src/main/java/com/codereboot/gameboot/domain/RoomMovementRules.java:13 - Applies a single step movement if the target cell is free.
+tick - src/main/java/com/codereboot/gameboot/domain/RoomMovementRules.java:27 - Advances and clamps all players during a simulation tick.
+RoomReplayLifecycle - src/main/java/com/codereboot/gameboot/domain/RoomReplayLifecycle.java:5 - Replay flow coordinator for completed matches.
+clear - src/main/java/com/codereboot/gameboot/domain/RoomReplayLifecycle.java:18 - Clears all replay requests.
+remove - src/main/java/com/codereboot/gameboot/domain/RoomReplayLifecycle.java:22 - Removes one replay request by token.
+cleanupExpiredForSnapshot - src/main/java/com/codereboot/gameboot/domain/RoomReplayLifecycle.java:26 - Clears expired replay requests for a completed room snapshot.
+requestReplay - src/main/java/com/codereboot/gameboot/domain/RoomReplayLifecycle.java:39 - Records replay intent and returns the replay outcome.
+pendingTokens - src/main/java/com/codereboot/gameboot/domain/RoomReplayLifecycle.java:53 - Returns all tokens still waiting on replay confirmation.
+RoomSnapshot - src/main/java/com/codereboot/gameboot/domain/RoomSnapshot.java:5 - Immutable room snapshot model.
+PlayerSnapshot - src/main/java/com/codereboot/gameboot/domain/PlayerSnapshot.java:3 - Immutable player state snapshot for transport.
+PlayerTickState - src/main/java/com/codereboot/gameboot/domain/PlayerTickState.java:3 - Internal per-tick player state record.
+ConeHitValidationPolicy - src/main/java/com/codereboot/gameboot/domain/ConeHitValidationPolicy.java:3 - Geometry-based hit validation helper.
+canHit - src/main/java/com/codereboot/gameboot/domain/ConeHitValidationPolicy.java:5 - Checks whether a shot cone can hit the target.
+User - src/main/java/com/codereboot/gameboot/domain/User.java:12 - Registered user JPA entity with audit timestamps.
+
 === Frontend Runtime (Core JS Functions) ===
 auth.js
 switchTab - src/main/resources/static/js/auth.js:50 - Switches login/register tab state and visible form panel.
@@ -156,6 +243,8 @@ wsUrl - src/main/resources/static/js/common.js:79 - Builds websocket URL from cu
 
 room.js
 applySnapshot - src/main/resources/static/js/room.js:214 - Applies room snapshot to lobby UI state.
+
+socket.js
 openRoomSocket - src/main/resources/static/js/socket.js:4 - Opens websocket and registers event callbacks.
 
 game.js

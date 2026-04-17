@@ -1,89 +1,172 @@
-<mxfile host="65bd71144e">
-    <diagram id="cc-view-1" name="C and C View">
-        <mxGraphModel dx="1016" dy="451" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+<mxfile host="65bd71144e" pages="2">
+    <diagram id="cc-view-runtime-v2" name="C and C View - Runtime Overview">
+        <mxGraphModel dx="2033" dy="1995" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="title" value="CodeReboot - Component and Connector View" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1;" parent="1" vertex="1">
-                    <mxGeometry x="50" y="24" width="860" height="34" as="geometry"/>
+                <mxCell id="title" value="&lt;font style=&quot;font-size: 50px;&quot;&gt;CodeReboot - C&amp;amp;C Runtime Overview&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=40;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="365" y="-270" width="1070" height="34" as="geometry"/>
                 </mxCell>
-                <mxCell id="browserA" value="Player Browser A" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="70" y="130" width="70" height="110" as="geometry"/>
+                <mxCell id="zone-clients" value="&lt;div&gt;&lt;b&gt;&lt;font style=&quot;font-size: 32px;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;font style=&quot;font-size: 32px;&quot;&gt;Clients&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontSize=16;align=center;verticalAlign=top;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="120" width="250" height="810" as="geometry"/>
                 </mxCell>
-                <mxCell id="browserB" value="Player Browser B" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="70" y="360" width="70" height="110" as="geometry"/>
+                <mxCell id="zone-ingress" value="&lt;div&gt;&lt;b&gt;&lt;font style=&quot;font-size: 32px;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;font style=&quot;font-size: 32px;&quot;&gt;Ingress&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=16;align=center;verticalAlign=top;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="120" width="340" height="810" as="geometry"/>
                 </mxCell>
-                <mxCell id="restApi" value="REST API&#xa;AuthController / RoomController&#xa;SystemController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="230" y="90" width="300" height="130" as="geometry"/>
+                <mxCell id="zone-application" value="&lt;div&gt;&lt;b&gt;&lt;font style=&quot;font-size: 32px;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;font style=&quot;font-size: 32px;&quot;&gt;Application&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=16;align=center;verticalAlign=top;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="890" y="120" width="320" height="810" as="geometry"/>
                 </mxCell>
-                <mxCell id="wsHandler" value="WebSocket Ingress&#xa;GameSocketHandler&#xa;GameSocketCommandDispatcher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="230" y="300" width="300" height="140" as="geometry"/>
+                <mxCell id="zone-runtime" value="&lt;div&gt;&lt;b&gt;&lt;font style=&quot;font-size: 32px;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;font style=&quot;font-size: 32px;&quot;&gt;Domain + Infrastructure&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=16;align=center;verticalAlign=top;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="120" width="430" height="810" as="geometry"/>
                 </mxCell>
-                <mxCell id="security" value="Security Pipeline&#xa;RequestIdFilter&#xa;JwtAuthenticationFilter&#xa;JwtTokenService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="590" y="90" width="300" height="130" as="geometry"/>
+                <mxCell id="client" value="&lt;font style=&quot;font-size: 22px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Browser Clients&lt;/b&gt;&lt;br&gt;&lt;br&gt;Player A&lt;br&gt;Player B&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=16;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="450" width="213" height="195" as="geometry"/>
                 </mxCell>
-                <mxCell id="authService" value="AuthService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="590" y="250" width="220" height="80" as="geometry"/>
+                <mxCell id="security" value="&lt;font style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 26px;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;b style=&quot;&quot;&gt;Security Pipeline&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;&lt;br&gt;- RequestIdFilter&lt;br&gt;- JwtAuthenticationFilter&lt;br&gt;- JwtTokenService&lt;/font&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="-150" width="640" height="150" as="geometry"/>
                 </mxCell>
-                <mxCell id="roomService" value="RoomService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="860" y="250" width="240" height="80" as="geometry"/>
+                <mxCell id="rest" value="&lt;font style=&quot;font-size: 22px;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;b style=&quot;&quot;&gt;REST API&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;- AuthController&lt;br&gt;- RoomController&lt;br&gt;- SystemController&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="440" y="300" width="270" height="170" as="geometry"/>
                 </mxCell>
-                <mxCell id="domain" value="Domain Runtime&#xa;Room + RoomCombatLifecycle&#xa;ShotTracker + TickHistoryTracker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="1160" y="250" width="320" height="140" as="geometry"/>
+                <mxCell id="ws" value="&lt;font style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;b style=&quot;&quot;&gt;WebSocket Ingress&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;br&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;- &lt;/span&gt;&lt;font style=&quot;font-size: 19px;&quot;&gt;GameSocketHandler&lt;br&gt;- GameSocketCommandDispatcher&lt;/font&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="620" width="320" height="167" as="geometry"/>
                 </mxCell>
-                <mxCell id="broadcaster" value="WebSocketRoomBroadcaster&#xa;(RoomEventBroadcaster + RoomSessionGateway)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="860" y="380" width="330" height="110" as="geometry"/>
+                <mxCell id="auth-service" value="&lt;font style=&quot;font-size: 25px;&quot;&gt;&lt;b style=&quot;&quot;&gt;AuthService&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="950" y="270" width="220" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="db" value="PostgreSQL&#xa;users" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="920" y="90" width="220" height="130" as="geometry"/>
+                <mxCell id="room-service" value="&lt;font style=&quot;font-size: 22px;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;b style=&quot;&quot;&gt;RoomService&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;primary orchestration seam&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="953" y="505" width="220" height="120" as="geometry"/>
                 </mxCell>
-                <mxCell id="e1" value="HTTPS JSON" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="browserA" target="restApi" edge="1">
+                <mxCell id="domain" value="&lt;font style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Domain Runtime&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;- Room + RoomCombatLifecycle&lt;br&gt;- ShotTracker + TickHistoryTracker&lt;/font&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1385" y="390" width="325" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="broadcaster" value="&lt;font style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 23px;&quot;&gt;&lt;b style=&quot;&quot;&gt;WebSocketRoomBroadcaster&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;RoomEventBroadcaster +&lt;br&gt;RoomSessionGateway&lt;/font&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="725" width="350" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="db" value="&lt;font style=&quot;font-size: 22px;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;b style=&quot;&quot;&gt;PostgreSQL&lt;/b&gt;&lt;/font&gt;&lt;br&gt;users&lt;/font&gt;" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1430" y="217" width="210" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-client-rest" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;HTTPS JSON&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="client" target="rest" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e2" value="HTTPS JSON" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="browserB" target="restApi" edge="1">
+                <mxCell id="e-client-ws" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;WSS frames&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="client" target="ws" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="340" y="548"/>
+                            <mxPoint x="340" y="689"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-security-rest" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;authn/authz&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="security" target="rest" edge="1">
+                    <mxGeometry x="-0.1961" relative="1" as="geometry">
+                        <mxPoint x="-1" as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="880" y="125"/>
+                            <mxPoint x="670" y="125"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-security-ws" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;JWT validation&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="security" target="ws" edge="1">
+                    <mxGeometry x="0.6432" relative="1" as="geometry">
+                        <mxPoint x="1" as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="880" y="240"/>
+                            <mxPoint x="770" y="240"/>
+                            <mxPoint x="770" y="540"/>
+                            <mxPoint x="540" y="540"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-rest-auth" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;register/login delegation&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="rest" target="auth-service" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e3" value="WSS frames" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="browserA" target="wsHandler" edge="1">
+                <mxCell id="e-rest-room" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;room lifecycle APIs&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="rest" target="room-service" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1023" y="430"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-ws-room" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;game commands&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="ws" target="room-service" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e4" value="WSS frames" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="browserB" target="wsHandler" edge="1">
+                <mxCell id="e-room-domain" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;mutate state&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="room-service" target="domain" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e5" value="authn/authz" style="endArrow=block;html=1;dashed=1;strokeWidth=2;" parent="1" source="security" target="restApi" edge="1">
+                <mxCell id="e-room-broadcast" value="broadcast(snapshot)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="room-service" target="broadcaster" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e6" value="jwt checks" style="endArrow=block;html=1;dashed=1;strokeWidth=2;" parent="1" source="security" target="wsHandler" edge="1">
+                <mxCell id="e-ws-broadcast" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;register/snapshot/error&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="ws" target="broadcaster" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e7" value="register/login" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="restApi" target="authService" edge="1">
+                <mxCell id="e-auth-db" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;user queries&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" parent="1" source="auth-service" target="db" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e8" value="room APIs" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="restApi" target="roomService" edge="1">
+                <mxCell id="e-broadcast-client" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;snapshot/event push&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" parent="1" source="broadcaster" target="client" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="187" y="853"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="note" value="&lt;font style=&quot;font-size: 30px;&quot;&gt;Read flow in two passes: 1) left to right for command handling, 2) right to left for realtime push back to clients.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1000" width="1720" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="cc-view-extension-v2" name="C and C View - Feature Extension Flow">
+        <mxGraphModel dx="1201" dy="764" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=40;fontStyle=1;" value="CodeReboot - Feature Extension Flow" vertex="1">
+                    <mxGeometry x="70" y="42" width="860" height="34" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;" value="Use this page to explain exactly where new features are added without creating cross-layer coupling." vertex="1">
+                    <mxGeometry x="70" y="92" width="1400" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lane1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=16;" value="&lt;b&gt;1) Entry Point&lt;/b&gt;&lt;br&gt;&lt;br&gt;REST: add endpoint in controller&lt;br&gt;WS: add command in dispatcher" vertex="1">
+                    <mxGeometry x="100" y="220" width="300" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="lane2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=16;" value="&lt;b&gt;2) Security&lt;/b&gt;&lt;br&gt;&lt;br&gt;JWT and auth remain in filters/config.&lt;br&gt;Do not put auth in domain entities." vertex="1">
+                    <mxGeometry x="440" y="220" width="300" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="lane3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=16;" value="&lt;b&gt;3) Application Use-Case&lt;/b&gt;&lt;br&gt;&lt;br&gt;Implement orchestration in service&lt;br&gt;(primarily RoomService)." vertex="1">
+                    <mxGeometry x="780" y="220" width="300" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="lane4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=16;" value="&lt;b&gt;4) Domain Rules&lt;/b&gt;&lt;br&gt;&lt;br&gt;Extend Room/lifecycle/trackers.&lt;br&gt;Keep rules deterministic and testable." vertex="1">
+                    <mxGeometry x="1120" y="220" width="300" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="lane5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=16;" value="&lt;b&gt;5) Side Effects&lt;/b&gt;&lt;br&gt;&lt;br&gt;Persist if needed, then broadcast&lt;br&gt;through WebSocketRoomBroadcaster." vertex="1">
+                    <mxGeometry x="1460" y="220" width="300" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="f1" edge="1" parent="1" source="lane1" target="lane2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" value="validated request">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e9" value="commands" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="wsHandler" target="roomService" edge="1">
+                <mxCell id="f2" edge="1" parent="1" source="lane2" target="lane3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" value="authorized">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e10" value="state changes" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="roomService" target="domain" edge="1">
+                <mxCell id="f3" edge="1" parent="1" source="lane3" target="lane4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" value="business command">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e11" value="broadcast(snapshot)" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="roomService" target="broadcaster" edge="1">
+                <mxCell id="f4" edge="1" parent="1" source="lane4" target="lane5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeWidth=2;fontSize=14;" value="state updated">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e12" value="register/snapshot/error" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="wsHandler" target="broadcaster" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="good" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=16;" value="&lt;b&gt;Healthy change pattern&lt;/b&gt;&lt;br&gt;entrypoint -&gt; service use-case -&gt; domain update -&gt; broadcast" vertex="1">
+                    <mxGeometry x="460" y="520" width="940" height="110" as="geometry"/>
                 </mxCell>
-                <mxCell id="e13" value="user repository" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="authService" target="db" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="risk1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;" value="&lt;b&gt;Avoid&lt;/b&gt;: business rules in controllers or socket handlers" vertex="1">
+                    <mxGeometry x="220" y="720" width="420" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="e14" value="snapshot/event push" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="broadcaster" target="browserA" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="risk2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;" value="&lt;b&gt;Avoid&lt;/b&gt;: duplicating validation across REST and WS" vertex="1">
+                    <mxGeometry x="700" y="720" width="420" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="e15" value="snapshot/event push" style="endArrow=block;html=1;strokeWidth=2;" parent="1" source="broadcaster" target="browserB" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="risk3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;" value="&lt;b&gt;Avoid&lt;/b&gt;: growing RoomService without extracting sub-use-cases" vertex="1">
+                    <mxGeometry x="1180" y="720" width="420" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="note" value="Runtime connectors reflect current code: RoomService broadcasts via WebSocketRoomBroadcaster, not directly via GameSocketHandler." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="230" y="540" width="1250" height="58" as="geometry"/>
+                <mxCell id="note2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=20;" value="Presentation script: show top row for architecture path, then use red boxes to justify maintainability guardrails." vertex="1">
+                    <mxGeometry x="70" y="1030" width="1680" height="60" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
