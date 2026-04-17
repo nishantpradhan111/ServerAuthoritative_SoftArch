@@ -1,6 +1,7 @@
 package com.codereboot.gameboot.api;
 
 import com.codereboot.gameboot.api.dto.RoomEntryResponse;
+import com.codereboot.gameboot.application.RoomEntry;
 import com.codereboot.gameboot.application.RoomService;
 import com.codereboot.gameboot.domain.RoomSnapshot;
 import jakarta.validation.Valid;
@@ -25,12 +26,14 @@ public class RoomController {
 
     @PostMapping
     public RoomEntryResponse createRoom(Authentication authentication) {
-        return roomService.createRoom(authentication.getName());
+        RoomEntry roomEntry = roomService.createRoom(authentication.getName());
+        return new RoomEntryResponse(roomEntry.roomCode(), roomEntry.token(), roomEntry.snapshot());
     }
 
     @PostMapping("/join")
     public RoomEntryResponse joinRoom(@Valid @RequestBody JoinRoomRequest request, Authentication authentication) {
-        return roomService.joinRoom(request.roomCode(), authentication.getName());
+        RoomEntry roomEntry = roomService.joinRoom(request.roomCode(), authentication.getName());
+        return new RoomEntryResponse(roomEntry.roomCode(), roomEntry.token(), roomEntry.snapshot());
     }
 
     @GetMapping("/{roomCode}")

@@ -9,7 +9,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.codereboot.gameboot.api.dto.RoomEntryResponse;
+import com.codereboot.gameboot.application.RoomEntry;
 import com.codereboot.gameboot.application.RoomService;
 import com.codereboot.gameboot.domain.RoomPhase;
 import com.codereboot.gameboot.domain.RoomSnapshot;
@@ -39,7 +39,7 @@ class RoomControllerTest {
     @WithMockUser(username = "Ada")
     void createRoomReturnsEntryResponse() throws Exception {
         RoomSnapshot snapshot = sampleSnapshot("ABCDE");
-        RoomEntryResponse response = new RoomEntryResponse("ABCDE", "token-a", snapshot);
+        RoomEntry response = new RoomEntry("ABCDE", "token-a", snapshot);
         when(roomService.createRoom("Ada")).thenReturn(response);
 
         mockMvc.perform(post("/api/rooms")
@@ -56,7 +56,7 @@ class RoomControllerTest {
     @WithMockUser(username = "Ada")
     void joinRoomReturnsEntryResponse() throws Exception {
         RoomSnapshot snapshot = sampleSnapshot("ABCDE");
-        RoomEntryResponse response = new RoomEntryResponse("ABCDE", "token-b", snapshot);
+        RoomEntry response = new RoomEntry("ABCDE", "token-b", snapshot);
         when(roomService.joinRoom("ABCDE", "Ada")).thenReturn(response);
 
         mockMvc.perform(post("/api/rooms/join")

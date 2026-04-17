@@ -16,7 +16,9 @@ com\codereboot\gameboot\api\ApiExceptionHandler.class
 com\codereboot\gameboot\api\SystemController.class
 com\codereboot\gameboot\domain\ShotTracker$TrackedShot.class
 com\codereboot\gameboot\security\JwtTokenService.class
+com\codereboot\gameboot\application\RoomService$AuthorizedRoom.class
 com\codereboot\gameboot\transport\WebSocketSessionRegistry$SessionRef.class
+com\codereboot\gameboot\application\RoomService$ReplayRoom.class
 com\codereboot\gameboot\infra\InMemoryRoomRepository.class
 com\codereboot\gameboot\transport\GameSocketHandler.class
 com\codereboot\gameboot\api\AuthResponse.class
@@ -53,6 +55,7 @@ com\codereboot\gameboot\domain\RoomCombatLifecycle.class
 com\codereboot\gameboot\transport\GameSocketCommand$Replay.class
 com\codereboot\gameboot\application\AppClock.class
 com\codereboot\gameboot\domain\User.class
+com\codereboot\gameboot\application\RoomEntry.class
 com\codereboot\gameboot\domain\RoomCombatLifecycle$HitOutcome.class
 com\codereboot\gameboot\application\RoomSessionGateway.class
 com\codereboot\gameboot\transport\GameSocketCommandParser.class

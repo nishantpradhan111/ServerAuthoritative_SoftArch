@@ -1,6 +1,5 @@
 package com.codereboot.gameboot.application;
 
-import com.codereboot.gameboot.api.dto.RoomEntryResponse;
 import com.codereboot.gameboot.domain.Direction;
 import com.codereboot.gameboot.domain.GameInputFrame;
 import com.codereboot.gameboot.domain.Player;
@@ -34,39 +33,39 @@ public class RoomService {
     public record ReplayRedirect(String oldToken, String roomCode, String token) {
     }
 
+    private record AuthorizedRoom(Room room, Player player) {
+    }
+
     public RoomService(RoomRepository roomRepository, RoomEventBroadcaster eventBroadcaster, AppClock clock) {
         this.roomRepository = roomRepository;
         this.eventBroadcaster = eventBroadcaster;
         this.clock = clock;
     }
 
-    public RoomEntryResponse createRoom(String authenticatedUsername) {
+    public RoomEntry createRoom(String authenticatedUsername) {
         String roomCode = generateRoomCode();
         Room room = new Room(roomCode, clock::nowMillis);
         roomRepository.save(room);
         String token = room.addPlayer(normalizeName(authenticatedUsername));
         RoomSnapshot snapshot = room.snapshot();
         safeBroadcast(snapshot);
-        return new RoomEntryResponse(roomCode, token, snapshot);
+        return new RoomEntry(roomCode, token, snapshot);
     }
 
-    public RoomEntryResponse joinRoom(String roomCode, String authenticatedUsername) {
+    public RoomEntry joinRoom(String roomCode, String authenticatedUsername) {
         Room room = getRoom(roomCode);
         String token = room.addPlayer(normalizeName(authenticatedUsername));
         RoomSnapshot snapshot = room.snapshot();
         safeBroadcast(snapshot);
-        return new RoomEntryResponse(room.code(), token, snapshot);
+        return new RoomEntry(room.code(), token, snapshot);
     }
 
     public RoomSnapshot snapshot(String roomCode, String token, String authenticatedUsername) {
-        Room room = getRoom(roomCode);
-        requireAuthorizedPlayer(room, token, authenticatedUsername);
-        return room.snapshot();
+        return authorizedRoom(roomCode, token, authenticatedUsername).room().snapshot();
     }
 
     public void leaveRoom(String roomCode, String token, String authenticatedUsername) {
-        Room room = getRoom(roomCode);
-        requireAuthorizedPlayer(room, token, authenticatedUsername);
+        Room room = authorizedRoom(roomCode, token, authenticatedUsername).room();
         room.removePlayer(token);
 
         if (room.empty()) {
@@ -109,35 +108,26 @@ public class RoomService {
     }
 
     public List<ReplayRedirect> requestReplay(String roomCode, String token, String authenticatedUsername) {
-        Room room = getRoom(roomCode);
-        requireAuthorizedPlayer(room, token, authenticatedUsername);
+        Room room = authorizedRoom(roomCode, token, authenticatedUsername).room();
         List<Room.ReplayParticipant> participants = room.requestReplay(token);
         safeBroadcast(room.snapshot());
         if (participants.isEmpty()) {
             return List.of();
         }
 
-        String newRoomCode = generateRoomCode();
-        Room replayRoom = new Room(newRoomCode, clock::nowMillis);
-        roomRepository.save(replayRoom);
-
-        List<ReplayRedirect> redirects = new ArrayList<>();
-        for (Room.ReplayParticipant participant : participants) {
-            String newToken = replayRoom.addPlayer(participant.name());
-            redirects.add(new ReplayRedirect(participant.token(), newRoomCode, newToken));
-        }
-
+        ReplayRoom replayRoom = createReplayRoom(participants);
         safeBroadcast(replayRoom.snapshot());
-        return redirects;
+        return replayRoom.redirects();
     }
 
     public String requestReturnToRoom(String roomCode, String token, String authenticatedUsername) {
-        Room room = getRoom(roomCode);
+        AuthorizedRoom authorizedRoom = authorizedRoom(roomCode, token, authenticatedUsername);
+        Room room = authorizedRoom.room();
         if (room.phase() != RoomPhase.COMPLETE) {
             throw new IllegalStateException("Return-to-room broadcast is only available after match completion");
         }
 
-        return requireAuthorizedPlayer(room, token, authenticatedUsername).name() + " returned to room";
+        return authorizedRoom.player().name() + " returned to room";
     }
 
     private Room getRoom(String roomCode) {
@@ -151,10 +141,28 @@ public class RoomService {
             String authenticatedUsername,
             Consumer<Room> mutation
     ) {
-        Room room = getRoom(roomCode);
-        requireAuthorizedPlayer(room, token, authenticatedUsername);
+        Room room = authorizedRoom(roomCode, token, authenticatedUsername).room();
         mutation.accept(room);
         safeBroadcast(room.snapshot());
+    }
+
+    private AuthorizedRoom authorizedRoom(String roomCode, String token, String authenticatedUsername) {
+        Room room = getRoom(roomCode);
+        return new AuthorizedRoom(room, requireAuthorizedPlayer(room, token, authenticatedUsername));
+    }
+
+    private ReplayRoom createReplayRoom(List<Room.ReplayParticipant> participants) {
+        String roomCode = generateRoomCode();
+        Room room = new Room(roomCode, clock::nowMillis);
+        roomRepository.save(room);
+
+        List<ReplayRedirect> redirects = new ArrayList<>();
+        for (Room.ReplayParticipant participant : participants) {
+            String newToken = room.addPlayer(participant.name());
+            redirects.add(new ReplayRedirect(participant.token(), roomCode, newToken));
+        }
+
+        return new ReplayRoom(room.snapshot(), redirects);
     }
 
     private Player requireAuthorizedPlayer(Room room, String token, String authenticatedUsername) {
@@ -189,6 +197,9 @@ public class RoomService {
 
     private String normalizeRoomCode(String value) {
         return value == null ? "" : value.trim().toUpperCase();
+    }
+
+    private record ReplayRoom(RoomSnapshot snapshot, List<ReplayRedirect> redirects) {
     }
 
     private String generateRoomCode() {

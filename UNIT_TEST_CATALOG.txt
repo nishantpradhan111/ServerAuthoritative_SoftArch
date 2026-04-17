@@ -2,7 +2,7 @@ CodeReboot Unit Test Catalog
 Generated: 2026-04-17
 
 Scope: JUnit test methods discovered under src/test/java via @Test/@ParameterizedTest/@RepeatedTest/@TestFactory/@TestTemplate.
-Total unit tests: 64
+Total unit tests: 68
 
 Format: [#] ClassName.testMethod - Path:Line
 
@@ -81,3 +81,9 @@ Format: [#] ClassName.testMethod - Path:Line
 [62] WebSocketSessionRegistryTest.removeClearsMappedSessionId - src/test/java/com/codereboot/gameboot/transport/WebSocketSessionRegistryTest.java:40
 [63] WebSocketSessionRegistryTest.unregisterOfStaleSessionDoesNotRemoveReplacement - src/test/java/com/codereboot/gameboot/transport/WebSocketSessionRegistryTest.java:56
 [64] WebSocketSessionRegistryTest.removeWithStaleSessionIdDoesNotRemoveReplacement - src/test/java/com/codereboot/gameboot/transport/WebSocketSessionRegistryTest.java:73
+
+=== Architecture Fitness Tests ===
+[65] ArchitectureLayeringTest.packageSlicesShouldBeAcyclic - src/test/java/com/codereboot/gameboot/architecture/ArchitectureLayeringTest.java:18
+[66] ArchitectureLayeringTest.domainShouldNotDependOnOuterLayers - src/test/java/com/codereboot/gameboot/architecture/ArchitectureLayeringTest.java:24
+[67] ArchitectureLayeringTest.applicationShouldNotDependOnApiOrTransport - src/test/java/com/codereboot/gameboot/architecture/ArchitectureLayeringTest.java:33
+[68] ArchitectureLayeringTest.apiShouldNotDependOnTransport - src/test/java/com/codereboot/gameboot/architecture/ArchitectureLayeringTest.java:41

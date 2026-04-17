@@ -216,6 +216,16 @@ function applySnapshot(snapshot) {
     updateLeaveButtonState();
     setRoomTitle(snapshot.code);
     phaseBadge.textContent = snapshot.phase;
+
+    // stayInRoom is a one-match override used when returning from game.html.
+    // Clear it once the room is back to a non-active phase so future matches redirect correctly.
+    if (snapshot.phase !== "ACTIVE") {
+        const currentProfile = loadProfile();
+        if (currentProfile?.stayInRoom) {
+            saveProfile({ ...currentProfile, stayInRoom: false });
+        }
+    }
+
     updateHeroStatus(snapshot);
     renderPlayers(snapshot);
     updateActionBar(snapshot);

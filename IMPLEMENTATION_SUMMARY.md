@@ -18,6 +18,7 @@ Responsibilities:
 - Validates request shapes (DTO + bean validation).
 - Delegates business operations to application services.
 - Returns stable JSON responses.
+- Maps application-layer room entry contracts to HTTP response DTOs.
 
 Key classes:
 - `AuthController`
@@ -30,10 +31,12 @@ Responsibilities:
 - Orchestrates room lifecycle operations.
 - Enforces token-user ownership constraints.
 - Coordinates broadcast side effects.
+- Returns room entry contracts without depending on API DTOs.
 
 Key classes:
 - `AuthService`
 - `RoomService`
+- `RoomEntry`
 - `GameSimulationService`
 
 ### 2.3 Domain Layer (`domain/`)
@@ -138,9 +141,13 @@ This satisfies practical debugging traceability while keeping architecture simpl
 Primary project artifacts:
 - `README.md`
 - `FUNCTION_CATALOG.txt`
+- `UNIT_TEST_CATALOG.txt`
 - `DEPLOYMENT.md`
 - `SETUP.md`
 - `POSTGRES_SETUP.md`
+- `ARCHITECTURAL_RATIONALE.md`
+- `QUALITY_ATTRIBUTES_REPORT.md`
+- `evaluation_scheme.txt`
 
 ## 8. Test Evidence
 
@@ -149,7 +156,8 @@ Representative coverage areas:
 - room orchestration and broadcast side effects,
 - websocket parser and dispatcher behavior,
 - request correlation filter behavior,
-- health endpoint payload contract.
+- health endpoint payload contract,
+- architecture fitness checks that block package cycles and outer-layer dependencies.
 
 ## 9. Scope Boundaries
 

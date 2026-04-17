@@ -106,6 +106,8 @@ requireAuthorizedPlayer - src/main/java/com/codereboot/gameboot/application/Room
 safeBroadcast - src/main/java/com/codereboot/gameboot/application/RoomService.java:169 - Broadcast wrapper with partial-delivery warning logs.
 generateRoomCode - src/main/java/com/codereboot/gameboot/application/RoomService.java:193 - Generates unique collision-safe short room codes.
 
+RoomEntry - src/main/java/com/codereboot/gameboot/application/RoomEntry.java:3 - Immutable application-layer room entry contract returned by room creation and join flows.
+
 GameSimulationService - src/main/java/com/codereboot/gameboot/application/GameSimulationService.java:19 - Scheduled room simulation driver.
 tickRooms - src/main/java/com/codereboot/gameboot/application/GameSimulationService.java:28 - Advances active room ticks and publishes snapshots.
 
@@ -258,4 +260,8 @@ RoomTest.preFireSnapshotTickCannotRegisterHit - src/test/java/com/codereboot/gam
 RoomServiceTest.setReadyBroadcastsSnapshotAfterMutation - src/test/java/com/codereboot/gameboot/application/RoomServiceTest.java:20 - Verifies mutation paths broadcast updated snapshots.
 GameSocketCommandDispatcherTest.subscribeRegistersSessionAndSendsInitialSnapshot - src/test/java/com/codereboot/gameboot/transport/GameSocketCommandDispatcherTest.java:39 - Verifies subscribe flow binds context and emits initial snapshot.
 RequestIdFilterTest.generatesRequestIdWhenHeaderMissing - src/test/java/com/codereboot/gameboot/security/RequestIdFilterTest.java:17 - Verifies correlation id generation and propagation.
+ArchitectureLayeringTest.packageSlicesShouldBeAcyclic - src/test/java/com/codereboot/gameboot/architecture/ArchitectureLayeringTest.java:18 - Verifies package slices remain cycle-free.
+ArchitectureLayeringTest.domainShouldNotDependOnOuterLayers - src/test/java/com/codereboot/gameboot/architecture/ArchitectureLayeringTest.java:25 - Verifies domain code does not depend on outer layers.
+ArchitectureLayeringTest.applicationShouldNotDependOnApiOrTransport - src/test/java/com/codereboot/gameboot/architecture/ArchitectureLayeringTest.java:33 - Verifies application code stays free of api/transport dependencies.
+ArchitectureLayeringTest.apiShouldNotDependOnTransport - src/test/java/com/codereboot/gameboot/architecture/ArchitectureLayeringTest.java:41 - Verifies api code does not depend on transport internals.
 SystemControllerTest.healthReturnsRuntimeSnapshot - src/test/java/com/codereboot/gameboot/api/SystemControllerTest.java:23 - Verifies health endpoint payload contract.
