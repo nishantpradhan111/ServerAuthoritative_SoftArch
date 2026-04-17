@@ -5,46 +5,49 @@
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="title" value="CodeReboot - Module View" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1;" parent="1" vertex="1">
-                    <mxGeometry x="60" y="26" width="620" height="30" as="geometry"/>
+                    <mxGeometry x="60" y="24" width="700" height="34" as="geometry"/>
                 </mxCell>
                 <mxCell id="api" value="API Module&#xa;- AuthController&#xa;- RoomController&#xa;- SystemController&#xa;- ApiExceptionHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="80" y="110" width="300" height="170" as="geometry"/>
+                    <mxGeometry x="70" y="100" width="290" height="175" as="geometry"/>
                 </mxCell>
                 <mxCell id="application" value="Application Module&#xa;- AuthService&#xa;- RoomService&#xa;- GameSimulationService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="458.75" y="110" width="292.5" height="170" as="geometry"/>
+                    <mxGeometry x="430" y="100" width="310" height="175" as="geometry"/>
                 </mxCell>
                 <mxCell id="domain" value="Domain Module&#xa;- Room&#xa;- Player&#xa;- RoomCombatLifecycle&#xa;- ShotTracker / TickHistoryTracker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="820" y="110" width="340" height="170" as="geometry"/>
-                </mxCell>
-                <mxCell id="transport" value="Transport Module&#xa;- GameSocketHandler&#xa;- GameSocketCommandDispatcher&#xa;- WebSocketRoomBroadcaster" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="457.5" y="360" width="295" height="160" as="geometry"/>
+                    <mxGeometry x="810" y="100" width="350" height="175" as="geometry"/>
                 </mxCell>
                 <mxCell id="security" value="Security Module&#xa;- SecurityConfig&#xa;- JwtAuthenticationFilter&#xa;- JwtTokenService&#xa;- RequestIdFilter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="80" y="360" width="300" height="160" as="geometry"/>
+                    <mxGeometry x="70" y="340" width="290" height="175" as="geometry"/>
+                </mxCell>
+                <mxCell id="transport" value="Transport Module&#xa;- GameSocketHandler&#xa;- GameSocketCommandDispatcher&#xa;- WebSocketRoomBroadcaster" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" parent="1" vertex="1">
+                    <mxGeometry x="430" y="340" width="310" height="175" as="geometry"/>
                 </mxCell>
                 <mxCell id="infra" value="Infrastructure Module&#xa;- UserRepository&#xa;- RoomRepository&#xa;- InMemoryRoomRepository" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="840" y="360" width="320" height="160" as="geometry"/>
+                    <mxGeometry x="810" y="340" width="350" height="175" as="geometry"/>
                 </mxCell>
                 <mxCell id="e1" value="delegates" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="api" target="application" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e2" value="uses" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="application" target="domain" edge="1">
+                <mxCell id="e2" value="auth + request-id" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="api" target="security" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e3" value="uses" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="application" target="infra" edge="1">
+                <mxCell id="e3" value="uses" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="application" target="domain" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e4" value="publishes" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="application" target="transport" edge="1">
+                <mxCell id="e4" value="uses" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="application" target="infra" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e5" value="protects" style="endArrow=block;html=1;rounded=0;dashed=1;strokeWidth=2;" parent="1" source="security" target="api" edge="1">
+                <mxCell id="e5" value="password + jwt ports" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="application" target="security" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e6" value="validates" style="endArrow=block;html=1;rounded=0;dashed=1;strokeWidth=2;" parent="1" source="security" target="transport" edge="1">
+                <mxCell id="e6" value="command dispatch" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" parent="1" source="transport" target="application" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="note" value="Dependency direction: outer modules depend inward toward domain/infrastructure contracts." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="80" y="560" width="1080" height="60" as="geometry"/>
+                <mxCell id="e7" value="token validation" style="endArrow=block;html=1;rounded=0;dashed=1;strokeWidth=2;" parent="1" source="transport" target="security" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="note" value="Connections reflect current code-level dependencies and runtime call paths." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="560" width="1090" height="56" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
