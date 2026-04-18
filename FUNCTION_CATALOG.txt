@@ -2,6 +2,7 @@ CodeReboot Function Catalog
 Generated: 2026-04-17
 
 Format: Function Name - Path - One-line Definition
+Note: Line numbers are snapshot values captured at generation time and may drift after refactors; use the symbol names and paths as the authoritative lookup keys.
 
 === Bootstrap and Shared Support ===
 GameBootApplication - src/main/java/com/codereboot/gameboot/GameBootApplication.java:9 - Spring Boot entrypoint with scheduling enabled.

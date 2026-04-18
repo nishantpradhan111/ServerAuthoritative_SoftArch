@@ -108,7 +108,7 @@ Layered architecture with explicit API, Application, Domain, Security, Transport
   - Room state is single-instance and not resilient across restarts.
   - Horizontal scale-out needs shared room state in future.
 - Evidence:
-  - `InMemoryRoomRepository`, `UserRepository`, datasource configuration in `application.properties`.
+  - `InMemoryRoomRepository`, `UserRepository`, datasource configuration in `src/main/resources/application.properties`.
 
 ## D5. Lightweight Observability
 
@@ -279,7 +279,7 @@ Software intentionally not included (with rationale):
 - Benchmarking workflow and evidence template: `benchmarks/README.md`
 - Benchmark execution evidence: `benchmarks/RESULTS.md`
 - Architecture diagrams: `docs/diagramnet-views/`
-- Evaluation rubric source: `evaluation_scheme.txt`
+- Client-server architecture view: `docs/diagramnet-views/client-server-view.drawio`
 
 ## 11. Strict Evaluation Readiness Gates
 

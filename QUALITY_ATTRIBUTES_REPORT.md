@@ -181,7 +181,7 @@ Each attribute is documented with:
 
 | Attribute | Scenario Defined | Tactics Implemented | Evidence Mapped | Acceptance Criteria Stated | Current Status |
 |---|---|---|---|---|---|
-| Performance | Yes | Yes | Yes | Yes | Functionally satisfied; telemetry enhancement pending |
+| Performance | Yes | Yes | Yes | Yes | Functionally satisfied with k6 evidence; deeper telemetry is optional for production hardening |
 | Security | Yes | Yes | Yes | Yes | Satisfied |
 | Modifiability | Yes | Yes | Yes | Yes | Satisfied with service-growth caution |
 | Reliability | Yes | Yes | Yes | Yes | Satisfied |

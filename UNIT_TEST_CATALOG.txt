@@ -3,6 +3,7 @@ Generated: 2026-04-17
 
 Scope: JUnit test methods discovered under src/test/java via @Test/@ParameterizedTest/@RepeatedTest/@TestFactory/@TestTemplate.
 Total unit tests: 68
+Line-number note: Path:Line entries are snapshot values from generation time and may shift after non-functional edits; class and test method names remain authoritative.
 
 Format: [#] ClassName.testMethod - Path:Line
 

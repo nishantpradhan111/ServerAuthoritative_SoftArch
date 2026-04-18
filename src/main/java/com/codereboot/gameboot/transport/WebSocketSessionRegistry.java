@@ -60,6 +60,14 @@ class WebSocketSessionRegistry {
         removeIfCurrent(roomCode, token, sessionId);
     }
 
+    int activeRoomCount() {
+        return sessionsByRoom.size();
+    }
+
+    int activeSessionCount() {
+        return sessionRefs.size();
+    }
+
     private void removeIfCurrent(String roomCode, String token, String expectedSessionId) {
         ConcurrentMap<String, WebSocketSession> roomSessions = sessionsByRoom.get(roomCode);
         if (roomSessions == null) {

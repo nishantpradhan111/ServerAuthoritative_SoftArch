@@ -40,6 +40,8 @@ public class SecurityConfig {
                     .requestMatchers("/favicon.ico", "/error").permitAll()
                         .requestMatchers("/css/**", "/js/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/system/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/metrics", "/actuator/metrics/**", "/actuator/prometheus").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/ws").permitAll()
                         .requestMatchers("/api/rooms/**").authenticated()

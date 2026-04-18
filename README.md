@@ -2,6 +2,8 @@
 
 Small multiplayer browser duel built as a clean Java backend plus HTML/CSS/JS client.
 
+Author: Nishant Pradhan
+
 GitHub Link: https://github.com/nishantpradhan111/ServerAuthoritative_SoftArch
 
 
@@ -74,12 +76,36 @@ Then open the tunnel URL from a device outside your LAN. If you later buy a doma
 
 - Layered Java server in `src/main/java`
 - Static browser pages in `src/main/resources/static`
+- Client-server split: browser pages and JS handle presentation/input, while the Spring Boot server handles auth, room APIs, WebSocket events, and authoritative game state
 - Security boundary for JWT authentication and protected room APIs
 - API controllers map application return types to HTTP DTOs so transport models stay out of the application layer
 - Room and match state in the domain layer
 - WebSocket broadcasts for room and match updates
 - `/api/system/health` provides a simple runtime check without bringing in Actuator or a monitoring stack
 - `X-Request-Id` is propagated through logs and API errors so requests can be traced end to end
+
+## Observability
+
+Runtime observability endpoints are exposed for dashboard tooling:
+
+- `GET /api/system/health` - lightweight application health snapshot
+- `GET /actuator/health` - Spring Boot actuator health
+- `GET /actuator/metrics` - available metric names
+- `GET /actuator/prometheus` - Prometheus scrape endpoint
+
+Custom game/realtime metrics now emitted include:
+
+- `codereboot.ws.commands.total` (tags: `type`, `outcome`)
+- `codereboot.ws.command.dispatch.duration`
+- `codereboot.ws.sessions.active`
+- `codereboot.ws.rooms.active`
+- `codereboot.ws.broadcast.messages.attempted`
+- `codereboot.ws.broadcast.messages.delivered`
+- `codereboot.ws.broadcast.messages.failed`
+- `codereboot.rooms.active`
+- `codereboot.simulation.ticks.total`
+- `codereboot.simulation.tick.duration`
+- `codereboot.rooms.cleanup.completed.total`
 - ArchUnit-based architecture tests enforce the package layering rules
 
 ## Documentation
@@ -96,6 +122,7 @@ Core project docs:
 - `evaluation_scheme.txt` - rubric used for strict assessment
 - `benchmarks/README.md` - third-party performance benchmarking workflow and reporting template
 - `benchmarks/RESULTS.md` - captured benchmark run results and interpretations
+- `docs/diagramnet-views/client-server-view.drawio` - client-server architecture view
 - `FUNCTION_CATALOG.txt` - concise function/class purpose index
 - `UNIT_TEST_CATALOG.txt` - complete unit test inventory with paths and line numbers
 

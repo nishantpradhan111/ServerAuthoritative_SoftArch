@@ -6,6 +6,10 @@ import com.codereboot.gameboot.application.RoomSessionGateway;
 import com.codereboot.gameboot.domain.RoomSnapshot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
@@ -13,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -30,10 +35,46 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
 
     private final ObjectMapper objectMapper;
     private final WebSocketSessionRegistry sessionRegistry;
+    private final Counter wsRegistrations;
+    private final Counter wsUnregistrations;
+    private final Counter wsBroadcastAttempted;
+    private final Counter wsBroadcastDelivered;
+    private final Counter wsBroadcastFailed;
 
-    public WebSocketRoomBroadcaster(ObjectMapper objectMapper, WebSocketSessionRegistry sessionRegistry) {
+    @Autowired
+    public WebSocketRoomBroadcaster(
+            ObjectMapper objectMapper,
+            WebSocketSessionRegistry sessionRegistry,
+            MeterRegistry meterRegistry
+        ) {
         this.objectMapper = objectMapper;
         this.sessionRegistry = sessionRegistry;
+        this.wsRegistrations = Counter.builder("codereboot.ws.sessions.registrations")
+            .description("Total websocket room/session registrations")
+            .register(meterRegistry);
+        this.wsUnregistrations = Counter.builder("codereboot.ws.sessions.unregistrations")
+            .description("Total websocket room/session unregistrations")
+            .register(meterRegistry);
+        this.wsBroadcastAttempted = Counter.builder("codereboot.ws.broadcast.messages.attempted")
+            .description("Total websocket broadcast message attempts")
+            .register(meterRegistry);
+        this.wsBroadcastDelivered = Counter.builder("codereboot.ws.broadcast.messages.delivered")
+            .description("Total websocket broadcast message deliveries")
+            .register(meterRegistry);
+        this.wsBroadcastFailed = Counter.builder("codereboot.ws.broadcast.messages.failed")
+            .description("Total websocket broadcast message failures")
+            .register(meterRegistry);
+
+        Gauge.builder("codereboot.ws.sessions.active", sessionRegistry, WebSocketSessionRegistry::activeSessionCount)
+            .description("Current active websocket sessions")
+            .register(meterRegistry);
+        Gauge.builder("codereboot.ws.rooms.active", sessionRegistry, WebSocketSessionRegistry::activeRoomCount)
+            .description("Current active websocket rooms with registered sessions")
+            .register(meterRegistry);
+    }
+
+    WebSocketRoomBroadcaster(ObjectMapper objectMapper, WebSocketSessionRegistry sessionRegistry) {
+        this(objectMapper, sessionRegistry, Metrics.globalRegistry);
     }
 
     @Override
@@ -44,6 +85,7 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
                 BUFFER_SIZE_LIMIT_BYTES
         );
         sessionRegistry.register(roomCode, token, session.getId(), safeSession);
+        wsRegistrations.increment();
     }
 
     @Override
@@ -53,6 +95,7 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
         }
 
         sessionRegistry.unregister(session.getId());
+        wsUnregistrations.increment();
     }
 
     @Override
@@ -79,6 +122,10 @@ public class WebSocketRoomBroadcaster implements RoomEventBroadcaster, RoomSessi
                 failed++;
             }
         }
+
+        wsBroadcastAttempted.increment(attempted);
+        wsBroadcastDelivered.increment(delivered);
+        wsBroadcastFailed.increment(failed);
 
         return new BroadcastResult(attempted, delivered, failed);
     }

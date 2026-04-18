@@ -108,6 +108,8 @@ You can override defaults without editing files:
 - `APP_JWT_SECRET`
 - `APP_AUTH_TOKEN_TTL_MINUTES`
 
+If `APP_JWT_SECRET` is not set, the app generates an in-memory ephemeral secret at startup. This works for local development, but all existing tokens become invalid after restart.
+
 ## Related Docs
 
 - `README.md` for overview and architecture
