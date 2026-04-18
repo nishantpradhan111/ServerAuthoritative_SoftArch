@@ -143,6 +143,7 @@ Primary project artifacts:
 - `README.md`
 - `FUNCTION_CATALOG.txt`
 - `UNIT_TEST_CATALOG.txt`
+- `UNIT_TESTING.md`
 - `DEPLOYMENT.md`
 - `SETUP.md`
 - `POSTGRES_SETUP.md`
