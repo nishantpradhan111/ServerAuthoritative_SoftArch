@@ -120,11 +120,10 @@ Core project docs:
 - `docs/ARCHITECTURAL_RATIONALE.md` - design decisions, alternatives, and trade-offs
 - `docs/QUALITY_ATTRIBUTES_REPORT.md` - completed quality-attribute evidence report
 - `docs/UNIT_TESTING.md` - JUnit/unit testing guide and execution commands
-- `evaluation_scheme.txt` - rubric used for strict assessment
 - `benchmarks/README.md` - third-party performance benchmarking workflow and reporting template
 - `benchmarks/RESULTS.md` - captured benchmark run results and interpretations
-- `docs/diagramnet-views/client-server-view.drawio` - client-server architecture view
-- `FUNCTION_CATALOG.txt` - concise function/class purpose index
+- `docs/Architecture Views/` - Architectural Views
+- `docs/FUNCTION_CATALOG.txt` - concise function/class purpose index
 - `docs/UNIT_TEST_CATALOG.txt` - complete unit test inventory with paths and line numbers
 
 ## First-pass game loop

@@ -6,6 +6,7 @@ This file is only for local setup and daily run commands.
 
 - Java 21
 - Maven 3.9+
+- Cloudefared
 - PostgreSQL running locally (default DB config is in `src/main/resources/application.properties`)
 
 Quick checks:
