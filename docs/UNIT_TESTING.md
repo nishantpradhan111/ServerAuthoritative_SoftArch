@@ -70,12 +70,6 @@ If Maven is available on `PATH`:
 mvn test
 ```
 
-If using your explicit Maven path:
-
-```powershell
-& "C:\Users\Nishant Pradhan\.maven\maven-3.9.14\bin\mvn.cmd" test
-```
-
 ## 7. Typical Success Signal
 
 A healthy run ends with output similar to:
