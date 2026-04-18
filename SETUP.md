@@ -19,7 +19,7 @@ mvn -version
 
 1. Create database and users table
 
-- Follow `POSTGRES_SETUP.md`.
+- Follow `docs/POSTGRES_SETUP.md`.
 - Default local credentials expected by the app:
    - DB: `codereboot`
    - User: `codereboot_user`
@@ -94,7 +94,7 @@ mvn clean
 
 - Confirm PostgreSQL is running.
 - Confirm DB/user/password match `application.properties` or environment variables.
-- Re-run steps in `POSTGRES_SETUP.md`.
+- Re-run steps in `docs/POSTGRES_SETUP.md`.
 
 ## Environment Variable Overrides (Optional)
 
@@ -113,5 +113,5 @@ If `APP_JWT_SECRET` is not set, the app generates an in-memory ephemeral secret 
 ## Related Docs
 
 - `README.md` for overview and architecture
-- `POSTGRES_SETUP.md` for database initialization
-- `DEPLOYMENT.md` for public access/deployment notes
+- `docs/POSTGRES_SETUP.md` for database initialization
+- `docs/DEPLOYMENT.md` for public access/deployment notes

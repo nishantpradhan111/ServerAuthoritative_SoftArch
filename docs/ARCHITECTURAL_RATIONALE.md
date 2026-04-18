@@ -112,15 +112,15 @@ Layered architecture with explicit API, Application, Domain, Security, Transport
 
 ## D5. Lightweight Observability
 
-- Decision: Add request correlation and health endpoint instead of full observability stack.
+- Decision: Add request correlation, Actuator health/metrics, and Prometheus export instead of a full dashboard/tracing stack.
 - Benefits:
-  - Lower operational complexity.
-  - Sufficient traceability for project debugging and demos.
+  - Lower operational complexity than a full telemetry backend.
+  - Sufficient traceability for project debugging, demos, and metric inspection.
 - Trade-offs:
-  - Limited metrics/tracing depth.
-  - Not equivalent to production-grade telemetry pipelines.
+  - Limited tracing depth compared with a full OpenTelemetry backend.
+  - Not equivalent to a production observability platform with dashboards and alerting.
 - Evidence:
-  - `RequestIdFilter`, `RequestIdResolver`, `SystemController` health endpoint.
+  - `RequestIdFilter`, `RequestIdResolver`, `SystemController`, Actuator configuration, Prometheus export.
 
 ## D6. Defensive Broadcast and Session Registry Semantics
 
@@ -213,7 +213,7 @@ This section documents external frameworks and libraries used in the solution an
 
 Software intentionally not included (with rationale):
 - Redis/message broker/distributed cache stack: intentionally deferred to avoid distributed complexity outside current coursework scope.
-- Full observability platform (Prometheus/Grafana/OpenTelemetry backend): intentionally deferred in favor of request correlation + health endpoint to maintain low operational overhead.
+- Full dashboard/tracing platform (Grafana/OpenTelemetry backend): intentionally deferred in favor of Actuator health/metrics, Prometheus export, and request correlation to maintain low operational overhead.
 
 ## 6. Consistency Matrix (Design -> Implementation -> Tests)
 
@@ -249,7 +249,7 @@ Software intentionally not included (with rationale):
 - Control: introduce shared room-state backing (cache/store) when moving beyond single-node deployment requirements.
 
 4. Evolution risk: current observability profile is optimized for coursework/demo rather than large-scale production telemetry.
-- Control: staged observability expansion path (metrics/tracing backend) is defined for production transition.
+- Control: current Actuator/Prometheus exposure covers the immediate debugging and metric needs; a staged dashboard/tracing backend can be added later.
 
 5. Evolution risk: package boundaries drift as the codebase accumulates more API and application response types.
 - Control: ArchUnit fitness checks now enforce acyclic package layering and block outer-layer dependencies.

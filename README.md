@@ -19,7 +19,7 @@ GitHub Link: https://github.com/nishantpradhan111/ServerAuthoritative_SoftArch
 - Application-layer room entry contracts with API-side DTO mapping to keep transport models at the boundary
 - Architecture fitness checks that block package-cycle regressions
 - Client/server hit validation with replay-friendly claim tracking
-- Lightweight runtime visibility through a public health endpoint and request-id tracing
+- Runtime observability through Actuator health/metrics, Prometheus export, and request-id tracing
 
 ## Run
 
@@ -81,7 +81,7 @@ Then open the tunnel URL from a device outside your LAN. If you later buy a doma
 - API controllers map application return types to HTTP DTOs so transport models stay out of the application layer
 - Room and match state in the domain layer
 - WebSocket broadcasts for room and match updates
-- `/api/system/health` provides a simple runtime check without bringing in Actuator or a monitoring stack
+- `/api/system/health` provides a simple app-specific runtime check alongside Actuator health/metrics and Prometheus export
 - `X-Request-Id` is propagated through logs and API errors so requests can be traced end to end
 
 ## Observability
@@ -114,11 +114,11 @@ Core project docs:
 
 - `README.md` - project overview and quick start
 - `SETUP.md` - local setup and prerequisites
-- `POSTGRES_SETUP.md` - PostgreSQL initialization details
-- `DEPLOYMENT.md` - public sharing and deployment notes
-- `IMPLEMENTATION_SUMMARY.md` - architecture and implementation overview
-- `ARCHITECTURAL_RATIONALE.md` - design decisions, alternatives, and trade-offs
-- `QUALITY_ATTRIBUTES_REPORT.md` - completed quality-attribute evidence report
+- `docs/POSTGRES_SETUP.md` - PostgreSQL initialization details
+- `docs/DEPLOYMENT.md` - public sharing and deployment notes
+- `docs/IMPLEMENTATION_SUMMARY.md` - architecture and implementation overview
+- `docs/ARCHITECTURAL_RATIONALE.md` - design decisions, alternatives, and trade-offs
+- `docs/QUALITY_ATTRIBUTES_REPORT.md` - completed quality-attribute evidence report
 - `evaluation_scheme.txt` - rubric used for strict assessment
 - `benchmarks/README.md` - third-party performance benchmarking workflow and reporting template
 - `benchmarks/RESULTS.md` - captured benchmark run results and interpretations

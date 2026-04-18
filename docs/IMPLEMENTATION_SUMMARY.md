@@ -7,7 +7,7 @@ The system uses stateless JWT authentication, token-bound room ownership checks,
 
 The design intentionally stays lightweight:
 - no external session/cache layer,
-- no heavyweight observability stack,
+- lightweight observability via Actuator health/metrics and Prometheus export,
 - clear seams for future scale-out.
 
 ## 2. Architectural Pattern and Layering
@@ -128,13 +128,14 @@ This design gives:
 
 ## 6. Operational Visibility (Lightweight)
 
-Instead of heavy platform additions, the project provides:
+The project provides a focused observability surface without adding a full dashboard/tracing backend:
 - `GET /api/system/health` for basic runtime introspection.
+- `GET /actuator/health`, `GET /actuator/metrics`, and `GET /actuator/prometheus` for runtime health and metric export.
 - `RequestIdFilter` to generate/propagate `X-Request-Id`.
 - request id included in structured API errors.
 - request id available in console log pattern via MDC.
 
-This satisfies practical debugging traceability while keeping architecture simple.
+This keeps debugging practical while preserving a simple deployment footprint.
 
 ## 7. Documentation Set
 
@@ -164,4 +165,4 @@ Representative coverage areas:
 Known intentional scope boundaries:
 - single-instance in-memory room state,
 - no distributed cache/queue/orchestration stack,
-- lightweight operational visibility over enterprise observability platform.
+- lightweight observability with Actuator/Prometheus export; centralized dashboard/tracing stack remains future work.

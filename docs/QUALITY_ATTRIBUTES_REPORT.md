@@ -150,32 +150,34 @@ Each attribute is documented with:
 
 ### Scenario
 
-- Stimulus source: bug report requiring request tracing.
-- Stimulus: need to follow request path through logs and API response context.
-- Environment: local/demo deployment without full telemetry platform.
-- Artifact: request filter, logging context, and health endpoint.
+- Stimulus source: bug report requiring request tracing or runtime metric inspection.
+- Stimulus: need to follow request path through logs, API response context, and exported metrics.
+- Environment: local/demo deployment with Actuator and Prometheus scrape support.
+- Artifact: request filter, logging context, health endpoint, and metric export endpoints.
 - Response: operator can correlate request and inspect runtime status quickly.
-- Response measure target: request id appears in response headers/log context; health endpoint available.
+- Response measure target: request id appears in response headers/log context; health and metrics endpoints are available.
 
 ### Tactics Used
 
 - `X-Request-Id` propagation and MDC logging correlation.
 - Lightweight health endpoint via system controller.
+- Spring Boot Actuator health and metrics endpoints.
+- Prometheus scrape export for realtime and simulation metrics.
 
 ### Evidence
 
-- Components: `RequestIdFilter`, `RequestIdResolver`, `SystemController`.
+- Components: `RequestIdFilter`, `RequestIdResolver`, `SystemController`, `SecurityConfig`, Actuator/metrics configuration.
 - Tests: `RequestIdFilterTest`, `SystemControllerTest`.
 
 ### Acceptance and Status
 
-- Acceptance criteria: request id generation/preservation behavior verified; health endpoint returns runtime snapshot.
+- Acceptance criteria: request id generation/preservation behavior verified; health and metrics endpoints return runtime snapshot and metric names.
 - Current status: satisfied in code and tests.
 - Confidence: high for project scope.
 
 ### Residual Risk
 
-- No centralized metrics/tracing backend.
+- No centralized dashboard/tracing backend yet.
 
 ## 8. Attribute Summary Table
 
@@ -195,4 +197,4 @@ The current architecture demonstrates explicit and traceable quality tactics acr
 
 - Automated test suite status: 68 run, 0 failures, 0 errors.
 - Layer coverage present across API, application, domain, security, transport, config, and architecture tests.
-- Artifacts are documented across `README.md`, `IMPLEMENTATION_SUMMARY.md`, and `ARCHITECTURAL_RATIONALE.md` for rubric traceability.
+- Artifacts are documented across `../README.md`, `IMPLEMENTATION_SUMMARY.md`, and `ARCHITECTURAL_RATIONALE.md` for rubric traceability.
